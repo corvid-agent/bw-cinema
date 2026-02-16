@@ -106,6 +106,14 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
                   </button>
                 }
               </div>
+              <div class="browse__quick-decades">
+                @for (g of quickGenres(); track g.name) {
+                  <button class="browse__quick-decade" (click)="quickFilterGenre(g.name)">
+                    {{ g.name }}
+                    <span class="browse__quick-count">{{ g.count }}</span>
+                  </button>
+                }
+              </div>
             }
 
             @if (browseSuggestion(); as suggestion) {
@@ -535,6 +543,17 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     return meta.decades.map((d) => ({ decade: d, count: counts.get(d) ?? 0 }));
   });
 
+  readonly quickGenres = computed(() => {
+    const meta = this.catalog.meta();
+    if (!meta) return [];
+    const movies = this.catalog.movies();
+    const counts = new Map<string, number>();
+    for (const m of movies) {
+      for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
+    }
+    return meta.genres.slice(0, 8).map((g) => ({ name: g, count: counts.get(g) ?? 0 }));
+  });
+
   readonly filteredMovies = computed(() => this.catalog.search(this.filter()));
   readonly paginatedMovies = computed(() =>
     this.filteredMovies().slice(0, this.page() * this.pageSize)
@@ -639,6 +658,12 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
 
   quickFilterDecade(decade: number): void {
     this.filter.update((f) => ({ ...f, decades: [decade] }));
+    this.page.set(1);
+    this.syncUrl();
+  }
+
+  quickFilterGenre(genre: string): void {
+    this.filter.update((f) => ({ ...f, genres: [genre] }));
     this.page.set(1);
     this.syncUrl();
   }

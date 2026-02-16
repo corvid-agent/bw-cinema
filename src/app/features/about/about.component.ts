@@ -52,6 +52,38 @@ import { CatalogService } from '../../core/services/catalog.service';
         </section>
       }
 
+      @if (highlights(); as h) {
+        <section class="about__section">
+          <h2>Catalog Highlights</h2>
+          <div class="about__highlights">
+            @if (h.oldest) {
+              <a class="about__highlight" [routerLink]="['/movie', h.oldest.id]">
+                <span class="about__highlight-label">Oldest Film</span>
+                <span class="about__highlight-value">{{ h.oldest.title }} ({{ h.oldest.year }})</span>
+              </a>
+            }
+            @if (h.highestRated) {
+              <a class="about__highlight" [routerLink]="['/movie', h.highestRated.id]">
+                <span class="about__highlight-label">Highest Rated</span>
+                <span class="about__highlight-value">{{ h.highestRated.title }} &#9733; {{ h.highestRated.voteAverage.toFixed(1) }}</span>
+              </a>
+            }
+            @if (h.topDirector) {
+              <a class="about__highlight" [routerLink]="['/director', h.topDirector.name]">
+                <span class="about__highlight-label">Most Prolific Director</span>
+                <span class="about__highlight-value">{{ h.topDirector.name }} ({{ h.topDirector.count }} films)</span>
+              </a>
+            }
+            @if (h.topGenre) {
+              <a class="about__highlight" [routerLink]="['/genre', h.topGenre.name]">
+                <span class="about__highlight-label">Most Popular Genre</span>
+                <span class="about__highlight-value">{{ h.topGenre.name }} ({{ h.topGenre.count }} films)</span>
+              </a>
+            }
+          </div>
+        </section>
+      }
+
       <section class="about__section">
         <h2>Data Sources</h2>
         <div class="about__sources">
@@ -373,6 +405,40 @@ import { CatalogService } from '../../core/services/catalog.service';
       letter-spacing: 0.06em;
       font-weight: 600;
     }
+    .about__highlights {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
+      margin-top: var(--space-md);
+    }
+    .about__highlight {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: var(--space-md) var(--space-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s;
+    }
+    .about__highlight:hover {
+      border-color: var(--accent-gold);
+      color: inherit;
+    }
+    .about__highlight-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-tertiary);
+      font-weight: 600;
+    }
+    .about__highlight-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent-gold);
+    }
     .about__features {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -424,6 +490,7 @@ import { CatalogService } from '../../core/services/catalog.service';
       .about__stats { grid-template-columns: repeat(2, 1fr); }
       .about__stat-value { font-size: 1.4rem; }
       .about__features { grid-template-columns: 1fr; }
+      .about__highlights { grid-template-columns: 1fr; }
     }
   `],
 })
@@ -449,6 +516,32 @@ export class AboutComponent implements OnInit {
       genres: meta?.genres.length ?? 0,
       directors: directorSet.size.toLocaleString(),
       yearRange: `${minYear}–${maxYear}`,
+    };
+  });
+
+  readonly highlights = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+
+    const oldest = movies.reduce((o, m) => m.year < o.year ? m : o);
+    const rated = movies.filter((m) => m.voteAverage > 0);
+    const highestRated = rated.length > 0
+      ? rated.reduce((h, m) => m.voteAverage > h.voteAverage ? m : h)
+      : null;
+
+    const dirCounts = new Map<string, number>();
+    for (const m of movies) for (const d of m.directors) dirCounts.set(d, (dirCounts.get(d) ?? 0) + 1);
+    const topDir = [...dirCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+
+    const genreCounts = new Map<string, number>();
+    for (const m of movies) for (const g of m.genres) genreCounts.set(g, (genreCounts.get(g) ?? 0) + 1);
+    const topGenre = [...genreCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+
+    return {
+      oldest,
+      highestRated,
+      topDirector: topDir ? { name: topDir[0], count: topDir[1] } : null,
+      topGenre: topGenre ? { name: topGenre[0], count: topGenre[1] } : null,
     };
   });
 
