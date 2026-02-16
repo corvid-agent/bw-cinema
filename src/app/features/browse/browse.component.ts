@@ -69,6 +69,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultDecadeCount(); as rdc) {
           <p class="browse__watched-note">Spanning {{ rdc }} decades</p>
         }
+        @if (resultCoDirectedCount(); as rcdc) {
+          <p class="browse__watched-note">{{ rcdc }} co-directed films</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -701,6 +704,13 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     if (films.length < 10) return null;
     const count = films.filter((m) => m.voteAverage >= 7.0).length;
     return count > 0 && count < films.length ? count : null;
+  });
+
+  readonly resultCoDirectedCount = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const count = films.filter((m) => m.directors.length > 1).length;
+    return count > 0 ? count : null;
   });
 
   readonly topResultDirector = computed(() => {

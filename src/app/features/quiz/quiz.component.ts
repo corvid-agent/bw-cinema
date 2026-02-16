@@ -84,6 +84,9 @@ interface QuizStep {
           @if (resultHighestRated(); as rhr) {
             <p class="quiz__decade-range">Top pick: {{ rhr }}</p>
           }
+          @if (resultAvgFilmAge(); as rafa) {
+            <p class="quiz__decade-range">Avg age: {{ rafa }} years</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -496,6 +499,13 @@ export class QuizComponent implements OnInit {
     const best = rated.reduce((a, b) => b.voteAverage > a.voteAverage ? b : a);
     const title = best.title.length > 25 ? best.title.slice(0, 23) + '...' : best.title;
     return `${title} (${best.voteAverage.toFixed(1)})`;
+  });
+
+  readonly resultAvgFilmAge = computed(() => {
+    const films = this.results();
+    if (films.length < 2) return null;
+    const now = new Date().getFullYear();
+    return Math.round(films.reduce((s, m) => s + (now - m.year), 0) / films.length);
   });
 
   readonly resultOldestYear = computed(() => {

@@ -336,6 +336,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                   <span class="stats__card-value">{{ longestStreak() }}</span>
                   <span class="stats__card-label">Best Streak (days)</span>
                 </div>
+                @if (watchedAvgFilmAge() > 0) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ watchedAvgFilmAge() }}</span>
+                    <span class="stats__card-label">Avg Film Age (yrs)</span>
+                  </div>
+                }
               </div>
 
               @if (nextMilestone(); as milestone) {
@@ -1597,6 +1603,13 @@ export class CollectionComponent implements OnInit {
 
   readonly currentStreak = computed(() => this.computeStreaks().current);
   readonly longestStreak = computed(() => this.computeStreaks().longest);
+
+  readonly watchedAvgFilmAge = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 2) return 0;
+    const now = new Date().getFullYear();
+    return Math.round(films.reduce((s, m) => s + (now - m.year), 0) / films.length);
+  });
 
   private computeStreaks(): { current: number; longest: number } {
     const watched = this.collectionService.watched();
