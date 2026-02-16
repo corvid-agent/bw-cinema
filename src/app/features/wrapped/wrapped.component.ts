@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
 import type { MovieSummary } from '../../core/models/movie.model';
@@ -47,6 +48,14 @@ interface WrappedStats {
               >{{ yr }}</button>
             }
           </div>
+          @if (stats().totalFilms > 0) {
+            <div class="wrapped__share">
+              <button class="wrapped__share-btn" (click)="shareWrapped()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                Share Your Wrapped
+              </button>
+            </div>
+          }
         </div>
 
         @if (stats().totalFilms === 0) {
@@ -233,6 +242,27 @@ interface WrappedStats {
       background: var(--accent-gold-dim);
       border-color: var(--accent-gold);
       color: var(--accent-gold);
+    }
+    .wrapped__share {
+      margin-top: var(--space-lg);
+    }
+    .wrapped__share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: 8px 20px;
+      background: var(--accent-gold-dim);
+      border: 1px solid var(--accent-gold);
+      border-radius: 20px;
+      color: var(--accent-gold);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .wrapped__share-btn:hover {
+      background: var(--accent-gold);
+      color: var(--bg-deep);
     }
     .wrapped__empty {
       text-align: center;
@@ -422,6 +452,7 @@ export class WrappedComponent implements OnInit {
   protected readonly catalog = inject(CatalogService);
   private readonly collection = inject(CollectionService);
   private readonly titleService = inject(Title);
+  private readonly notifications = inject(NotificationService);
 
   readonly selectedYear = signal(new Date().getFullYear());
 
@@ -561,6 +592,32 @@ export class WrappedComponent implements OnInit {
   monthHeight(count: number): number {
     const max = Math.max(1, ...this.stats().monthlyBreakdown.map((m) => m.count));
     return count === 0 ? 2 : (count / max) * 85;
+  }
+
+  shareWrapped(): void {
+    const s = this.stats();
+    const year = this.selectedYear();
+    const topGenre = s.topGenres[0]?.name ?? '';
+    const topDirector = s.topDirectors[0]?.name ?? '';
+    const text = [
+      `My ${year} BW Cinema Wrapped:`,
+      `${s.totalFilms} classic B&W films watched`,
+      s.avgRating > 0 ? `Average rating: ${s.avgRating.toFixed(1)}/10` : '',
+      topGenre ? `Favorite genre: ${topGenre}` : '',
+      topDirector ? `Most watched director: ${topDirector}` : '',
+      `${s.favoriteCount} favorites, ${s.reviewCount} reviews`,
+      '',
+      'bw-cinema.app/wrapped',
+    ].filter(Boolean).join('\n');
+
+    if (navigator.share) {
+      navigator.share({ title: `${year} BW Cinema Wrapped`, text }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text).then(
+        () => this.notifications.show('Wrapped stats copied to clipboard!', 'success'),
+        () => this.notifications.show('Failed to copy', 'error'),
+      );
+    }
   }
 
   private emptyMonths(): { month: string; count: number }[] {
