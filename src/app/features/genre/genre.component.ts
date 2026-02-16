@@ -137,6 +137,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (medianRating(); as mr) {
             <p class="genre__fact">Median rating: &#9733; {{ mr }}</p>
           }
+          @if (avgTitleLength(); as atl) {
+            <p class="genre__fact">Avg title length: {{ atl }} chars</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -880,6 +883,13 @@ export class GenreComponent implements OnInit {
     const mid = Math.floor(sorted.length / 2);
     const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
     return median.toFixed(1);
+  });
+
+  readonly avgTitleLength = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const avg = Math.round(f.reduce((s, m) => s + m.title.length, 0) / f.length);
+    return avg > 0 ? avg : null;
   });
 
   readonly silentEraCount = computed(() => {

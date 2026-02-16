@@ -102,6 +102,9 @@ interface QuizStep {
           @if (resultStreamablePct(); as rsp) {
             <p class="quiz__decade-range">{{ rsp }}% free to watch</p>
           }
+          @if (resultCoDirectedPct(); as rcdp) {
+            <p class="quiz__decade-range">{{ rcdp }}% co-directed</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -557,6 +560,14 @@ export class QuizComponent implements OnInit {
     const years = films.map((m) => m.year).sort((a, b) => a - b);
     const mid = Math.floor(years.length / 2);
     return years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
+  });
+
+  readonly resultCoDirectedPct = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const count = films.filter((m) => m.directors.length > 1).length;
+    const pct = Math.round((count / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly resultOldestYear = computed(() => {

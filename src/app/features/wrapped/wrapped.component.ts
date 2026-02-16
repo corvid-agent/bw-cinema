@@ -208,6 +208,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Silent Era</span>
               </div>
             }
+            @if (uniqueGenrePct(); as ugp) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ ugp }}%</span>
+                <span class="wrapped__hero-label">Genres explored</span>
+              </div>
+            }
             @if (coDirectedPct(); as cdp) {
               <div class="wrapped__hero-stat">
                 <span class="wrapped__hero-value">{{ cdp }}%</span>
@@ -1014,6 +1020,16 @@ export class WrappedComponent implements OnInit {
       );
     }
   }
+
+  readonly uniqueGenrePct = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 5) return null;
+    const allGenres = new Set(this.catalog.movies().flatMap((m) => m.genres));
+    if (allGenres.size === 0) return null;
+    const watchedGenres = new Set(films.flatMap((m) => m.genres));
+    const pct = Math.round((watchedGenres.size / allGenres.size) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
+  });
 
   readonly coDirectedPct = computed(() => {
     const films = this.yearFilms();
