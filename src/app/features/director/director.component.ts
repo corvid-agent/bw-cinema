@@ -96,6 +96,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Rating Range</span>
               </div>
             }
+            @if (soloDirectedPct(); as sdp) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ sdp }}%</span>
+                <span class="director__stat-label">Solo Directed</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -828,6 +834,15 @@ export class DirectorComponent implements OnInit {
     if (f.length < 2) return null;
     const pct = Math.round((this.streamableCount() / f.length) * 100);
     if (pct === 0 || pct === 100) return null;
+    return pct;
+  });
+
+  readonly soloDirectedPct = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const solo = f.filter((m) => m.directors.length === 1).length;
+    const pct = Math.round((solo / f.length) * 100);
+    if (pct === 100 || pct === 0) return null;
     return pct;
   });
 

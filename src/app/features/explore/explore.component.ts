@@ -40,7 +40,7 @@ const MOODS: Mood[] = [
       <div class="explore container">
         <div class="explore__header">
           <h1>Explore</h1>
-          <p class="explore__subtitle">Discover films by mood, or let fate decide</p>
+          <p class="explore__subtitle">Discover films by mood, or let fate decide@if (totalUnwatchedStreamable(); as tus) { &middot; {{ tus }} free films to discover}</p>
         </div>
 
         <div class="explore__random">
@@ -917,6 +917,12 @@ export class ExploreComponent implements OnInit {
       .filter(([, c]) => c >= 5)
       .sort((a, b) => b[1] - a[1]);
     return best.length > 0 ? { name: best[0][0], count: best[0][1] } : null;
+  });
+
+  readonly totalUnwatchedStreamable = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return null;
+    return this.catalog.movies().filter((m) => m.isStreamable && !watchedIds.has(m.id)).length;
   });
 
   readonly topRatedUnwatched = computed(() => {
