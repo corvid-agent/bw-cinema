@@ -44,5 +44,25 @@ export const routes: Routes = [
     title: 'About — BW Cinema',
     loadComponent: () => import('./features/about/about.component').then((m) => m.AboutComponent),
   },
+  {
+    path: 'genre/:name',
+    title: 'Genre — BW Cinema',
+    loadComponent: () => import('./features/genre/genre.component').then((m) => m.GenreComponent),
+  },
+  {
+    path: 'decade/:year',
+    title: 'Decade — BW Cinema',
+    loadComponent: () => import('./features/decade/decade.component').then((m) => m.DecadeComponent),
+  },
+  {
+    path: 'stats',
+    title: 'Catalog Statistics — BW Cinema',
+    loadComponent: () => import('./features/stats/stats.component').then((m) => m.StatsComponent),
+  },
+  {
+    path: 'quiz',
+    title: 'What Should I Watch? — BW Cinema',
+    loadComponent: () => import('./features/quiz/quiz.component').then((m) => m.QuizComponent),
+  },
   { path: '**', redirectTo: 'home' },
 ];

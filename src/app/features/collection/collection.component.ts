@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -17,6 +17,19 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
   imports: [RouterLink, MovieGridComponent, MovieListComponent, ViewToggleComponent, LoadingSpinnerComponent],
   template: `
     <div class="collection container">
+      @if (isSharedView()) {
+        <h1>Shared Collection</h1>
+        <p class="collection__shared-info">{{ sharedMovies().length }} film{{ sharedMovies().length !== 1 ? 's' : '' }} in this shared collection</p>
+        @if (sharedMovies().length > 0) {
+          <app-movie-grid [movies]="sharedMovies()" />
+        } @else {
+          <div class="collection__empty">
+            <p class="collection__empty-title">No films found</p>
+            <p class="collection__empty-text">The shared link may be invalid or the films are no longer in our catalog.</p>
+            <a class="btn-primary" routerLink="/browse">Browse Films</a>
+          </div>
+        }
+      } @else {
       <h1>My Collection</h1>
 
       @if (catalog.loading()) {
@@ -110,6 +123,11 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                 </label>
               }
               <app-view-toggle [(mode)]="viewMode" />
+            </div>
+          }
+          @if (activeTab() !== 'stats' && activeTab() !== 'playlists') {
+            <div class="collection__backup">
+              <button class="btn-ghost collection__backup-btn" (click)="shareCollection()">Share</button>
             </div>
           }
           @if (activeTab() !== 'stats') {
@@ -391,10 +409,15 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
           </div>
         }
       }
+      }
     </div>
   `,
   styles: [`
     .collection { padding: var(--space-xl) 0; }
+    .collection__shared-info {
+      color: var(--text-secondary);
+      margin: 0 0 var(--space-xl);
+    }
     .collection__controls {
       display: flex;
       align-items: center;
@@ -855,12 +878,40 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
         grid-template-columns: repeat(2, 1fr);
       }
     }
+    @media (max-width: 480px) {
+      .collection__tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        max-width: 100%;
+        scrollbar-width: none;
+      }
+      .collection__tabs::-webkit-scrollbar { display: none; }
+      .collection__tab {
+        flex-shrink: 0;
+        padding: var(--space-sm) var(--space-md);
+        font-size: 0.85rem;
+      }
+      .stats__overview {
+        grid-template-columns: 1fr;
+      }
+      .film-tl__track {
+        min-width: 400px;
+      }
+      .collection__actions {
+        flex-wrap: wrap;
+      }
+    }
   `],
 })
 export class CollectionComponent implements OnInit {
   protected readonly catalog = inject(CatalogService);
   protected readonly collectionService = inject(CollectionService);
   private readonly notifications = inject(NotificationService);
+  private readonly route = inject(ActivatedRoute);
+
+  readonly isSharedView = signal(false);
+  readonly sharedMovies = signal<MovieSummary[]>([]);
 
   readonly activeTab = signal<'watchlist' | 'watched' | 'favorites' | 'playlists' | 'stats'>('watchlist');
   readonly sortBy = signal<SortOption>('added-desc');
@@ -1107,6 +1158,36 @@ export class CollectionComponent implements OnInit {
 
   ngOnInit(): void {
     this.catalog.load();
+    const shared = this.route.snapshot.queryParams['shared'];
+    if (shared) {
+      this.isSharedView.set(true);
+      const ids = shared.split(',');
+      // Wait for catalog to load, then resolve IDs
+      const checkLoaded = () => {
+        if (this.catalog.loaded()) {
+          const movies = this.catalog.movies();
+          this.sharedMovies.set(ids.map((id: string) => movies.find((m) => m.id === id)).filter((m: MovieSummary | undefined): m is MovieSummary => !!m));
+        } else {
+          setTimeout(checkLoaded, 100);
+        }
+      };
+      checkLoaded();
+    }
+  }
+
+  shareCollection(): void {
+    const movies = this.currentMovies();
+    if (movies.length === 0) {
+      this.notifications.show('No films to share', 'info');
+      return;
+    }
+    const ids = movies.map((m) => m.id).join(',');
+    const url = `${window.location.origin}/collection?shared=${ids}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.notifications.show('Share link copied to clipboard', 'success');
+    }).catch(() => {
+      this.notifications.show('Failed to copy link', 'error');
+    });
   }
 
   onSortChange(event: Event): void {

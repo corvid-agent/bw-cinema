@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, ChangeDetectionStrategy, signal, inject, OnInit } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
 import { AccessibilityService } from '../../core/services/accessibility.service';
 
@@ -30,6 +30,7 @@ import { AccessibilityService } from '../../core/services/accessibility.service'
           <a routerLink="/collection" routerLinkActive="active" (click)="menuOpen.set(false)">Collection</a>
           <a routerLink="/compare" routerLinkActive="active" (click)="menuOpen.set(false)">Compare</a>
           <a routerLink="/about" routerLinkActive="active" (click)="menuOpen.set(false)">About</a>
+          <a routerLink="/stats" routerLinkActive="active" (click)="menuOpen.set(false)">Stats</a>
           <button
             class="header__theme-toggle"
             (click)="theme.toggle()"
@@ -204,11 +205,30 @@ import { AccessibilityService } from '../../core/services/accessibility.service'
         align-self: flex-start;
         margin: var(--space-sm) 0 var(--space-sm) var(--space-md);
       }
+      .header__nav--open {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 99;
+        overflow-y: auto;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
     }
   `],
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
+  private readonly router = inject(Router);
   readonly theme = inject(ThemeService);
   readonly a11y = inject(AccessibilityService);
   readonly menuOpen = signal(false);
+
+  ngOnInit(): void {
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.menuOpen.set(false);
+      }
+    });
+  }
 }

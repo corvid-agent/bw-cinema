@@ -149,6 +149,15 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
         grid-template-columns: repeat(2, 1fr);
       }
     }
+    @media (max-width: 480px) {
+      .director__stats {
+        grid-template-columns: 1fr;
+      }
+      .director__header {
+        flex-direction: column;
+        gap: var(--space-md);
+      }
+    }
   `],
 })
 export class DirectorComponent implements OnInit {

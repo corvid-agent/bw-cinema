@@ -242,6 +242,13 @@ import type { MovieSummary } from '../../core/models/movie.model';
       color: var(--text-tertiary);
       flex-shrink: 0;
     }
+    @media (max-width: 480px) {
+      .search__suggestions,
+      .search__history {
+        max-height: 50vh;
+        overflow-y: auto;
+      }
+    }
   `],
 })
 export class SearchBarComponent implements OnDestroy {

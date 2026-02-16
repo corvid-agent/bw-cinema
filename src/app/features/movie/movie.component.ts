@@ -93,6 +93,10 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
               <div class="detail__actions">
                 @if (streamingUrl()) {
                   <a class="btn-primary detail__watch-btn" [routerLink]="['/watch', m.id]">Watch Film</a>
+                } @else if (m.imdbId) {
+                  <a class="btn-secondary detail__watch-btn detail__imdb-btn" [href]="'https://www.imdb.com/title/' + m.imdbId" target="_blank" rel="noopener">View on IMDb</a>
+                } @else {
+                  <a class="btn-secondary detail__watch-btn" [href]="'https://archive.org/search?query=' + encodeTitle(m.title)" target="_blank" rel="noopener">Search Internet Archive</a>
                 }
                 <button
                   class="btn-ghost detail__fav-btn"
@@ -659,6 +663,14 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       padding: var(--space-3xl) 0;
       text-align: center;
     }
+    .detail__imdb-btn {
+      border-color: rgba(245, 197, 24, 0.5);
+      color: #f5c518;
+    }
+    .detail__imdb-btn:hover {
+      background-color: rgba(245, 197, 24, 0.1);
+      border-color: #f5c518;
+    }
     @media (max-width: 768px) {
       .detail__hero { height: 220px; }
       .detail__content { margin-top: -60px; }
@@ -671,6 +683,32 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
         margin: 0 auto;
       }
       .detail__title { font-size: 1.8rem; }
+      .detail__actions {
+        width: 100%;
+      }
+      .detail__watch-btn {
+        flex: 1;
+        text-align: center;
+      }
+    }
+    @media (max-width: 480px) {
+      .detail__poster {
+        max-width: 150px;
+      }
+      .detail__title { font-size: 1.5rem; }
+      .detail__ratings {
+        flex-direction: column;
+        gap: var(--space-sm);
+      }
+      .detail__rating-card {
+        flex-direction: row;
+        gap: var(--space-md);
+        min-width: auto;
+        padding: var(--space-sm) var(--space-md);
+      }
+      .detail__overview {
+        font-size: 0.9rem;
+      }
     }
   `],
 })
@@ -825,5 +863,9 @@ export class MovieComponent implements OnInit {
     await navigator.clipboard.writeText(window.location.href);
     this.notifications.show('Link copied to clipboard', 'info');
     this.shareMenuOpen.set(false);
+  }
+
+  encodeTitle(title: string): string {
+    return encodeURIComponent(title);
   }
 }

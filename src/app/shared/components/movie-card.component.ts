@@ -28,6 +28,8 @@ import type { MovieSummary } from '../../core/models/movie.model';
           }
           @if (movie().isStreamable) {
             <span class="card__badge">Free</span>
+          } @else if (movie().imdbId) {
+            <span class="card__badge card__badge--imdb">IMDb</span>
           }
         </div>
         @if (collection.isFavorite(movie().id)) {
@@ -59,9 +61,17 @@ import type { MovieSummary } from '../../core/models/movie.model';
       cursor: pointer;
       background: transparent;
     }
-    .card:hover {
-      transform: translateY(-6px) scale(1.02);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    @media (hover: hover) and (pointer: fine) {
+      .card:hover {
+        transform: translateY(-6px) scale(1.02);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      }
+      .card:hover .card__poster {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--accent-gold);
+      }
+      .card:hover .card__poster img {
+        transform: scale(1.05);
+      }
     }
     .card__poster {
       position: relative;
@@ -70,9 +80,6 @@ import type { MovieSummary } from '../../core/models/movie.model';
       border-radius: var(--radius-lg);
       overflow: hidden;
       box-shadow: var(--shadow-poster);
-    }
-    .card:hover .card__poster {
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--accent-gold);
     }
     .card__poster img {
       width: 100%;
@@ -83,9 +90,6 @@ import type { MovieSummary } from '../../core/models/movie.model';
     }
     .card__poster img.loaded {
       filter: blur(0);
-    }
-    .card:hover .card__poster img {
-      transform: scale(1.05);
     }
     .card__poster-placeholder {
       width: 100%;
@@ -150,6 +154,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-left: auto;
+    }
+    .card__badge--imdb {
+      background-color: rgba(245, 197, 24, 0.85);
+      color: #000;
     }
     .card__heart {
       position: absolute;

@@ -70,9 +70,18 @@ describe('MovieCardComponent', () => {
     expect(placeholder.textContent).toContain('1945');
   });
 
-  it('should hide badge when not streamable', () => {
+  it('should show IMDb badge when not streamable but has imdbId', () => {
     const nonStreamable = { ...mockMovie, isStreamable: false };
     fixture.componentRef.setInput('movie', nonStreamable);
+    fixture.detectChanges();
+    const badge = fixture.nativeElement.querySelector('.card__badge--imdb');
+    expect(badge).toBeTruthy();
+    expect(badge.textContent).toContain('IMDb');
+  });
+
+  it('should hide badge when not streamable and no imdbId', () => {
+    const noLinks = { ...mockMovie, isStreamable: false, imdbId: null };
+    fixture.componentRef.setInput('movie', noLinks);
     fixture.detectChanges();
     const badge = fixture.nativeElement.querySelector('.card__badge');
     expect(badge).toBeFalsy();

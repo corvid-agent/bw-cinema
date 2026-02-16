@@ -288,6 +288,20 @@ import type { MovieSummary } from '../../core/models/movie.model';
       .compare__vs { padding-top: 0; text-align: center; }
       .compare__row { grid-template-columns: 80px 1fr 1fr; }
     }
+    @media (max-width: 480px) {
+      .compare__row { grid-template-columns: 1fr; }
+      .compare__cell--label {
+        border-bottom: none;
+        padding-bottom: 0;
+        font-size: 0.75rem;
+      }
+      .compare__row--header {
+        display: flex;
+        flex-direction: column;
+      }
+      .compare__poster { width: 120px; }
+      .compare__cell { padding: var(--space-sm) var(--space-md); font-size: 0.9rem; }
+    }
   `],
 })
 export class CompareComponent implements OnInit {

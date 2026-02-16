@@ -369,6 +369,27 @@ img {
   h3 { font-size: 1.1rem; }
 }
 
+@media (max-width: 480px) {
+  :root {
+    --font-size-base: 15px;
+  }
+
+  .container {
+    padding: 0 12px;
+  }
+
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.15rem; }
+  h3 { font-size: 1rem; }
+}
+
+/* Safe area for bottom nav on notched devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 /* Print */
 @media print {
   :root {

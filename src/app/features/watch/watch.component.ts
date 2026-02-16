@@ -52,10 +52,21 @@ import type { MovieSummary } from '../../core/models/movie.model';
         </div>
       </div>
     } @else {
-      <div class="container" style="padding: var(--space-2xl) 0; text-align: center;">
+      <div class="watch__unavailable container">
         <h2>Film not available for streaming</h2>
-        <p class="text-secondary">This film is not currently available for online viewing.</p>
-        <a class="btn-primary" [routerLink]="['/movie', id()]">Back to Film Details</a>
+        <p class="text-secondary">This film isn't available for embedded streaming, but you may be able to find it elsewhere.</p>
+        <div class="watch__fallback-actions">
+          @if (movieImdbId()) {
+            <a class="btn-secondary watch__fallback-btn" [href]="'https://www.imdb.com/title/' + movieImdbId()" target="_blank" rel="noopener">
+              View on IMDb
+            </a>
+          }
+          <a class="btn-secondary watch__fallback-btn" [href]="'https://archive.org/search?query=' + encodedTitle()" target="_blank" rel="noopener">
+            Search Internet Archive
+          </a>
+          <a class="btn-primary watch__fallback-btn" [routerLink]="['/movie', id()]">Back to Film Details</a>
+        </div>
+        <p class="watch__note">Many classic black &amp; white films are in the public domain and freely available on the Internet Archive.</p>
       </div>
     }
   `,
@@ -120,6 +131,29 @@ import type { MovieSummary } from '../../core/models/movie.model';
       margin-top: var(--space-lg);
       color: var(--text-secondary);
     }
+    .watch__unavailable {
+      padding: var(--space-2xl) 0;
+      text-align: center;
+    }
+    .watch__fallback-actions {
+      display: flex;
+      gap: var(--space-md);
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: var(--space-xl) 0;
+    }
+    .watch__fallback-btn {
+      display: inline-block;
+      padding: var(--space-md) var(--space-xl);
+      border-radius: var(--radius-lg);
+      font-size: 0.95rem;
+    }
+    .watch__note {
+      color: var(--text-tertiary);
+      font-size: 0.85rem;
+      max-width: 480px;
+      margin: var(--space-lg) auto 0;
+    }
   `],
 })
 export class WatchComponent implements OnInit, OnDestroy {
@@ -135,6 +169,8 @@ export class WatchComponent implements OnInit, OnDestroy {
 
   readonly loading = signal(true);
   readonly movieTitle = signal('');
+  readonly movieImdbId = signal<string | null>(null);
+  readonly encodedTitle = signal('');
   readonly source = signal<StreamingSource | null>(null);
   readonly safeUrl = signal<SafeResourceUrl>('');
   readonly isFullscreen = signal(false);
@@ -148,6 +184,8 @@ export class WatchComponent implements OnInit, OnDestroy {
     const movie = this.catalogService.movies().find((m) => m.id === this.id());
     if (movie) {
       this.movieTitle.set(movie.title);
+      this.movieImdbId.set(movie.imdbId);
+      this.encodedTitle.set(encodeURIComponent(movie.title));
       this.titleService.setTitle(`Watch ${movie.title} — BW Cinema`);
       const src = this.streamingService.getSource(movie.internetArchiveId, movie.youtubeId);
       this.source.set(src);

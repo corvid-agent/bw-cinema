@@ -25,7 +25,14 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         <app-skeleton-grid [count]="24" />
       } @else {
         <div class="browse__layout">
-          <aside class="browse__sidebar">
+          <button class="browse__filter-toggle" (click)="filterOpen.set(!filterOpen())">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            Filters
+            @if (activeFilterCount() > 0) {
+              <span class="browse__filter-badge">{{ activeFilterCount() }}</span>
+            }
+          </button>
+          <aside class="browse__sidebar" [class.browse__sidebar--open]="filterOpen()">
             <app-filter-panel
               [availableDecades]="catalog.meta()?.decades ?? []"
               [availableGenres]="catalog.meta()?.genres ?? []"
@@ -163,17 +170,50 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       color: var(--text-tertiary);
       font-weight: 400;
     }
+    .browse__filter-toggle {
+      display: none;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: var(--space-md);
+      min-height: 44px;
+    }
+    .browse__filter-toggle:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .browse__filter-badge {
+      background-color: var(--accent-gold);
+      color: var(--bg-deep);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      min-width: 20px;
+      text-align: center;
+    }
     @media (max-width: 900px) {
       .browse__layout {
         grid-template-columns: 1fr;
       }
+      .browse__filter-toggle { display: inline-flex; }
       .browse__sidebar {
+        display: none;
         position: static;
         max-height: none;
       }
+      .browse__sidebar--open { display: block; }
       .browse__toolbar {
-        flex-direction: column;
+        flex-wrap: wrap;
       }
+      .browse__search { flex: 1 1 100%; }
       .browse__sort select { width: 100%; }
     }
   `],
@@ -197,6 +237,7 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly pageSize = 24;
   readonly page = signal(1);
   readonly viewMode = signal<ViewMode>('grid');
+  readonly filterOpen = signal(false);
 
   readonly filter = signal<CatalogFilter>({
     query: '',
@@ -209,6 +250,18 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     yearRange: null,
     sortBy: 'rating',
     sortDirection: 'desc',
+  });
+
+  readonly activeFilterCount = computed(() => {
+    const f = this.filter();
+    let count = 0;
+    if (f.decades.length > 0) count++;
+    if (f.genres.length > 0) count++;
+    if (f.directors.length > 0) count++;
+    if (f.streamableOnly) count++;
+    if (f.minRating > 0) count++;
+    if (f.yearRange) count++;
+    return count;
   });
 
   readonly filteredMovies = computed(() => this.catalog.search(this.filter()));

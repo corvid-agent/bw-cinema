@@ -1,59 +1,63 @@
-# BwCinema
+# BW Cinema
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.4.
+The definitive destination for discovering, tracking, and watching classic black & white films. A catalog of 7,600+ timeless masterpieces from the golden age of cinema — browse, track your collection, and stream thousands for free.
 
-## Development server
+## Features
 
-To start a local development server, run:
+- **Browse & Search** — Filter by decade, genre, director, language, and rating. Voice search, autocomplete, and infinite scroll.
+- **Stream for Free** — 4,600+ films streamable directly from Internet Archive and YouTube. Embedded player with fullscreen support.
+- **My Collection** — Watchlist, watched history, favorites, custom playlists. Export to CSV/Letterboxd, backup & restore, shareable links.
+- **Film Details** — Ratings from TMDb/IMDb/Rotten Tomatoes, cast & crew, similar films, social sharing. Every film has a CTA — stream, view on IMDb, or search the Internet Archive.
+- **Director Pages** — Filmography, stats, genre breakdown for each director.
+- **Compare Films** — Side-by-side comparison of any two films in the catalog.
+- **Catalog Statistics** — Decade distribution, genre breakdown, top directors, language stats.
+- **Genre & Decade Pages** — Dedicated landing pages for each genre and decade.
+- **"What Should I Watch?" Quiz** — 5-question preference quiz with shuffleable recommendations.
+- **Hidden Gems** — Curated section highlighting well-rated films you may have missed.
+- **Achievements & Streaks** — Gamified watch tracking with badges and streak counters.
+- **Accessibility** — High contrast mode, reduced motion, wide spacing, keyboard navigation, screen reader support.
+- **Themes** — Dark and sepia modes with film-grain overlay.
+
+## Tech Stack
+
+- **Framework:** Angular 21 (standalone components, signals, lazy routes)
+- **Styling:** CSS custom properties, responsive design (480px / 768px / 900px breakpoints)
+- **Testing:** Vitest + Angular Testing Library
+- **E2E:** Playwright
+- **Build:** Angular CLI
+- **Data:** Static JSON catalog with TMDb metadata
+
+## Getting Started
 
 ```bash
+npm install
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Open http://localhost:4200.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Development
 
 ```bash
-ng generate component component-name
+ng serve          # Dev server with hot reload
+ng test           # Unit tests (Vitest)
+ng e2e            # End-to-end tests (Playwright)
+ng build          # Production build → dist/bw-cinema
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Project Structure
 
-```bash
-ng generate --help
+```
+src/
+  app/
+    core/          — Services (catalog, collection, streaming, theme, a11y)
+    features/      — Route components (home, browse, movie, watch, collection,
+                     director, compare, genre, decade, stats, quiz, about)
+    shared/        — Reusable components, directives, pipes
+  assets/data/     — Static catalog JSON
+  styles.css       — Global styles, CSS variables, responsive breakpoints
 ```
 
-## Building
+## License
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+All film metadata sourced from TMDb. This product uses the TMDB API but is not endorsed or certified by TMDB.

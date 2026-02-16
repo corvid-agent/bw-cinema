@@ -92,15 +92,37 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         </div>
       </section>
 
+      @if (hiddenGems().length > 0) {
+        <section class="section container" aria-label="Hidden gems">
+          <div class="section__header">
+            <h2>Hidden Gems</h2>
+            <span class="section__desc">Highly rated films with under 1,000 votes</span>
+          </div>
+          <div class="gems__scroll">
+            @for (gem of hiddenGems(); track gem.id) {
+              <a class="gems__card" [routerLink]="['/movie', gem.id]">
+                @if (gem.posterUrl) {
+                  <img [src]="gem.posterUrl" [alt]="gem.title" loading="lazy" />
+                } @else {
+                  <div class="gems__placeholder">{{ gem.title }}</div>
+                }
+                <p class="gems__title">{{ gem.title }}</p>
+                <p class="gems__meta">{{ gem.year }}</p>
+              </a>
+            }
+          </div>
+        </section>
+      }
+
       @if (decades().length > 0) {
         <section class="section container" aria-label="Browse by decade">
           <h2>Browse by Decade</h2>
           <div class="decades">
             @for (decade of decades(); track decade) {
-              <button class="decade-card" (click)="browseTo(decade)">
+              <a class="decade-card" [routerLink]="['/decade', decade]">
                 <span class="decade-card__year">{{ decade }}s</span>
                 <span class="decade-card__arrow">&rarr;</span>
-              </button>
+              </a>
             }
           </div>
         </section>
@@ -111,7 +133,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
           <h2>Popular Genres</h2>
           <div class="genres">
             @for (genre of genres(); track genre) {
-              <button class="genre-tag" (click)="browseGenre(genre)">{{ genre }}</button>
+              <a class="genre-tag" [routerLink]="['/genre', genre]">{{ genre }}</a>
             }
           </div>
         </section>
@@ -401,6 +423,63 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       font-weight: 600;
       color: var(--accent-gold);
     }
+    .gems__scroll {
+      display: flex;
+      gap: var(--space-md);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: var(--space-sm);
+      -webkit-overflow-scrolling: touch;
+      margin-top: var(--space-md);
+    }
+    .gems__scroll::-webkit-scrollbar { height: 6px; }
+    .gems__scroll::-webkit-scrollbar-track { background: var(--bg-raised); border-radius: 3px; }
+    .gems__scroll::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+    .gems__card {
+      flex: 0 0 130px;
+      scroll-snap-align: start;
+      text-decoration: none;
+      color: var(--text-primary);
+      transition: transform 0.2s;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .gems__card:hover { transform: translateY(-4px); }
+    }
+    .gems__card:hover { color: var(--text-primary); }
+    .gems__card img {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: var(--radius);
+      margin-bottom: var(--space-xs);
+    }
+    .gems__placeholder {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      background: var(--bg-raised);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      text-align: center;
+      padding: var(--space-sm);
+      margin-bottom: var(--space-xs);
+    }
+    .gems__title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .gems__meta {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      margin: 0;
+    }
     @media (max-width: 768px) {
       .hero { padding: var(--space-2xl) 0 var(--space-xl); }
       .hero__title { font-size: 2.2rem; }
@@ -408,6 +487,11 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       .hero__stat-value { font-size: 1.4rem; }
       .fotd__card { flex-direction: column; gap: var(--space-md); }
       .fotd__poster { width: 100%; max-width: 200px; }
+    }
+    @media (max-width: 480px) {
+      .hero__title { font-size: 1.8rem; }
+      .hero__subtitle { font-size: 1rem; }
+      .hero__stats { flex-wrap: wrap; gap: var(--space-lg); }
     }
   `],
 })
@@ -435,6 +519,13 @@ export class HomeComponent implements OnInit {
       .map((p) => movies.find((m) => m.id === p.movieId))
       .filter((m): m is NonNullable<typeof m> => !!m);
   });
+
+  readonly hiddenGems = computed(() =>
+    this.catalog.movies()
+      .filter((m) => m.voteAverage >= 7.0 && m.voteAverage <= 8.0 && m.isStreamable && m.posterUrl)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 12)
+  );
 
   readonly recommendations = computed(() =>
     this.catalog.getRecommendations(this.collectionService.watchedIds())
