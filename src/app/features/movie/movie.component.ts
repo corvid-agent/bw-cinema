@@ -259,7 +259,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                           <a class="detail__tag" [routerLink]="['/genre', genre]">{{ genre }}</a>
                         }
                         @if (genreSiblingCount(); as gsc) {
-                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (directorAvgTitleLength(); as datl) {, avg title {{ datl }} chars})</span>
+                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (directorAvgTitleLength(); as datl) {, avg title {{ datl }} chars}@if (decadeAvgRating(); as dar) {, decade avg &#9733; {{ dar }}})</span>
                         }
                       </div>
                     </div>
@@ -1316,6 +1316,15 @@ export class MovieComponent implements OnInit {
     const mid = Math.floor(sorted.length / 2);
     const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
     return median.toFixed(1);
+  });
+
+  readonly decadeAvgRating = computed(() => {
+    const s = this.summary();
+    if (!s) return null;
+    const decade = Math.floor(s.year / 10) * 10;
+    const rated = this.catalogService.movies().filter((m) => Math.floor(m.year / 10) * 10 === decade && m.voteAverage > 0);
+    if (rated.length < 10) return null;
+    return (rated.reduce((sum, m) => sum + m.voteAverage, 0) / rated.length).toFixed(1);
   });
 
   readonly directorAvgTitleLength = computed(() => {

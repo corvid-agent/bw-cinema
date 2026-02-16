@@ -90,6 +90,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultAvgTitleLength(); as ratl) {
           <p class="browse__watched-note">Avg title: {{ ratl }} chars</p>
         }
+        @if (resultLongestTitle(); as rlt) {
+          <p class="browse__watched-note">Longest: "{{ rlt }}"</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -766,6 +769,13 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     const films = this.filteredMovies();
     if (films.length < 10) return null;
     return Math.round(films.reduce((s, m) => s + m.year, 0) / films.length);
+  });
+
+  readonly resultLongestTitle = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const longest = films.reduce((a, b) => a.title.length >= b.title.length ? a : b);
+    return longest.title.length >= 20 ? longest.title : null;
   });
 
   readonly resultAvgTitleLength = computed(() => {

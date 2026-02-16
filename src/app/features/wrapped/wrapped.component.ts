@@ -226,6 +226,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Longest Title</span>
               </div>
             }
+            @if (shortestTitleWatched(); as stw) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value" style="font-size: 0.85em">{{ stw }}</span>
+                <span class="wrapped__hero-label">Shortest Title</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -1051,6 +1057,13 @@ export class WrappedComponent implements OnInit {
     const count = films.filter((m) => m.year < 1930).length;
     const pct = Math.round((count / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly shortestTitleWatched = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 3) return null;
+    const shortest = films.reduce((a, b) => a.title.length <= b.title.length ? a : b);
+    return shortest.title.length <= 15 ? shortest.title : null;
   });
 
   readonly longestTitleWatched = computed(() => {
