@@ -275,6 +275,14 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
             </div>
           </div>
 
+          @if (filmContext().length > 0) {
+            <div class="detail__context">
+              @for (ctx of filmContext(); track ctx) {
+                <span class="detail__context-chip">{{ ctx }}</span>
+              }
+            </div>
+          }
+
           @if (m.cast.length > 0) {
             <section class="detail__cast-section">
               <h2>Cast</h2>
@@ -854,6 +862,21 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .detail__context {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-xl);
+    }
+    .detail__context-chip {
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
     .detail__not-found {
       padding: var(--space-3xl) 0;
       text-align: center;
@@ -965,6 +988,30 @@ export class MovieComponent implements OnInit {
   readonly similarFilms = computed(() => {
     const s = this.summary();
     return s ? this.catalogService.getSimilar(s) : [];
+  });
+
+  readonly filmContext = computed(() => {
+    const m = this.movie();
+    if (!m) return [];
+    const ctx: string[] = [];
+    if (m.year < 1930) ctx.push('Silent Era');
+    else if (m.year < 1950) ctx.push('Golden Age');
+    else if (m.year < 1970) ctx.push('Post-War Cinema');
+    const age = new Date().getFullYear() - m.year;
+    ctx.push(`${age} years old`);
+    if (m.isStreamable) {
+      if (m.internetArchiveId) ctx.push('Free on Internet Archive');
+      else if (m.youtubeId) ctx.push('Free on YouTube');
+    } else {
+      ctx.push('Not in public domain');
+    }
+    if (m.runtime) {
+      if (m.runtime < 60) ctx.push('Short film');
+      else if (m.runtime > 150) ctx.push('Epic length');
+    }
+    if (m.originalLanguage && m.originalLanguage !== 'en') ctx.push('Foreign language');
+    if (m.genres.length >= 4) ctx.push('Multi-genre');
+    return ctx;
   });
 
   readonly similarWithReasons = computed(() => {
