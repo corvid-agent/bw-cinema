@@ -143,6 +143,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (longestTitle(); as lt) {
             <p class="genre__fact">Longest title: "{{ lt }}"</p>
           }
+          @if (shortestTitle(); as st) {
+            <p class="genre__fact">Shortest title: "{{ st }}"</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -886,6 +889,13 @@ export class GenreComponent implements OnInit {
     const mid = Math.floor(sorted.length / 2);
     const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
     return median.toFixed(1);
+  });
+
+  readonly shortestTitle = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const shortest = f.reduce((a, b) => a.title.length <= b.title.length ? a : b);
+    return shortest.title.length <= 12 ? shortest.title : null;
   });
 
   readonly longestTitle = computed(() => {

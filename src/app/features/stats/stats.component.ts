@@ -455,6 +455,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">avg directors per film</span>
               </div>
             }
+            @if (highlyRatedCount() > 0) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ highlyRatedCount() }}</span>
+                <span class="stats__fact-text">films rated 8.0+</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1179,6 +1185,10 @@ export class StatsComponent implements OnInit {
     const count = movies.filter((m) => m.directors.length > 1).length;
     const pct = Math.round((count / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly highlyRatedCount = computed(() => {
+    return this.catalog.movies().filter((m) => m.voteAverage >= 8.0).length;
   });
 
   readonly avgDirectorsPerFilm = computed(() => {

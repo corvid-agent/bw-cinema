@@ -162,6 +162,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Avg Title Length</span>
               </div>
             }
+            @if (longestTitle(); as lt) {
+              <div class="director__stat">
+                <span class="director__stat-value" style="font-size: 0.7em">{{ lt }}</span>
+                <span class="director__stat-label">Longest Title</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -979,6 +985,13 @@ export class DirectorComponent implements OnInit {
     const f = this.films();
     if (f.length < 3) return null;
     return Math.round(f.reduce((s, m) => s + m.title.length, 0) / f.length);
+  });
+
+  readonly longestTitle = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const longest = f.reduce((a, b) => a.title.length >= b.title.length ? a : b);
+    return longest.title.length >= 15 ? longest.title : null;
   });
 
   readonly medianYear = computed(() => {
