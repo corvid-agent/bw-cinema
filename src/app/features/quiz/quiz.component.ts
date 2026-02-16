@@ -65,6 +65,13 @@ interface QuizStep {
                   @if (m.voteAverage > 0) {
                     <p class="quiz__result-rating">&#9733; {{ m.voteAverage.toFixed(1) }}</p>
                   }
+                  @if (matchReasons().get(m.id); as reasons) {
+                    <div class="quiz__match-tags">
+                      @for (tag of reasons; track tag) {
+                        <span class="quiz__match-tag">{{ tag }}</span>
+                      }
+                    </div>
+                  }
                 </div>
               </a>
             }
@@ -198,6 +205,21 @@ interface QuizStep {
       font-weight: 700;
       margin: 4px 0 0;
     }
+    .quiz__match-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .quiz__match-tag {
+      font-size: 0.65rem;
+      padding: 1px 6px;
+      border-radius: 6px;
+      background: var(--accent-gold-dim);
+      color: var(--accent-gold);
+      font-weight: 600;
+      white-space: nowrap;
+    }
     .quiz__result-actions {
       display: flex;
       gap: var(--space-md);
@@ -284,6 +306,29 @@ export class QuizComponent implements OnInit {
 
   readonly currentStep = computed(() => this.steps[this.step()]);
   readonly progressPct = computed(() => ((this.step() + 1) / this.steps.length) * 100);
+
+  readonly matchReasons = computed(() => {
+    const a = this.answers();
+    const films = this.results();
+    const map = new Map<string, string[]>();
+    for (const m of films) {
+      const tags: string[] = [];
+      const era = a[0];
+      if (era === 'silent' && m.year < 1930) tags.push('Silent era');
+      else if (era === 'golden' && m.year >= 1930 && m.year < 1950) tags.push('Golden age');
+      else if (era === 'postwar' && m.year >= 1950) tags.push('Post-war');
+      const genre = a[1];
+      if (genre && genre !== 'any') {
+        const matched = m.genres.find((g) => g.toLowerCase().includes(genre.toLowerCase()));
+        if (matched) tags.push(matched);
+      }
+      if (m.voteAverage >= 8) tags.push('Highly rated');
+      else if (m.voteAverage >= 7) tags.push('Well rated');
+      if (m.isStreamable) tags.push('Free');
+      map.set(m.id, tags.slice(0, 3));
+    }
+    return map;
+  });
 
   ngOnInit(): void {
     this.catalog.load();

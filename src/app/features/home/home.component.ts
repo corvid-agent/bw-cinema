@@ -159,6 +159,25 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         </section>
       }
 
+      @if (topDirectors().length > 0) {
+        <section class="section container" aria-label="Featured directors">
+          <div class="section__header">
+            <h2>Featured Directors</h2>
+          </div>
+          <div class="directors-row">
+            @for (d of topDirectors(); track d.name) {
+              <a class="director-chip" [routerLink]="['/director', d.name]">
+                <span class="director-chip__initial">{{ d.name[0] }}</span>
+                <div class="director-chip__info">
+                  <span class="director-chip__name">{{ d.name }}</span>
+                  <span class="director-chip__count">{{ d.count }} films</span>
+                </div>
+              </a>
+            }
+          </div>
+        </section>
+      }
+
       @if (recentMovies().length > 0) {
         <section class="section container" aria-label="Recently viewed">
           <div class="section__header">
@@ -622,6 +641,62 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       color: var(--text-tertiary);
       margin: 0;
     }
+    .directors-row {
+      display: flex;
+      gap: var(--space-sm);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+    .directors-row::-webkit-scrollbar { height: 6px; }
+    .directors-row::-webkit-scrollbar-track { background: var(--bg-raised); border-radius: 3px; }
+    .directors-row::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+    .director-chip {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .director-chip:hover {
+      border-color: var(--accent-gold);
+      color: inherit;
+    }
+    .director-chip__initial {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--accent-gold-dim);
+      color: var(--accent-gold);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .director-chip__info {
+      display: flex;
+      flex-direction: column;
+    }
+    .director-chip__name {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+    }
+    .director-chip__count {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+    }
     .cta-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -848,6 +923,18 @@ export class HomeComponent implements OnInit {
   readonly recommendations = computed(() =>
     this.catalog.getRecommendations(this.collectionService.watchedIds())
   );
+
+  readonly topDirectors = computed(() => {
+    const dirMap = new Map<string, number>();
+    for (const m of this.catalog.movies()) {
+      for (const d of m.directors) dirMap.set(d, (dirMap.get(d) ?? 0) + 1);
+    }
+    return [...dirMap.entries()]
+      .filter(([, count]) => count >= 5)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([name, count]) => ({ name, count }));
+  });
   readonly filmCount = computed(() => {
     const total = this.catalog.meta()?.totalMovies ?? 0;
     return total > 1000 ? `${(total / 1000).toFixed(1)}k` : `${total}`;
