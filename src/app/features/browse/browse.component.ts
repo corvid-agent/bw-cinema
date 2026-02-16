@@ -60,6 +60,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultYearRange(); as ryr) {
           <p class="browse__watched-note">Years: {{ ryr }}</p>
         }
+        @if (resultAvgFilmAge(); as rafa) {
+          <p class="browse__watched-note">Avg age: {{ rafa }} years</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -652,6 +655,14 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     if (films.length < 10) return null;
     const langs = new Set(films.map((m) => m.language).filter(Boolean));
     return langs.size > 1 ? langs.size : null;
+  });
+
+  readonly resultAvgFilmAge = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const now = new Date().getFullYear();
+    const avg = films.reduce((s, m) => s + (now - m.year), 0) / films.length;
+    return Math.round(avg);
   });
 
   readonly resultYearRange = computed(() => {

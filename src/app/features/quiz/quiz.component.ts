@@ -75,6 +75,9 @@ interface QuizStep {
           @if (resultLanguageCount(); as rlc) {
             <p class="quiz__decade-range">{{ rlc }} languages represented</p>
           }
+          @if (resultGenreCount(); as rgc) {
+            <p class="quiz__decade-range">{{ rgc }} genres covered</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -456,6 +459,14 @@ export class QuizComponent implements OnInit {
       for (const d of m.directors) dirs.add(d);
     }
     return dirs.size;
+  });
+
+  readonly resultGenreCount = computed(() => {
+    const films = this.results();
+    if (films.length < 2) return null;
+    const genres = new Set<string>();
+    for (const m of films) for (const g of m.genres) genres.add(g);
+    return genres.size > 2 ? genres.size : null;
   });
 
   readonly resultLanguageCount = computed(() => {
