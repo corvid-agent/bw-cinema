@@ -196,6 +196,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Non-English Films</span>
               </div>
             }
+            @if (medianRating(); as mr) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ mr }}</span>
+                <span class="wrapped__hero-label">Median Rating</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -919,6 +925,15 @@ export class WrappedComponent implements OnInit {
     const films = this.yearFilms();
     if (films.length < 3) return 0;
     return films.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
+  });
+
+  readonly medianRating = computed(() => {
+    const rated = this.yearFilms().filter((m) => m.voteAverage > 0);
+    if (rated.length < 3) return null;
+    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    return median.toFixed(1);
   });
 
   readonly avgFilmAge = computed(() => {

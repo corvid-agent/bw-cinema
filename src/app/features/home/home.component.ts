@@ -80,6 +80,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (avgFilmAge() > 0) {
           <p class="hero__avg-rating">Average film age: {{ avgFilmAge() }} years</p>
         }
+        @if (nonEnglishCount() > 0) {
+          <p class="hero__avg-rating">{{ nonEnglishCount() }} non-English films in catalog</p>
+        }
       </div>
     </section>
 
@@ -1297,6 +1300,11 @@ export class HomeComponent implements OnInit {
     if (movies.length === 0) return 0;
     const now = new Date().getFullYear();
     return Math.round(movies.reduce((s, m) => s + (now - m.year), 0) / movies.length);
+  });
+
+  readonly nonEnglishCount = computed(() => {
+    const count = this.catalog.movies().filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
+    return count > 0 ? count : 0;
   });
 
   readonly decadeSpan = computed(() => {
