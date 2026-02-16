@@ -372,6 +372,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Avg. Year</span>
                   </div>
                 }
+                @if (watchedCoDirectedCount() > 0) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ watchedCoDirectedCount() }}</span>
+                    <span class="stats__card-label">Co-directed</span>
+                  </div>
+                }
               </div>
 
               @if (nextMilestone(); as milestone) {
@@ -1675,6 +1681,12 @@ export class CollectionComponent implements OnInit {
     const films = this.watchedMovies();
     if (films.length < 5) return null;
     return Math.round(films.reduce((s, m) => s + m.year, 0) / films.length);
+  });
+
+  readonly watchedCoDirectedCount = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 2) return 0;
+    return films.filter((m) => m.directors.length > 1).length;
   });
 
   private computeStreaks(): { current: number; longest: number } {

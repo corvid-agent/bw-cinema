@@ -150,6 +150,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Silent Era</span>
               </div>
             }
+            @if (medianYear(); as my) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ my }}</span>
+                <span class="director__stat-label">Median Year</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -961,6 +967,14 @@ export class DirectorComponent implements OnInit {
   readonly silentEraCount = computed(() => {
     const count = this.films().filter((m) => m.year < 1930).length;
     return count > 0 ? count : null;
+  });
+
+  readonly medianYear = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const years = f.map((m) => m.year).sort((a, b) => a - b);
+    const mid = Math.floor(years.length / 2);
+    return years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
   });
 
   ngOnInit(): void {
