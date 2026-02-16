@@ -322,6 +322,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                   <span class="stats__card-value">{{ totalDecades() }}</span>
                   <span class="stats__card-label">Decades Spanned</span>
                 </div>
+                @if (uniqueLanguages() > 1) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ uniqueLanguages() }}</span>
+                    <span class="stats__card-label">Languages Explored</span>
+                  </div>
+                }
                 <div class="stats__card">
                   <span class="stats__card-value">{{ currentStreak() }}</span>
                   <span class="stats__card-label">Current Streak (days)</span>
@@ -1499,6 +1505,11 @@ export class CollectionComponent implements OnInit {
   readonly totalDecades = computed(() => {
     const decades = new Set(this.watchedMovies().map((m) => Math.floor(m.year / 10) * 10));
     return decades.size;
+  });
+
+  readonly uniqueLanguages = computed(() => {
+    const langs = new Set(this.watchedMovies().filter((m) => m.language).map((m) => m.language));
+    return langs.size;
   });
 
   readonly watchedThisYear = computed(() => {

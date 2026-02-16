@@ -71,6 +71,11 @@ import type { MovieSummary } from '../../core/models/movie.model';
               <span class="search__suggestion-meta">{{ s.year }}@if (s.directors.length > 0) { &middot; {{ s.directors[0] }}}</span>
             </li>
           }
+          @if (totalMatches() > suggestions().length) {
+            <li class="search__match-count" role="presentation">
+              Showing {{ suggestions().length }} of {{ totalMatches() }} matches
+            </li>
+          }
         </ul>
       }
     </div>
@@ -181,6 +186,13 @@ import type { MovieSummary } from '../../core/models/movie.model';
       white-space: nowrap;
       flex-shrink: 0;
     }
+    .search__match-count {
+      padding: 6px var(--space-md);
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
     .search__history {
       position: absolute;
       top: 100%;
@@ -255,6 +267,7 @@ export class SearchBarComponent implements OnDestroy {
   readonly searched = output<string>();
   readonly query = signal('');
   readonly suggestions = signal<MovieSummary[]>([]);
+  readonly totalMatches = signal(0);
   readonly showSuggestions = signal(false);
   readonly showHistory = signal(false);
   readonly activeIndex = signal(-1);
@@ -416,16 +429,18 @@ export class SearchBarComponent implements OnDestroy {
   private updateSuggestions(query: string): void {
     if (query.length < 2) {
       this.suggestions.set([]);
+      this.totalMatches.set(0);
       this.showSuggestions.set(false);
       return;
     }
     const q = query.toLowerCase();
-    const matches = this.catalog.movies()
+    const allMatches = this.catalog.movies()
       .filter((m) =>
         m.title.toLowerCase().includes(q) ||
         m.directors.some((d) => d.toLowerCase().includes(q))
-      )
-      .slice(0, 8);
+      );
+    this.totalMatches.set(allMatches.length);
+    const matches = allMatches.slice(0, 8);
     this.suggestions.set(matches);
     this.showSuggestions.set(matches.length > 0);
   }

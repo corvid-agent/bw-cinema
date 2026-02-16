@@ -82,7 +82,7 @@ import { CatalogService } from '../../core/services/catalog.service';
                   </a>
                 }
                 <a class="header__autocomplete-all" routerLink="/browse" [queryParams]="{ q: searchQuery() }" (mousedown)="onSearch()">
-                  View all results &rarr;
+                  View all {{ totalSearchResults() }} results &rarr;
                 </a>
               </div>
             }
@@ -432,6 +432,14 @@ export class HeaderComponent implements OnInit {
     } catch {
       return 'Search films...';
     }
+  });
+
+  readonly totalSearchResults = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (q.length < 2) return 0;
+    return this.catalog.movies()
+      .filter((m) => m.title.toLowerCase().includes(q) || m.directors.some((d) => d.toLowerCase().includes(q)))
+      .length;
   });
 
   readonly searchResults = computed(() => {
