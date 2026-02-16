@@ -22,7 +22,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
   styles: [`
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
       gap: var(--space-lg) var(--space-md);
     }
     .grid__empty {
@@ -36,12 +36,12 @@ import type { MovieSummary } from '../../core/models/movie.model';
     }
     @media (min-width: 1200px) {
       .grid {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
       }
     }
     @media (max-width: 480px) {
       .grid {
-        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
         gap: var(--space-md) var(--space-sm);
       }
     }

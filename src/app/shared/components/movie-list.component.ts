@@ -94,18 +94,18 @@ import type { MovieSummary } from '../../core/models/movie.model';
       color: inherit;
     }
     .list-item__poster {
-      width: 50px;
+      width: 48px;
       flex-shrink: 0;
     }
     .list-item__poster img {
-      width: 50px;
-      height: 75px;
+      width: 48px;
+      height: 72px;
       object-fit: cover;
       border-radius: var(--radius);
     }
     .list-item__poster-placeholder {
-      width: 50px;
-      height: 75px;
+      width: 48px;
+      height: 72px;
       background: var(--bg-raised);
       border-radius: var(--radius);
       display: flex;

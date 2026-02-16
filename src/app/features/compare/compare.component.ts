@@ -309,6 +309,8 @@ import type { MovieSummary } from '../../core/models/movie.model';
     }
     .compare__poster {
       width: 80px;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
       border-radius: var(--radius);
     }
     .compare__film-link {

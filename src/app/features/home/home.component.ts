@@ -420,6 +420,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
     }
     .fotd__poster {
       width: 140px;
+      aspect-ratio: 2 / 3;
       flex-shrink: 0;
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-poster);
@@ -601,7 +602,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       .hero__stats { gap: var(--space-xl); }
       .hero__stat-value { font-size: 1.4rem; }
       .fotd__card { flex-direction: column; gap: var(--space-md); }
-      .fotd__poster { width: 100%; max-width: 200px; }
+      .fotd__poster { width: 100%; max-width: 200px; aspect-ratio: 2 / 3; }
     }
     @media (max-width: 480px) {
       .hero__title { font-size: 1.8rem; }
