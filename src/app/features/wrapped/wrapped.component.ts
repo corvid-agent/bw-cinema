@@ -232,6 +232,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Shortest Title</span>
               </div>
             }
+            @if (avgTitleLength(); as atl) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ atl }}</span>
+                <span class="wrapped__hero-label">Avg Title Chars</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -1057,6 +1063,12 @@ export class WrappedComponent implements OnInit {
     const count = films.filter((m) => m.year < 1930).length;
     const pct = Math.round((count / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly avgTitleLength = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 3) return null;
+    return Math.round(films.reduce((s, m) => s + m.title.length, 0) / films.length);
   });
 
   readonly shortestTitleWatched = computed(() => {

@@ -461,6 +461,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">films rated 8.0+</span>
               </div>
             }
+            @if (topGenre(); as tg) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number" style="font-size: 0.85em">{{ tg.name }}</span>
+                <span class="stats__fact-text">top genre ({{ tg.count }} films)</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1185,6 +1191,17 @@ export class StatsComponent implements OnInit {
     const count = movies.filter((m) => m.directors.length > 1).length;
     const pct = Math.round((count / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly topGenre = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    const counts = new Map<string, number>();
+    for (const m of movies) {
+      for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
+    }
+    const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return best ? { name: best[0], count: best[1] } : null;
   });
 
   readonly highlyRatedCount = computed(() => {
