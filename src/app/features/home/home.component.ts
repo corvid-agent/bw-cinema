@@ -3,13 +3,13 @@ import { Router } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { SearchBarComponent } from '../../shared/components/search-bar.component';
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
+import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.component';
 import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.directive';
 
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MovieGridComponent, SearchBarComponent, LoadingSpinnerComponent, KeyboardNavDirective],
+  imports: [MovieGridComponent, SearchBarComponent, SkeletonGridComponent, KeyboardNavDirective],
   template: `
     <section class="hero">
       <div class="hero__bg"></div>
@@ -23,6 +23,10 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         <div class="hero__search">
           <app-search-bar (searched)="onSearch($event)" />
         </div>
+        <button class="hero__surprise btn-secondary" (click)="surpriseMe()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/><polyline points="21 12 16.5 14.6 16.5 19.79"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          Surprise Me
+        </button>
         <div class="hero__stats">
           <div class="hero__stat">
             <span class="hero__stat-value">{{ filmCount() }}</span>
@@ -41,7 +45,10 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
     </section>
 
     @if (catalog.loading()) {
-      <app-loading-spinner />
+      <section class="section container">
+        <h2>Featured Films</h2>
+        <app-skeleton-grid />
+      </section>
     } @else {
       <section class="section container" aria-label="Featured films">
         <div class="section__header">
@@ -122,6 +129,15 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
     .hero__search {
       max-width: 520px;
       margin: 0 auto var(--space-xl);
+    }
+    .hero__surprise {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 auto var(--space-xl);
+      border-radius: 24px;
+      padding: 10px 24px;
+      font-size: 0.95rem;
     }
     .hero__stats {
       display: flex;
@@ -266,5 +282,12 @@ export class HomeComponent implements OnInit {
 
   browseGenre(genre: string): void {
     this.router.navigate(['/browse'], { queryParams: { genre } });
+  }
+
+  surpriseMe(): void {
+    const streamable = this.catalog.movies().filter((m) => m.isStreamable);
+    if (streamable.length === 0) return;
+    const pick = streamable[Math.floor(Math.random() * streamable.length)];
+    this.router.navigate(['/movie', pick.id]);
   }
 }

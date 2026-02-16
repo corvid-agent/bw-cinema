@@ -4,14 +4,14 @@ import { CatalogService } from '../../core/services/catalog.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { SearchBarComponent } from '../../shared/components/search-bar.component';
 import { FilterPanelComponent } from '../../shared/components/filter-panel.component';
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
+import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.component';
 import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.directive';
 import type { CatalogFilter } from '../../core/models/catalog.model';
 
 @Component({
   selector: 'app-browse',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MovieGridComponent, SearchBarComponent, FilterPanelComponent, LoadingSpinnerComponent, KeyboardNavDirective],
+  imports: [MovieGridComponent, SearchBarComponent, FilterPanelComponent, SkeletonGridComponent, KeyboardNavDirective],
   template: `
     <div class="browse container">
       <div class="browse__top">
@@ -20,7 +20,7 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       </div>
 
       @if (catalog.loading()) {
-        <app-loading-spinner />
+        <app-skeleton-grid [count]="24" />
       } @else {
         <div class="browse__layout">
           <aside class="browse__sidebar">
