@@ -1968,6 +1968,15 @@ export class CollectionComponent implements OnInit {
       }
     }
 
+    // Streamable percentage of watched films
+    const streamableWatched = watched.filter((w) => {
+      const m = movieMap.get(w.movieId);
+      return m?.isStreamable;
+    }).length;
+    if (watched.length >= 3) {
+      insights.push({ label: 'Streamable %', value: `${Math.round((streamableWatched / watched.length) * 100)}%` });
+    }
+
     // Rating bias vs TMDb
     if (ratedItems.length >= 3) {
       let userTotal = 0;

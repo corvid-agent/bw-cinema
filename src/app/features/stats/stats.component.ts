@@ -252,6 +252,18 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
               </div>
             </a>
           }
+          @if (longestTitle(); as film) {
+            <a class="stats__highlight" [routerLink]="['/movie', film.id]">
+              @if (film.posterUrl) {
+                <img class="stats__highlight-poster" [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+              }
+              <div class="stats__highlight-text">
+                <span class="stats__highlight-label">Longest Title</span>
+                <span class="stats__highlight-value">{{ film.title }}</span>
+                <span class="stats__highlight-meta">{{ film.title.length }} characters</span>
+              </div>
+            </a>
+          }
         </div>
 
         <section class="stats__fun-facts">
@@ -851,6 +863,12 @@ export class StatsComponent implements OnInit {
     const total = this.totalFilms();
     if (dirs === 0) return null;
     return (total / dirs).toFixed(1);
+  });
+
+  readonly longestTitle = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    return movies.reduce((longest, m) => m.title.length > longest.title.length ? m : longest);
   });
 
   readonly mostVersatileDirector = computed(() => {

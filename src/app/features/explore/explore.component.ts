@@ -143,6 +143,14 @@ const MOODS: Mood[] = [
           </a>
         }
 
+        @if (directorToExplore(); as dir) {
+          <a class="explore__director-explore" [routerLink]="['/director', dir.name]">
+            <span class="explore__director-explore-label">Director to Explore</span>
+            <span class="explore__director-explore-name">{{ dir.name }}</span>
+            <span class="explore__director-explore-count">{{ dir.count }} unwatched films</span>
+          </a>
+        }
+
         @if (!activeMood()) {
           @if (topMood(); as tm) {
             <p class="explore__top-mood">Your most-explored mood: <strong>{{ tm.mood.name }}</strong> ({{ tm.count }} films)</p>
@@ -640,6 +648,43 @@ const MOODS: Mood[] = [
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+    .explore__director-explore {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+      padding: var(--space-md) var(--space-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s;
+    }
+    .explore__director-explore:hover { border-color: var(--accent-gold); color: inherit; }
+    .explore__director-explore-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent-gold);
+      flex-shrink: 0;
+    }
+    .explore__director-explore-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .explore__director-explore-count {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      flex-shrink: 0;
+    }
     .explore__next-up-rating {
       font-family: var(--font-heading);
       font-size: 1.1rem;
@@ -788,6 +833,22 @@ export class ExploreComponent implements OnInit {
     const progress = this.watchProgress();
     if (!progress) return 0;
     return progress.filter((p) => p.total > 0 && p.watched >= p.total).length;
+  });
+
+  readonly directorToExplore = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return null;
+    const dirCounts = new Map<string, number>();
+    for (const m of this.catalog.movies()) {
+      if (!m.isStreamable || watchedIds.has(m.id)) continue;
+      for (const d of m.directors) {
+        dirCounts.set(d, (dirCounts.get(d) ?? 0) + 1);
+      }
+    }
+    const best = [...dirCounts.entries()]
+      .filter(([, c]) => c >= 3)
+      .sort((a, b) => b[1] - a[1]);
+    return best.length > 0 ? { name: best[0][0], count: best[0][1] } : null;
   });
 
   readonly topRatedUnwatched = computed(() => {
