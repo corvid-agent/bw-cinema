@@ -106,6 +106,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Directors</span>
               </div>
             }
+            @if (genresExplored() > 1) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ genresExplored() }}</span>
+                <span class="wrapped__hero-label">Genres</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -715,6 +721,14 @@ export class WrappedComponent implements OnInit {
       for (const d of f.directors) dirs.add(d);
     }
     return dirs.size;
+  });
+
+  readonly genresExplored = computed(() => {
+    const genres = new Set<string>();
+    for (const f of this.yearFilms()) {
+      for (const g of f.genres) genres.add(g);
+    }
+    return genres.size;
   });
 
   private maxBarValue = computed(() => {

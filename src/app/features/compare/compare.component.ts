@@ -110,6 +110,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             <div class="compare__cell">{{ filmA()!.year }}</div>
             <div class="compare__cell">{{ filmB()!.year }}</div>
           </div>
+          @if (yearGap(); as gap) {
+            <div class="compare__year-gap">{{ gap }}</div>
+          }
           <div class="compare__row">
             <div class="compare__cell compare__cell--label">Rating</div>
             <div class="compare__cell" [class.compare__cell--winner]="filmA()!.voteAverage > filmB()!.voteAverage">
@@ -493,6 +496,13 @@ import type { MovieSummary } from '../../core/models/movie.model';
       border-color: var(--accent-gold);
       color: var(--accent-gold);
     }
+    .compare__year-gap {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      padding: 2px 0;
+      border-bottom: 1px solid var(--border);
+    }
     .compare__verdict {
       padding: var(--space-md) var(--space-lg);
       font-size: 0.95rem;
@@ -575,6 +585,15 @@ export class CompareComponent implements OnInit {
       notes.push('Nearly identical ratings');
     }
     return notes;
+  });
+
+  readonly yearGap = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return null;
+    const diff = Math.abs(a.year - b.year);
+    if (diff === 0) return 'Same year';
+    return `${diff} year${diff !== 1 ? 's' : ''} apart`;
   });
 
   readonly similarityScore = computed(() => {

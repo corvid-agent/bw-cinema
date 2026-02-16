@@ -58,6 +58,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
               <span class="decade__stat-value">{{ directorCount() }}</span>
               <span class="decade__stat-label">Directors</span>
             </div>
+            @if (peakYear(); as py) {
+              <div class="decade__stat">
+                <span class="decade__stat-value">{{ py.year }}</span>
+                <span class="decade__stat-label">Peak Year ({{ py.count }})</span>
+              </div>
+            }
           </div>
 
           @if (decadeFact(); as fact) {
@@ -612,6 +618,16 @@ export class DecadeComponent implements OnInit {
       for (const d of m.directors) dirs.add(d);
     }
     return dirs.size;
+  });
+
+  readonly peakYear = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const counts = new Map<number, number>();
+    for (const m of f) counts.set(m.year, (counts.get(m.year) ?? 0) + 1);
+    const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (!best || best[1] < 2) return null;
+    return { year: best[0], count: best[1] };
   });
 
   readonly streamablePct = computed(() => {
