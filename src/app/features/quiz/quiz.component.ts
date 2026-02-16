@@ -69,6 +69,9 @@ interface QuizStep {
           @if (resultUniqueDirectors() > 1) {
             <p class="quiz__decade-range">{{ resultUniqueDirectors() }} different directors</p>
           }
+          @if (resultAvgYear(); as ray) {
+            <p class="quiz__decade-range">Average release year: {{ ray }}</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -450,6 +453,12 @@ export class QuizComponent implements OnInit {
       for (const d of m.directors) dirs.add(d);
     }
     return dirs.size;
+  });
+
+  readonly resultAvgYear = computed(() => {
+    const films = this.results();
+    if (films.length < 2) return null;
+    return Math.round(films.reduce((s, m) => s + m.year, 0) / films.length);
   });
 
   readonly avgMatchScore = computed(() => {

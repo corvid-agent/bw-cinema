@@ -186,6 +186,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
           @if (doubleFeatureNote(); as dfn) {
             <p class="compare__double-feature-note">{{ dfn }}</p>
           }
+          @if (eraLabel(); as era) {
+            <p class="compare__double-feature-note">{{ era }}</p>
+          }
           @if (combinedAvgRating(); as avg) {
             <div class="compare__combined-avg">
               Combined Avg: {{ avg }}/10
@@ -720,6 +723,18 @@ export class CompareComponent implements OnInit {
     const score = this.similarityScore();
     if (score >= 70) return 'Perfect double feature!';
     if (score >= 50) return 'Great double feature pairing';
+    return null;
+  });
+
+  readonly eraLabel = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return null;
+    const decadeA = Math.floor(a.year / 10) * 10;
+    const decadeB = Math.floor(b.year / 10) * 10;
+    const gap = Math.abs(decadeA - decadeB);
+    if (gap === 0) return null; // already covered by "Both from the Xs" in comparisonNotes
+    if (gap >= 30) return 'A cross-era pairing';
     return null;
   });
 

@@ -54,6 +54,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultLanguageCount(); as rlc) {
           <p class="browse__watched-note">{{ rlc }} languages in results</p>
         }
+        @if (resultStreamablePct(); as rsp) {
+          <p class="browse__watched-note">{{ rsp }}% streamable</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -646,6 +649,14 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     if (films.length < 10) return null;
     const langs = new Set(films.map((m) => m.language).filter(Boolean));
     return langs.size > 1 ? langs.size : null;
+  });
+
+  readonly resultStreamablePct = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const pct = Math.round((films.filter((m) => m.isStreamable).length / films.length) * 100);
+    if (pct === 0 || pct === 100) return null;
+    return pct;
   });
 
   readonly topResultDirector = computed(() => {
