@@ -65,6 +65,9 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                 @if (directorRank(); as dRank) {
                   <a class="detail__sub-rank" [routerLink]="['/director', dRank.director]">#{{ dRank.rank }} of {{ dRank.total }} by {{ dRank.director }}</a>
                 }
+                @if (languageRank(); as lr) {
+                  <span class="detail__sub-rank">#{{ lr.rank }} in {{ lr.language }}</span>
+                }
               </div>
 
               <div class="detail__meta">
@@ -1189,6 +1192,18 @@ export class MovieComponent implements OnInit {
     const idx = dirFilms.findIndex((m) => m.id === s.id);
     if (idx < 0 || idx >= 10) return null;
     return { rank: idx + 1, director: dir, total: dirFilms.length };
+  });
+
+  readonly languageRank = computed(() => {
+    const s = this.summary();
+    if (!s || s.voteAverage === 0 || !s.language || s.language === 'English') return null;
+    const langFilms = this.catalogService.movies()
+      .filter((m) => m.voteAverage > 0 && m.language === s.language)
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+    if (langFilms.length < 20) return null;
+    const idx = langFilms.findIndex((m) => m.id === s.id);
+    if (idx < 0 || idx >= 10) return null;
+    return { rank: idx + 1, language: s.language };
   });
 
   readonly yearPeers = computed(() => {

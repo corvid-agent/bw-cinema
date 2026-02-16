@@ -70,6 +70,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="decade__stat-label">vs Catalog Avg</span>
               </div>
             }
+            @if (coDirectedCount() > 0) {
+              <div class="decade__stat">
+                <span class="decade__stat-value">{{ coDirectedCount() }}</span>
+                <span class="decade__stat-label">Co-Directed</span>
+              </div>
+            }
           </div>
 
           @if (decadeFact(); as fact) {
@@ -656,6 +662,10 @@ export class DecadeComponent implements OnInit {
     if (f.length === 0) return 0;
     return Math.round((f.filter((m) => m.isStreamable).length / f.length) * 100);
   });
+
+  readonly coDirectedCount = computed(() =>
+    this.films().filter((m) => m.directors.length > 1).length
+  );
 
   readonly decadeFact = computed(() => {
     const f = this.films();

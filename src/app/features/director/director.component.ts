@@ -78,6 +78,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Avg Year</span>
               </div>
             }
+            @if (bestDecade(); as bd) {
+              <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
+                <span class="director__stat-value">{{ bd.decade }}s</span>
+                <span class="director__stat-label">Best Decade ({{ bd.avg }})</span>
+              </a>
+            }
           </div>
 
           @if (bestFilm(); as best) {
@@ -259,6 +265,15 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
     }
     .director__stat-value--positive {
       color: #198754;
+    }
+    .director__stat--link {
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .director__stat--link:hover {
+      border-color: var(--accent-gold);
     }
     .director__best-film {
       margin-bottom: var(--space-xl);
@@ -629,6 +644,25 @@ export class DirectorComponent implements OnInit {
     const f = this.films();
     if (f.length < 2) return null;
     return Math.round(f.reduce((s, m) => s + m.year, 0) / f.length);
+  });
+
+  readonly bestDecade = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length < 4) return null;
+    const decMap = new Map<number, { total: number; count: number }>();
+    for (const m of rated) {
+      const d = Math.floor(m.year / 10) * 10;
+      const entry = decMap.get(d) ?? { total: 0, count: 0 };
+      entry.total += m.voteAverage;
+      entry.count++;
+      decMap.set(d, entry);
+    }
+    if (decMap.size < 2) return null;
+    const best = [...decMap.entries()]
+      .filter(([, v]) => v.count >= 2)
+      .map(([decade, v]) => ({ decade, avg: (v.total / v.count).toFixed(1) }))
+      .sort((a, b) => parseFloat(b.avg) - parseFloat(a.avg));
+    return best[0] ?? null;
   });
 
   readonly ratingVsCatalog = computed(() => {
