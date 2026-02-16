@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../../core/services/theme.service';
 import { AccessibilityService } from '../../core/services/accessibility.service';
 import { CollectionService } from '../../core/services/collection.service';
+import { CatalogService } from '../../core/services/catalog.service';
 
 @Component({
   selector: 'app-header',
@@ -49,8 +50,42 @@ import { CollectionService } from '../../core/services/collection.service';
               [(ngModel)]="searchQuery"
               name="q"
               aria-label="Search films (press / to focus)"
-              (keydown.escape)="searchQuery.set('')"
+              (keydown.escape)="clearSearch()"
+              (keydown.arrowDown)="navigateResults($event, 1)"
+              (keydown.arrowUp)="navigateResults($event, -1)"
+              (focus)="searchFocused.set(true)"
+              (blur)="onSearchBlur()"
+              autocomplete="off"
             />
+            @if (searchResults().length > 0 && searchFocused()) {
+              <div class="header__autocomplete" role="listbox">
+                @for (result of searchResults(); track result.id; let i = $index) {
+                  <a
+                    class="header__autocomplete-item"
+                    [class.header__autocomplete-item--active]="i === activeResultIndex()"
+                    [routerLink]="['/movie', result.id]"
+                    (mousedown)="selectResult(result.id)"
+                    role="option"
+                  >
+                    @if (result.posterUrl) {
+                      <img [src]="result.posterUrl" [alt]="result.title" />
+                    } @else {
+                      <div class="header__autocomplete-placeholder"></div>
+                    }
+                    <div class="header__autocomplete-info">
+                      <span class="header__autocomplete-title">{{ result.title }}</span>
+                      <span class="header__autocomplete-meta">{{ result.year }} · {{ result.directors.slice(0, 2).join(', ') }}</span>
+                    </div>
+                    @if (result.voteAverage > 0) {
+                      <span class="header__autocomplete-rating">&#9733; {{ result.voteAverage.toFixed(1) }}</span>
+                    }
+                  </a>
+                }
+                <a class="header__autocomplete-all" routerLink="/browse" [queryParams]="{ q: searchQuery() }" (mousedown)="onSearch()">
+                  View all results &rarr;
+                </a>
+              </div>
+            }
           </form>
           <button
             class="header__theme-toggle"
@@ -251,6 +286,87 @@ import { CollectionService } from '../../core/services/collection.service';
     .header__search-input::placeholder {
       color: var(--text-tertiary);
     }
+    .header__autocomplete {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 4px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      z-index: 200;
+      min-width: 300px;
+    }
+    .header__autocomplete-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: 8px 12px;
+      text-decoration: none;
+      color: var(--text-primary);
+      transition: background-color 0.15s;
+      cursor: pointer;
+    }
+    .header__autocomplete-item:hover,
+    .header__autocomplete-item--active {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+    .header__autocomplete-item img {
+      width: 28px;
+      height: 42px;
+      object-fit: cover;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .header__autocomplete-placeholder {
+      width: 28px;
+      height: 42px;
+      background: var(--bg-raised);
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .header__autocomplete-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .header__autocomplete-title {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .header__autocomplete-meta {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+    }
+    .header__autocomplete-rating {
+      font-size: 0.75rem;
+      color: var(--accent-gold);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .header__autocomplete-all {
+      display: block;
+      padding: 8px 12px;
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent-gold);
+      border-top: 1px solid var(--border);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .header__autocomplete-all:hover {
+      background: var(--bg-hover);
+      color: var(--accent-gold);
+    }
     @media (max-width: 768px) {
       .header__hamburger { display: flex; }
       .header__nav {
@@ -300,11 +416,24 @@ import { CollectionService } from '../../core/services/collection.service';
 export class HeaderComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly collection = inject(CollectionService);
+  private readonly catalog = inject(CatalogService);
   readonly theme = inject(ThemeService);
   readonly a11y = inject(AccessibilityService);
   readonly menuOpen = signal(false);
   readonly searchQuery = signal('');
+  readonly searchFocused = signal(false);
+  readonly activeResultIndex = signal(-1);
   readonly watchlistCount = computed(() => this.collection.watchlistIds().size);
+
+  readonly searchResults = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (q.length < 2) return [];
+    const movies = this.catalog.movies();
+    return movies
+      .filter((m) => m.title.toLowerCase().includes(q) || m.directors.some((d) => d.toLowerCase().includes(q)))
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 6);
+  });
 
   @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
 
@@ -332,10 +461,54 @@ export class HeaderComponent implements OnInit {
   }
 
   onSearch(): void {
+    const idx = this.activeResultIndex();
+    const results = this.searchResults();
+    if (idx >= 0 && idx < results.length) {
+      this.selectResult(results[idx].id);
+      return;
+    }
     const q = this.searchQuery().trim();
     if (!q) return;
+    this.searchFocused.set(false);
+    this.activeResultIndex.set(-1);
     this.router.navigate(['/browse'], { queryParams: { q } });
     this.searchQuery.set('');
     this.menuOpen.set(false);
+  }
+
+  clearSearch(): void {
+    if (this.searchQuery()) {
+      this.searchQuery.set('');
+      this.activeResultIndex.set(-1);
+    } else {
+      this.searchInput?.nativeElement.blur();
+    }
+  }
+
+  onSearchBlur(): void {
+    setTimeout(() => {
+      this.searchFocused.set(false);
+      this.activeResultIndex.set(-1);
+    }, 200);
+  }
+
+  navigateResults(event: Event, direction: number): void {
+    const results = this.searchResults();
+    if (results.length === 0) return;
+    event.preventDefault();
+    this.activeResultIndex.update((i) => {
+      const next = i + direction;
+      if (next < 0) return results.length - 1;
+      if (next >= results.length) return 0;
+      return next;
+    });
+  }
+
+  selectResult(id: string): void {
+    this.searchFocused.set(false);
+    this.searchQuery.set('');
+    this.activeResultIndex.set(-1);
+    this.menuOpen.set(false);
+    this.router.navigate(['/movie', id]);
   }
 }

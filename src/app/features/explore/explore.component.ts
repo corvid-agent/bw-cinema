@@ -63,6 +63,9 @@ const MOODS: Mood[] = [
                 <span class="explore__mood-name">{{ mood.name }}</span>
                 <span class="explore__mood-desc">{{ mood.description }}</span>
                 <span class="explore__mood-count">{{ moodCount(mood) }} films</span>
+                @if (moodWatchedCount(mood) > 0) {
+                  <span class="explore__mood-watched">{{ moodWatchedCount(mood) }} watched</span>
+                }
               </button>
             }
           </div>
@@ -218,6 +221,13 @@ const MOODS: Mood[] = [
       color: var(--accent-gold);
       font-weight: 600;
     }
+    .explore__mood-watched {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      background: var(--bg-raised);
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
     .explore__section {
       margin-bottom: var(--space-2xl);
     }
@@ -348,6 +358,19 @@ export class ExploreComponent implements OnInit {
     const watchedIds = this.collection.watchedIds();
     return this.catalog.movies().filter((m) => !watchedIds.has(m.id) && m.isStreamable).length;
   });
+
+  moodWatchedCount(mood: Mood): number {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return 0;
+    const films = this.catalog.movies().filter((m) => watchedIds.has(m.id));
+    if (mood.id === 'foreign') return films.filter((m) => m.language && m.language !== 'English').length;
+    if (mood.yearRange) return films.filter((m) => m.year >= mood.yearRange![0] && m.year <= mood.yearRange![1]).length;
+    if (mood.genres.length > 0) {
+      const genreSet = new Set(mood.genres.map((g) => g.toLowerCase()));
+      return films.filter((m) => m.genres.some((g) => genreSet.has(g.toLowerCase()))).length;
+    }
+    return 0;
+  }
 
   moodCount(mood: Mood): number {
     const films = this.catalog.movies().filter((m) => m.isStreamable);

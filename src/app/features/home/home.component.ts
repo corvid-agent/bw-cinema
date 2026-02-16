@@ -190,8 +190,40 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             </div>
             <a class="section__link" routerLink="/collection">View all &rarr;</a>
           </div>
+          @if (watchlistProgress(); as progress) {
+            <div class="progress-bar" role="progressbar" [attr.aria-valuenow]="progress.watched" [attr.aria-valuemax]="progress.total">
+              <div class="progress-bar__fill" [style.width.%]="progress.percent"></div>
+              <span class="progress-bar__label">{{ progress.watched }} of {{ progress.total }} watched ({{ progress.percent }}%)</span>
+            </div>
+          }
           <div appKeyboardNav>
             <app-movie-grid [movies]="watchlistNext()" />
+          </div>
+        </section>
+      }
+
+      @if (unratedWatched().length > 0) {
+        <section class="section container" aria-label="Rate your films">
+          <div class="section__header">
+            <div>
+              <h2>Rate These Films</h2>
+              <p class="section__desc">You watched these but haven't rated them yet</p>
+            </div>
+          </div>
+          <div class="rate-cards">
+            @for (movie of unratedWatched().slice(0, 6); track movie.id) {
+              <a class="rate-card" [routerLink]="['/movie', movie.id]">
+                @if (movie.posterUrl) {
+                  <img [src]="movie.posterUrl" [alt]="movie.title" loading="lazy" />
+                } @else {
+                  <div class="rate-card__placeholder">{{ movie.title }}</div>
+                }
+                <div class="rate-card__info">
+                  <span class="rate-card__title">{{ movie.title }}</span>
+                  <span class="rate-card__year">{{ movie.year }}</span>
+                </div>
+              </a>
+            }
           </div>
         </section>
       }
@@ -650,6 +682,79 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       color: var(--accent-gold);
       transform: translateX(3px);
     }
+    .progress-bar {
+      position: relative;
+      height: 28px;
+      background: var(--bg-raised);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: var(--space-lg);
+    }
+    .progress-bar__fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-gold-dim), var(--accent-gold));
+      border-radius: 14px;
+      transition: width 0.6s ease;
+    }
+    .progress-bar__label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .rate-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: var(--space-md);
+    }
+    .rate-card {
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .rate-card:hover { transform: translateY(-4px); }
+    }
+    .rate-card img {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: var(--radius);
+      margin-bottom: var(--space-xs);
+    }
+    .rate-card__placeholder {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      background: var(--bg-raised);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      text-align: center;
+      padding: var(--space-sm);
+      margin-bottom: var(--space-xs);
+    }
+    .rate-card__info {
+      display: flex;
+      flex-direction: column;
+    }
+    .rate-card__title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .rate-card__year {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+    }
     @media (max-width: 768px) {
       .cta-row { grid-template-columns: 1fr; }
       .hero { padding: var(--space-2xl) 0 var(--space-xl); }
@@ -719,6 +824,26 @@ export class HomeComponent implements OnInit {
   });
 
   readonly watchlistTotal = computed(() => this.collectionService.watchlistIds().size);
+
+  readonly watchlistProgress = computed(() => {
+    const watchlistIds = [...this.collectionService.watchlistIds()];
+    const watchedIds = this.collectionService.watchedIds();
+    const total = watchlistIds.length + watchedIds.size;
+    if (total === 0) return null;
+    const watched = watchedIds.size;
+    return { watched, total, percent: Math.round((watched / total) * 100) };
+  });
+
+  readonly unratedWatched = computed(() => {
+    const watched = this.collectionService.watched();
+    const unrated = watched.filter((w) => w.userRating === null);
+    const movies = this.catalog.movies();
+    const movieMap = new Map(movies.map((m) => [m.id, m]));
+    return unrated
+      .sort((a, b) => b.watchedAt - a.watchedAt)
+      .map((w) => movieMap.get(w.movieId))
+      .filter((m): m is NonNullable<typeof m> => !!m);
+  });
 
   readonly recommendations = computed(() =>
     this.catalog.getRecommendations(this.collectionService.watchedIds())
