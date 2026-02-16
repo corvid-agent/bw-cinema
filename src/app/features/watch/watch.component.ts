@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal, 
 import { RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
+import { CollectionService } from '../../core/services/collection.service';
 import { StreamingService, StreamingSource } from '../../core/services/streaming.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
 import type { MovieSummary } from '../../core/models/movie.model';
@@ -125,6 +126,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly id = input.required<string>();
 
   private readonly catalogService = inject(CatalogService);
+  private readonly collectionService = inject(CollectionService);
   private readonly streamingService = inject(StreamingService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly titleService = inject(Title);
@@ -151,6 +153,7 @@ export class WatchComponent implements OnInit, OnDestroy {
       this.source.set(src);
       if (src) {
         this.safeUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(src.embedUrl));
+        this.collectionService.trackProgress(movie.id);
       }
     }
     this.loading.set(false);

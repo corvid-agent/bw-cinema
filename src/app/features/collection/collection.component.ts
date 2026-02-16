@@ -50,6 +50,18 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
             </button>
             <button
               class="collection__tab"
+              [class.collection__tab--active]="activeTab() === 'favorites'"
+              (click)="activeTab.set('favorites')"
+              role="tab"
+              [attr.aria-selected]="activeTab() === 'favorites'"
+            >
+              Favorites
+              @if (favoriteMovies().length > 0) {
+                <span class="collection__count">{{ favoriteMovies().length }}</span>
+              }
+            </button>
+            <button
+              class="collection__tab"
               [class.collection__tab--active]="activeTab() === 'stats'"
               (click)="activeTab.set('stats')"
               role="tab"
@@ -121,6 +133,24 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                 <p class="collection__empty-title">No films watched yet</p>
                 <p class="collection__empty-text">Films you mark as watched will appear here.</p>
                 <a class="btn-primary" routerLink="/browse">Discover Films</a>
+              </div>
+            }
+          </div>
+        }
+
+        @if (activeTab() === 'favorites') {
+          <div role="tabpanel">
+            @if (sortedFavorites().length > 0) {
+              @if (viewMode() === 'grid') {
+                <app-movie-grid [movies]="sortedFavorites()" />
+              } @else {
+                <app-movie-list [movies]="sortedFavorites()" />
+              }
+            } @else {
+              <div class="collection__empty">
+                <p class="collection__empty-title">No favorite films yet</p>
+                <p class="collection__empty-text">Tap the heart icon on any film to add it to your favorites.</p>
+                <a class="btn-primary" routerLink="/browse">Browse Films</a>
               </div>
             }
           </div>
@@ -375,7 +405,7 @@ export class CollectionComponent implements OnInit {
   private readonly collectionService = inject(CollectionService);
   private readonly notifications = inject(NotificationService);
 
-  readonly activeTab = signal<'watchlist' | 'watched' | 'stats'>('watchlist');
+  readonly activeTab = signal<'watchlist' | 'watched' | 'favorites' | 'stats'>('watchlist');
   readonly sortBy = signal<SortOption>('added-desc');
   readonly viewMode = signal<ViewMode>('grid');
 
@@ -393,8 +423,26 @@ export class CollectionComponent implements OnInit {
     this.activeTab() === 'watchlist' ? this.watchlistMovies() : this.watchedMovies()
   );
 
+  readonly favoriteMovies = computed(() => {
+    const ids = this.collectionService.favoriteIds();
+    return this.catalog.movies().filter((m) => ids.has(m.id));
+  });
+
   readonly sortedWatchlist = computed(() => this.sortMovies(this.watchlistMovies(), 'watchlist'));
   readonly sortedWatched = computed(() => this.sortMovies(this.watchedMovies(), 'watched'));
+  readonly sortedFavorites = computed(() => {
+    const sort = this.sortBy();
+    const movies = [...this.favoriteMovies()];
+    return movies.sort((a, b) => {
+      switch (sort) {
+        case 'title-asc': return a.title.localeCompare(b.title);
+        case 'title-desc': return b.title.localeCompare(a.title);
+        case 'rating-desc': return b.voteAverage - a.voteAverage;
+        case 'year-desc': return b.year - a.year;
+        default: return 0;
+      }
+    });
+  });
 
   // Stats
   readonly avgRating = computed(() => {
@@ -468,6 +516,7 @@ export class CollectionComponent implements OnInit {
     const data = {
       watchlist: this.collectionService.watchlist(),
       watched: this.collectionService.watched(),
+      favorites: this.collectionService.favorites(),
       exportedAt: new Date().toISOString(),
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -500,6 +549,13 @@ export class CollectionComponent implements OnInit {
           for (const item of data.watched) {
             if (item.movieId && !this.collectionService.isWatched(item.movieId)) {
               this.collectionService.markWatched(item.movieId, item.userRating ?? null);
+            }
+          }
+        }
+        if (data.favorites && Array.isArray(data.favorites)) {
+          for (const id of data.favorites) {
+            if (typeof id === 'string' && !this.collectionService.isFavorite(id)) {
+              this.collectionService.toggleFavorite(id);
             }
           }
         }

@@ -90,4 +90,69 @@ describe('CollectionService', () => {
     expect(service.isInWatchlist('Q10')).toBe(true);
     expect(service.isWatched('Q20')).toBe(true);
   });
+
+  it('should set and get notes', () => {
+    service.markWatched('Q1');
+    service.setNote('Q1', 'Great film!');
+    expect(service.getNote('Q1')).toBe('Great film!');
+  });
+
+  it('should clear empty notes', () => {
+    service.markWatched('Q1');
+    service.setNote('Q1', 'A note');
+    service.setNote('Q1', '   ');
+    expect(service.getNote('Q1')).toBe('');
+  });
+
+  it('should return empty string for no notes', () => {
+    expect(service.getNote('nonexistent')).toBe('');
+  });
+
+  it('should toggle favorites', () => {
+    service.toggleFavorite('Q1');
+    expect(service.isFavorite('Q1')).toBe(true);
+    service.toggleFavorite('Q1');
+    expect(service.isFavorite('Q1')).toBe(false);
+  });
+
+  it('should persist favorites', () => {
+    service.toggleFavorite('Q1');
+    const raw = mockStore['bw-cinema-collection'];
+    const stored = JSON.parse(raw);
+    expect(stored.favorites).toContain('Q1');
+  });
+
+  it('should track watch progress', () => {
+    service.trackProgress('Q1');
+    expect(service.watchProgress().length).toBe(1);
+    expect(service.watchProgress()[0].movieId).toBe('Q1');
+  });
+
+  it('should update existing progress timestamp', () => {
+    service.trackProgress('Q1');
+    const first = service.watchProgress()[0].startedAt;
+    service.trackProgress('Q1');
+    expect(service.watchProgress().length).toBe(1);
+    expect(service.watchProgress()[0].startedAt).toBeGreaterThanOrEqual(first);
+  });
+
+  it('should remove progress when marking watched', () => {
+    service.trackProgress('Q1');
+    service.markWatched('Q1');
+    expect(service.watchProgress().length).toBe(0);
+  });
+
+  it('should include notes: null on markWatched', () => {
+    service.markWatched('Q1');
+    expect(service.watched()[0].notes).toBeNull();
+  });
+
+  it('should load legacy data without notes field', () => {
+    mockStore['bw-cinema-collection'] = JSON.stringify({
+      watchlist: [],
+      watched: [{ movieId: 'Q1', watchedAt: 1000, userRating: 3 }],
+    });
+    service['loadFromStorage']();
+    expect(service.watched()[0].notes).toBeNull();
+  });
 });

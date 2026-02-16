@@ -93,6 +93,18 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                 @if (streamingUrl()) {
                   <a class="btn-primary detail__watch-btn" [routerLink]="['/watch', m.id]">Watch Film</a>
                 }
+                <button
+                  class="btn-ghost detail__fav-btn"
+                  [class.detail__fav-btn--active]="collection.isFavorite(m.id)"
+                  (click)="toggleFavorite(m.id)"
+                  [attr.aria-label]="collection.isFavorite(m.id) ? 'Remove from favorites' : 'Add to favorites'"
+                >
+                  @if (collection.isFavorite(m.id)) {
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  } @else {
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  }
+                </button>
                 @if (!collection.isInWatchlist(m.id) && !collection.isWatched(m.id)) {
                   <button class="btn-secondary" (click)="addToWatchlist(m.id)">+ Watchlist</button>
                 } @else if (collection.isInWatchlist(m.id)) {
@@ -115,6 +127,20 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                     [interactive]="true"
                     (rated)="onRate(m.id, $event)"
                   />
+                </div>
+              }
+
+              @if (collection.isWatched(m.id)) {
+                <div class="detail__notes">
+                  <label class="detail__notes-label" for="film-notes">Your Notes</label>
+                  <textarea
+                    id="film-notes"
+                    class="detail__notes-input"
+                    placeholder="Add your thoughts about this film..."
+                    [value]="collection.getNote(m.id)"
+                    (blur)="onNoteChange(m.id, $event)"
+                    rows="3"
+                  ></textarea>
                 </div>
               }
 
@@ -413,6 +439,51 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       gap: 6px;
       font-size: 0.9rem;
     }
+    .detail__fav-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 48px;
+      min-height: 48px;
+      padding: 0;
+      color: var(--text-tertiary);
+      transition: color 0.2s, transform 0.2s;
+    }
+    .detail__fav-btn:hover { color: #e53e3e; }
+    .detail__fav-btn--active { color: #e53e3e; }
+    .detail__fav-btn--active:hover { transform: scale(1.1); }
+    .detail__notes {
+      margin-bottom: var(--space-xl);
+    }
+    .detail__notes-label {
+      display: block;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+      font-weight: 600;
+      margin-bottom: var(--space-sm);
+    }
+    .detail__notes-input {
+      width: 100%;
+      padding: var(--space-md);
+      background-color: var(--bg-surface);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      resize: vertical;
+      min-height: 80px;
+    }
+    .detail__notes-input:focus {
+      border-color: var(--accent-gold);
+      outline: none;
+    }
+    .detail__notes-input::placeholder {
+      color: var(--text-tertiary);
+    }
     .detail__user-rating {
       display: flex;
       align-items: center;
@@ -535,6 +606,17 @@ export class MovieComponent implements OnInit {
   getUserRating(movieId: string): number {
     const item = this.collection.watched().find((w) => w.movieId === movieId);
     return item?.userRating ?? 0;
+  }
+
+  toggleFavorite(id: string): void {
+    this.collection.toggleFavorite(id);
+    const msg = this.collection.isFavorite(id) ? 'Added to favorites' : 'Removed from favorites';
+    this.notifications.show(msg, 'success');
+  }
+
+  onNoteChange(movieId: string, event: Event): void {
+    const value = (event.target as HTMLTextAreaElement).value;
+    this.collection.setNote(movieId, value);
   }
 
   async share(movie: MovieDetail): Promise<void> {

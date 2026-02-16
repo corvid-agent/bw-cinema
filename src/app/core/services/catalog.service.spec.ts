@@ -196,4 +196,72 @@ describe('CatalogService', () => {
     expect(results[0].year).toBe(1941);
     expect(results[2].year).toBe(1960);
   });
+
+  it('should filter by directors', async () => {
+    const loadPromise = service.load();
+    httpTesting.expectOne('assets/data/catalog.json').flush(mockCatalog);
+    await loadPromise;
+
+    const results = service.search({
+      query: '',
+      decades: [],
+      genres: [],
+      directors: ['Director A'],
+      streamableOnly: false,
+      minRating: 0,
+      sortBy: 'title',
+      sortDirection: 'asc',
+    });
+    expect(results.length).toBe(2);
+    expect(results.every((m) => m.directors.includes('Director A'))).toBe(true);
+  });
+
+  it('should get similar films', async () => {
+    const loadPromise = service.load();
+    httpTesting.expectOne('assets/data/catalog.json').flush(mockCatalog);
+    await loadPromise;
+
+    const filmA = service.movies().find((m) => m.id === 'Q1')!;
+    const similar = service.getSimilar(filmA);
+    expect(similar.length).toBeGreaterThan(0);
+    expect(similar.every((m) => m.id !== 'Q1')).toBe(true);
+  });
+
+  it('should get recommendations', async () => {
+    const loadPromise = service.load();
+    const extendedCatalog = {
+      ...mockCatalog,
+      movies: [
+        ...mockCatalog.movies,
+        { id: 'Q4', title: 'Test Film D', year: 1945, posterUrl: null, tmdbId: '4', imdbId: 'tt004', internetArchiveId: null, youtubeId: null, voteAverage: 7.0, genres: ['Drama'], directors: ['Director C'], isStreamable: false },
+        { id: 'Q5', title: 'Test Film E', year: 1950, posterUrl: null, tmdbId: '5', imdbId: 'tt005', internetArchiveId: null, youtubeId: null, voteAverage: 6.5, genres: ['Drama', 'Comedy'], directors: ['Director A'], isStreamable: true },
+      ],
+    };
+    httpTesting.expectOne('assets/data/catalog.json').flush(extendedCatalog);
+    await loadPromise;
+
+    const watchedIds = new Set(['Q1', 'Q2', 'Q3']);
+    const recs = service.getRecommendations(watchedIds);
+    expect(recs.length).toBeGreaterThan(0);
+    expect(recs.every((m) => !watchedIds.has(m.id))).toBe(true);
+  });
+
+  it('should return empty recommendations with fewer than 3 watched', async () => {
+    const loadPromise = service.load();
+    httpTesting.expectOne('assets/data/catalog.json').flush(mockCatalog);
+    await loadPromise;
+
+    const recs = service.getRecommendations(new Set(['Q1']));
+    expect(recs.length).toBe(0);
+  });
+
+  it('should compute film of the day', async () => {
+    const loadPromise = service.load();
+    httpTesting.expectOne('assets/data/catalog.json').flush(mockCatalog);
+    await loadPromise;
+
+    const fotd = service.filmOfTheDay();
+    expect(fotd).not.toBeNull();
+    expect(fotd!.isStreamable).toBe(true);
+  });
 });

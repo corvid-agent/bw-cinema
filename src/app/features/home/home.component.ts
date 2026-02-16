@@ -128,6 +128,17 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         </section>
       }
 
+      @if (continueWatching().length > 0) {
+        <section class="section container" aria-label="Continue watching">
+          <div class="section__header">
+            <h2>Continue Watching</h2>
+          </div>
+          <div appKeyboardNav>
+            <app-movie-grid [movies]="continueWatching()" />
+          </div>
+        </section>
+      }
+
       @if (recommendations().length > 0) {
         <section class="section container" aria-label="Recommended for you">
           <div class="section__header">
@@ -136,6 +147,20 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
           </div>
           <div appKeyboardNav>
             <app-movie-grid [movies]="recommendations()" />
+          </div>
+        </section>
+      }
+
+      @for (coll of catalog.curatedCollections().slice(0, 3); track coll.name) {
+        <section class="section container" [attr.aria-label]="coll.name">
+          <div class="section__header">
+            <div>
+              <h2>{{ coll.name }}</h2>
+              <p class="section__desc">{{ coll.description }}</p>
+            </div>
+          </div>
+          <div appKeyboardNav>
+            <app-movie-grid [movies]="coll.movies" />
           </div>
         </section>
       }
@@ -232,6 +257,11 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
     .section__link {
       font-size: 0.9rem;
       font-weight: 600;
+    }
+    .section__desc {
+      font-size: 0.9rem;
+      color: var(--text-tertiary);
+      margin: 2px 0 0;
     }
     .decades {
       display: grid;
@@ -394,6 +424,18 @@ export class HomeComponent implements OnInit {
     const movies = this.catalog.movies();
     return ids.map((id) => movies.find((m) => m.id === id)).filter((m): m is NonNullable<typeof m> => !!m);
   });
+  readonly continueWatching = computed(() => {
+    const progress = this.collectionService.watchProgress();
+    const watchedIds = this.collectionService.watchedIds();
+    const movies = this.catalog.movies();
+    return progress
+      .filter((p) => !watchedIds.has(p.movieId))
+      .sort((a, b) => b.startedAt - a.startedAt)
+      .slice(0, 6)
+      .map((p) => movies.find((m) => m.id === p.movieId))
+      .filter((m): m is NonNullable<typeof m> => !!m);
+  });
+
   readonly recommendations = computed(() =>
     this.catalog.getRecommendations(this.collectionService.watchedIds())
   );

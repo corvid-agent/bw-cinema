@@ -27,6 +27,21 @@ import type { MovieSummary } from '../../core/models/movie.model';
         [attr.aria-activedescendant]="activeIndex() >= 0 ? 'suggestion-' + activeIndex() : null"
         autocomplete="off"
       />
+      @if (speechSupported) {
+        <button
+          class="search__mic"
+          [class.search__mic--recording]="isListening()"
+          (click)="toggleVoice()"
+          [attr.aria-label]="isListening() ? 'Stop voice search' : 'Voice search'"
+          type="button"
+        >
+          @if (isListening()) {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+          } @else {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          }
+        </button>
+      }
       @if (showSuggestions() && suggestions().length > 0) {
         <ul class="search__suggestions" role="listbox" id="search-suggestions">
           @for (s of suggestions(); track s.id; let i = $index) {
@@ -65,7 +80,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
     .search__input {
       width: 100%;
       font-size: 1rem;
-      padding: var(--space-md) var(--space-md) var(--space-md) 42px;
+      padding: var(--space-md) 52px var(--space-md) 42px;
       background-color: var(--bg-surface);
       color: var(--text-primary);
       border: 1px solid var(--border);
@@ -74,6 +89,36 @@ import type { MovieSummary } from '../../core/models/movie.model';
     .search__input:focus {
       border-color: var(--accent-gold);
       background-color: var(--bg-input);
+    }
+    .search__mic {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      padding: 6px;
+      min-width: 36px;
+      min-height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: color 0.2s, background-color 0.2s;
+    }
+    .search__mic:hover {
+      color: var(--accent-gold);
+      background-color: var(--accent-gold-dim);
+    }
+    .search__mic--recording {
+      color: #e53e3e;
+      animation: pulse-mic 1.2s infinite;
+    }
+    @keyframes pulse-mic {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
     .search__suggestions {
       position: absolute;
@@ -130,10 +175,14 @@ export class SearchBarComponent implements OnDestroy {
   readonly suggestions = signal<MovieSummary[]>([]);
   readonly showSuggestions = signal(false);
   readonly activeIndex = signal(-1);
+  readonly isListening = signal(false);
+
+  readonly speechSupported = typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
 
   private readonly catalog = inject(CatalogService);
   private readonly elRef = inject(ElementRef);
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private recognition: any = null;
 
   @HostListener('document:click', ['$event'])
   onDocClick(event: Event): void {
@@ -144,6 +193,7 @@ export class SearchBarComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
+    this.stopVoice();
   }
 
   onInput(event: Event): void {
@@ -187,6 +237,51 @@ export class SearchBarComponent implements OnDestroy {
     this.showSuggestions.set(false);
     this.query.set(movie.title);
     this.searched.emit(movie.title);
+  }
+
+  toggleVoice(): void {
+    if (this.isListening()) {
+      this.stopVoice();
+    } else {
+      this.startVoice();
+    }
+  }
+
+  private startVoice(): void {
+    const SpeechRecognition = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    this.recognition = new SpeechRecognition();
+    this.recognition.lang = 'en-US';
+    this.recognition.interimResults = false;
+    this.recognition.maxAlternatives = 1;
+
+    this.recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      this.query.set(transcript);
+      this.searched.emit(transcript);
+      this.updateSuggestions(transcript);
+      this.isListening.set(false);
+    };
+
+    this.recognition.onerror = () => {
+      this.isListening.set(false);
+    };
+
+    this.recognition.onend = () => {
+      this.isListening.set(false);
+    };
+
+    this.recognition.start();
+    this.isListening.set(true);
+  }
+
+  private stopVoice(): void {
+    if (this.recognition) {
+      this.recognition.abort();
+      this.recognition = null;
+    }
+    this.isListening.set(false);
   }
 
   private updateSuggestions(query: string): void {

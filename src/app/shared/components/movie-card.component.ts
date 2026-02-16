@@ -1,6 +1,7 @@
-import { Component, ChangeDetectionStrategy, input, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, signal, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LazyImageDirective } from '../directives/lazy-image.directive';
+import { CollectionService } from '../../core/services/collection.service';
 import type { MovieSummary } from '../../core/models/movie.model';
 
 @Component({
@@ -29,6 +30,11 @@ import type { MovieSummary } from '../../core/models/movie.model';
             <span class="card__badge">Free</span>
           }
         </div>
+        @if (collection.isFavorite(movie().id)) {
+          <span class="card__heart" aria-label="Favorited">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+        }
       </div>
       <div class="card__info">
         <h3 class="card__title">{{ movie().title }}</h3>
@@ -141,6 +147,13 @@ import type { MovieSummary } from '../../core/models/movie.model';
       letter-spacing: 0.05em;
       margin-left: auto;
     }
+    .card__heart {
+      position: absolute;
+      bottom: var(--space-sm);
+      right: var(--space-sm);
+      color: #e53e3e;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+    }
     .card__info {
       padding: 10px 4px 4px;
     }
@@ -180,4 +193,5 @@ import type { MovieSummary } from '../../core/models/movie.model';
 export class MovieCardComponent {
   readonly movie = input.required<MovieSummary>();
   readonly imgFailed = signal(false);
+  protected readonly collection = inject(CollectionService);
 }
