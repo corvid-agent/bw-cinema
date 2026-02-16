@@ -121,6 +121,27 @@ const MOODS: Mood[] = [
             </section>
           }
 
+          @if (watchProgress(); as progress) {
+            <section class="explore__section">
+              <h2>Your Exploration Progress</h2>
+              <p class="explore__section-desc">How many streamable films you've watched per mood</p>
+              <div class="explore__progress-grid">
+                @for (p of progress; track p.name) {
+                  <div class="explore__progress-item">
+                    <div class="explore__progress-header">
+                      <span class="explore__progress-icon">{{ p.icon }}</span>
+                      <span class="explore__progress-name">{{ p.name }}</span>
+                      <span class="explore__progress-frac">{{ p.watched }}/{{ p.total }}</span>
+                    </div>
+                    <div class="explore__progress-track">
+                      <div class="explore__progress-fill" [style.width.%]="p.pct"></div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
           @if (recentlyAdded().length > 0) {
             <section class="explore__section">
               <h2>More to Discover</h2>
@@ -374,6 +395,48 @@ const MOODS: Mood[] = [
       padding: var(--space-3xl);
       color: var(--text-tertiary);
     }
+    .explore__progress-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
+    }
+    .explore__progress-item {
+      padding: var(--space-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .explore__progress-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-sm);
+    }
+    .explore__progress-icon { font-size: 1.1rem; }
+    .explore__progress-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .explore__progress-frac {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      font-weight: 600;
+    }
+    .explore__progress-track {
+      height: 6px;
+      background: var(--bg-raised);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .explore__progress-fill {
+      height: 100%;
+      background: var(--accent-gold);
+      border-radius: 3px;
+      min-width: 2px;
+      transition: width 0.4s ease;
+    }
     .explore__start-watching {
       text-align: center;
       padding: var(--space-2xl);
@@ -403,6 +466,7 @@ const MOODS: Mood[] = [
       }
       .explore__mood-icon { font-size: 1.5rem; }
       .explore__mood-name { font-size: 0.95rem; }
+      .explore__progress-grid { grid-template-columns: 1fr; }
     }
   `],
 })
@@ -453,6 +517,33 @@ export class ExploreComponent implements OnInit {
       .slice(-12)
       .reverse()
   );
+
+  readonly watchProgress = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return null;
+    const films = this.catalog.movies().filter((m) => m.isStreamable);
+    const watched = films.filter((m) => watchedIds.has(m.id));
+    return MOODS.map((mood) => {
+      const moodFilter = (m: MovieSummary) => {
+        if (mood.id === 'foreign') return m.language != null && m.language !== 'English';
+        if (mood.yearRange) return m.year >= mood.yearRange[0] && m.year <= mood.yearRange[1];
+        if (mood.genres.length > 0) {
+          const gs = new Set(mood.genres.map((g) => g.toLowerCase()));
+          return m.genres.some((g) => gs.has(g.toLowerCase()));
+        }
+        return false;
+      };
+      const total = films.filter(moodFilter).length;
+      const w = watched.filter(moodFilter).length;
+      return {
+        name: mood.name,
+        icon: mood.icon,
+        total,
+        watched: w,
+        pct: total > 0 ? Math.round((w / total) * 100) : 0,
+      };
+    }).filter((p) => p.total > 0);
+  });
 
   readonly unwatchedCount = computed(() => {
     const watchedIds = this.collection.watchedIds();

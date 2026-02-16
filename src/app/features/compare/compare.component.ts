@@ -153,8 +153,11 @@ import type { MovieSummary } from '../../core/models/movie.model';
             <div class="compare__cell">{{ getStreamSource(filmA()!) }}</div>
             <div class="compare__cell">{{ getStreamSource(filmB()!) }}</div>
           </div>
-          @if (sharedGenres().length > 0 || sharedDirectors().length > 0) {
+          @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
             <div class="compare__shared">
+              @for (note of comparisonNotes(); track note) {
+                <div class="compare__note">{{ note }}</div>
+              }
               @if (sharedGenres().length > 0) {
                 <div>
                   <span class="compare__shared-label">Shared genres:</span>
@@ -392,6 +395,11 @@ import type { MovieSummary } from '../../core/models/movie.model';
       font-weight: 600;
       margin-right: var(--space-sm);
     }
+    .compare__note {
+      color: var(--accent-gold);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
     @media (max-width: 768px) {
       .compare__pickers { flex-direction: column; }
       .compare__vs { padding-top: 0; text-align: center; }
@@ -439,6 +447,32 @@ export class CompareComponent implements OnInit {
     if (!a || !b) return [];
     const setB = new Set(b.genres);
     return a.genres.filter((g) => setB.has(g));
+  });
+
+  readonly comparisonNotes = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return [];
+    const notes: string[] = [];
+    const yearGap = Math.abs(a.year - b.year);
+    if (yearGap === 0) {
+      notes.push('Released the same year');
+    } else {
+      notes.push(`${yearGap} year${yearGap > 1 ? 's' : ''} apart`);
+    }
+    const decadeA = Math.floor(a.year / 10) * 10;
+    const decadeB = Math.floor(b.year / 10) * 10;
+    if (decadeA === decadeB) {
+      notes.push(`Both from the ${decadeA}s`);
+    }
+    if (a.isStreamable && b.isStreamable) {
+      notes.push('Both free to watch');
+    }
+    const ratingDiff = Math.abs(a.voteAverage - b.voteAverage);
+    if (a.voteAverage > 0 && b.voteAverage > 0 && ratingDiff < 0.3) {
+      notes.push('Nearly identical ratings');
+    }
+    return notes;
   });
 
   readonly sharedDirectors = computed(() => {

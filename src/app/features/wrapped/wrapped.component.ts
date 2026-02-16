@@ -153,37 +153,63 @@ interface WrappedStats {
           </div>
 
           <div class="wrapped__highlights">
-            @if (stats().oldestFilm) {
-              <div class="wrapped__highlight">
-                <span class="wrapped__highlight-label">Oldest Film</span>
-                <a class="wrapped__highlight-title" [routerLink]="['/movie', stats().oldestFilm!.id]">
-                  {{ stats().oldestFilm!.title }} ({{ stats().oldestFilm!.year }})
-                </a>
-              </div>
+            @if (stats().oldestFilm; as film) {
+              <a class="wrapped__highlight" [routerLink]="['/movie', film.id]">
+                @if (film.posterUrl) {
+                  <img class="wrapped__highlight-poster" [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+                } @else {
+                  <div class="wrapped__highlight-placeholder">{{ film.year }}</div>
+                }
+                <div class="wrapped__highlight-text">
+                  <span class="wrapped__highlight-label">Oldest Film</span>
+                  <span class="wrapped__highlight-title">{{ film.title }}</span>
+                  <span class="wrapped__highlight-meta">{{ film.year }}</span>
+                </div>
+              </a>
             }
-            @if (stats().newestFilm) {
-              <div class="wrapped__highlight">
-                <span class="wrapped__highlight-label">Most Recent Film</span>
-                <a class="wrapped__highlight-title" [routerLink]="['/movie', stats().newestFilm!.id]">
-                  {{ stats().newestFilm!.title }} ({{ stats().newestFilm!.year }})
-                </a>
-              </div>
+            @if (stats().newestFilm; as film) {
+              <a class="wrapped__highlight" [routerLink]="['/movie', film.id]">
+                @if (film.posterUrl) {
+                  <img class="wrapped__highlight-poster" [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+                } @else {
+                  <div class="wrapped__highlight-placeholder">{{ film.year }}</div>
+                }
+                <div class="wrapped__highlight-text">
+                  <span class="wrapped__highlight-label">Most Recent Film</span>
+                  <span class="wrapped__highlight-title">{{ film.title }}</span>
+                  <span class="wrapped__highlight-meta">{{ film.year }}</span>
+                </div>
+              </a>
             }
-            @if (stats().highestRated) {
-              <div class="wrapped__highlight">
-                <span class="wrapped__highlight-label">Your Highest Rated</span>
-                <a class="wrapped__highlight-title" [routerLink]="['/movie', stats().highestRated!.id]">
-                  {{ stats().highestRated!.title }}
-                </a>
-              </div>
+            @if (stats().highestRated; as film) {
+              <a class="wrapped__highlight" [routerLink]="['/movie', film.id]">
+                @if (film.posterUrl) {
+                  <img class="wrapped__highlight-poster" [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+                } @else {
+                  <div class="wrapped__highlight-placeholder">&#9733;</div>
+                }
+                <div class="wrapped__highlight-text">
+                  <span class="wrapped__highlight-label">Your Highest Rated</span>
+                  <span class="wrapped__highlight-title">{{ film.title }}</span>
+                  @if (highestRating(); as rating) {
+                    <span class="wrapped__highlight-meta">{{ rating }}/10</span>
+                  }
+                </div>
+              </a>
             }
-            @if (stats().firstWatched) {
-              <div class="wrapped__highlight">
-                <span class="wrapped__highlight-label">First Film of {{ selectedYear() }}</span>
-                <a class="wrapped__highlight-title" [routerLink]="['/movie', stats().firstWatched!.id]">
-                  {{ stats().firstWatched!.title }}
-                </a>
-              </div>
+            @if (stats().firstWatched; as film) {
+              <a class="wrapped__highlight" [routerLink]="['/movie', film.id]">
+                @if (film.posterUrl) {
+                  <img class="wrapped__highlight-poster" [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+                } @else {
+                  <div class="wrapped__highlight-placeholder">#1</div>
+                }
+                <div class="wrapped__highlight-text">
+                  <span class="wrapped__highlight-label">First Film of {{ selectedYear() }}</span>
+                  <span class="wrapped__highlight-title">{{ film.title }}</span>
+                  <span class="wrapped__highlight-meta">{{ film.year }}</span>
+                </div>
+              </a>
             }
           </div>
 
@@ -405,10 +431,46 @@ interface WrappedStats {
       margin-bottom: var(--space-2xl);
     }
     .wrapped__highlight {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
       padding: var(--space-md) var(--space-lg);
       background: var(--bg-surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .wrapped__highlight:hover {
+      border-color: var(--accent-gold);
+      background: var(--bg-raised);
+      color: inherit;
+    }
+    .wrapped__highlight-poster {
+      width: 48px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+    .wrapped__highlight-placeholder {
+      width: 48px;
+      height: 72px;
+      background: var(--bg-raised);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-heading);
+      font-size: 0.85rem;
+      color: var(--accent-gold);
+      flex-shrink: 0;
+    }
+    .wrapped__highlight-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
     }
     .wrapped__highlight-label {
       font-size: 0.75rem;
@@ -416,17 +478,22 @@ interface WrappedStats {
       text-transform: uppercase;
       letter-spacing: 0.06em;
       font-weight: 600;
-      display: block;
-      margin-bottom: var(--space-xs);
     }
     .wrapped__highlight-title {
       font-family: var(--font-heading);
       font-size: 1.05rem;
       font-weight: 600;
       color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .wrapped__highlight-title:hover {
+    .wrapped__highlight:hover .wrapped__highlight-title {
       color: var(--accent-gold);
+    }
+    .wrapped__highlight-meta {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
     }
     .wrapped__films {
       margin-top: var(--space-xl);
@@ -563,6 +630,14 @@ export class WrappedComponent implements OnInit {
       favoriteCount,
       reviewCount,
     };
+  });
+
+  readonly highestRating = computed(() => {
+    const watched = this.yearWatched();
+    const rated = watched.filter((w) => w.userRating !== null && w.userRating > 0);
+    if (rated.length === 0) return null;
+    const best = rated.reduce((a, b) => ((b.userRating ?? 0) > (a.userRating ?? 0) ? b : a));
+    return best.userRating;
   });
 
   private maxBarValue = computed(() => {

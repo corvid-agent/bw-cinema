@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, computed } from '@angular/core';
+import { CatalogService } from '../../core/services/catalog.service';
 
 @Component({
   selector: 'app-about',
@@ -16,6 +17,38 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
           to everyone.
         </p>
       </section>
+
+      @if (catalogStats(); as stats) {
+        <section class="about__section">
+          <h2>The Collection</h2>
+          <div class="about__stats">
+            <div class="about__stat">
+              <span class="about__stat-value">{{ stats.total }}</span>
+              <span class="about__stat-label">Films in Catalog</span>
+            </div>
+            <div class="about__stat">
+              <span class="about__stat-value">{{ stats.streamable }}</span>
+              <span class="about__stat-label">Free to Watch</span>
+            </div>
+            <div class="about__stat">
+              <span class="about__stat-value">{{ stats.decades }}</span>
+              <span class="about__stat-label">Decades Covered</span>
+            </div>
+            <div class="about__stat">
+              <span class="about__stat-value">{{ stats.genres }}</span>
+              <span class="about__stat-label">Genres</span>
+            </div>
+            <div class="about__stat">
+              <span class="about__stat-value">{{ stats.directors }}</span>
+              <span class="about__stat-label">Directors</span>
+            </div>
+            <div class="about__stat">
+              <span class="about__stat-value">{{ stats.yearRange }}</span>
+              <span class="about__stat-label">Year Range</span>
+            </div>
+          </div>
+        </section>
+      }
 
       <section class="about__section">
         <h2>Data Sources</h2>
@@ -260,6 +293,68 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
     .about__faq-item a {
       color: var(--accent-gold);
     }
+    .about__stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md);
+      margin-top: var(--space-md);
+    }
+    .about__stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .about__stat-value {
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      line-height: 1;
+      margin-bottom: var(--space-xs);
+    }
+    .about__stat-label {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    @media (max-width: 480px) {
+      .about__stats { grid-template-columns: repeat(2, 1fr); }
+      .about__stat-value { font-size: 1.4rem; }
+    }
   `],
 })
-export class AboutComponent {}
+export class AboutComponent implements OnInit {
+  private readonly catalog = inject(CatalogService);
+
+  readonly catalogStats = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    const meta = this.catalog.meta();
+    const streamable = movies.filter((m) => m.isStreamable).length;
+    const directorSet = new Set<string>();
+    for (const m of movies) {
+      for (const d of m.directors) directorSet.add(d);
+    }
+    const years = movies.map((m) => m.year);
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
+    return {
+      total: movies.length.toLocaleString(),
+      streamable: streamable.toLocaleString(),
+      decades: meta?.decades.length ?? 0,
+      genres: meta?.genres.length ?? 0,
+      directors: directorSet.size.toLocaleString(),
+      yearRange: `${minYear}–${maxYear}`,
+    };
+  });
+
+  ngOnInit(): void {
+    this.catalog.load();
+  }
+}

@@ -166,26 +166,48 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
         <div class="stats__highlights">
           @if (oldestFilm(); as film) {
             <a class="stats__highlight" [routerLink]="['/movie', film.id]">
-              <span class="stats__highlight-label">Oldest Film</span>
-              <span class="stats__highlight-value">{{ film.title }} ({{ film.year }})</span>
+              @if (film.posterUrl) {
+                <img class="stats__highlight-poster" [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+              }
+              <div class="stats__highlight-text">
+                <span class="stats__highlight-label">Oldest Film</span>
+                <span class="stats__highlight-value">{{ film.title }}</span>
+                <span class="stats__highlight-meta">{{ film.year }}</span>
+              </div>
             </a>
           }
           @if (newestFilm(); as film) {
             <a class="stats__highlight" [routerLink]="['/movie', film.id]">
-              <span class="stats__highlight-label">Most Recent Film</span>
-              <span class="stats__highlight-value">{{ film.title }} ({{ film.year }})</span>
+              @if (film.posterUrl) {
+                <img class="stats__highlight-poster" [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+              }
+              <div class="stats__highlight-text">
+                <span class="stats__highlight-label">Most Recent Film</span>
+                <span class="stats__highlight-value">{{ film.title }}</span>
+                <span class="stats__highlight-meta">{{ film.year }}</span>
+              </div>
             </a>
           }
           @if (highestRatedFilm(); as film) {
             <a class="stats__highlight" [routerLink]="['/movie', film.id]">
-              <span class="stats__highlight-label">Highest Rated</span>
-              <span class="stats__highlight-value">{{ film.title }} ({{ film.voteAverage.toFixed(1) }})</span>
+              @if (film.posterUrl) {
+                <img class="stats__highlight-poster" [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+              }
+              <div class="stats__highlight-text">
+                <span class="stats__highlight-label">Highest Rated</span>
+                <span class="stats__highlight-value">{{ film.title }}</span>
+                <span class="stats__highlight-meta">&#9733; {{ film.voteAverage.toFixed(1) }}</span>
+              </div>
             </a>
           }
           @if (mostFilmedDirector(); as dir) {
             <a class="stats__highlight" [routerLink]="['/director', dir.name]">
-              <span class="stats__highlight-label">Most Prolific Director</span>
-              <span class="stats__highlight-value">{{ dir.name }} ({{ dir.count }} films)</span>
+              <div class="stats__highlight-initial">{{ dir.name[0] }}</div>
+              <div class="stats__highlight-text">
+                <span class="stats__highlight-label">Most Prolific Director</span>
+                <span class="stats__highlight-value">{{ dir.name }}</span>
+                <span class="stats__highlight-meta">{{ dir.count }} films</span>
+              </div>
             </a>
           }
         </div>
@@ -361,36 +383,70 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
       margin-top: var(--space-xl);
     }
     .stats__highlight {
-      display: block;
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
       padding: var(--space-md) var(--space-lg);
       background: var(--bg-surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       text-decoration: none;
       color: inherit;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, background-color 0.2s;
     }
     .stats__highlight:hover {
       border-color: var(--accent-gold);
+      background: var(--bg-raised);
       color: inherit;
     }
+    .stats__highlight-poster {
+      width: 40px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+    .stats__highlight-initial {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--accent-gold-dim);
+      color: var(--accent-gold);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .stats__highlight-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
     .stats__highlight-label {
-      display: block;
       font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: var(--text-tertiary);
       font-weight: 600;
-      margin-bottom: var(--space-xs);
     }
     .stats__highlight-value {
       font-family: var(--font-heading);
       font-size: 1rem;
       font-weight: 600;
       color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .stats__highlight:hover .stats__highlight-value {
       color: var(--accent-gold);
+    }
+    .stats__highlight-meta {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
     }
     .stats__lang-summary {
       display: grid;
