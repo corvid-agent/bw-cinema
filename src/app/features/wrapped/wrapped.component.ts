@@ -178,6 +178,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Newest Film</span>
               </div>
             }
+            @if (coDirectedCount() > 0) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ coDirectedCount() }}</span>
+                <span class="wrapped__hero-label">Co-directed Films</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -877,6 +883,10 @@ export class WrappedComponent implements OnInit {
 
   readonly silentEraWatched = computed(() => {
     return this.yearFilms().filter((m) => m.year < 1930).length;
+  });
+
+  readonly coDirectedCount = computed(() => {
+    return this.yearFilms().filter((m) => m.directors.length > 1).length;
   });
 
   readonly avgFilmAge = computed(() => {

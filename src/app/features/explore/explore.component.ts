@@ -40,7 +40,7 @@ const MOODS: Mood[] = [
       <div class="explore container">
         <div class="explore__header">
           <h1>Explore</h1>
-          <p class="explore__subtitle">Discover films by mood, or let fate decide@if (totalUnwatchedStreamable(); as tus) { &middot; {{ tus }} free films to discover}@if (unwatchedAvgRating(); as uar) { &middot; avg &#9733; {{ uar }}}@if (unwatchedLanguageCount(); as ulc) { &middot; {{ ulc }} languages}@if (unwatchedGenreCount(); as ugc) { &middot; {{ ugc }} genres}</p>
+          <p class="explore__subtitle">Discover films by mood, or let fate decide@if (totalUnwatchedStreamable(); as tus) { &middot; {{ tus }} free films to discover}@if (unwatchedAvgRating(); as uar) { &middot; avg &#9733; {{ uar }}}@if (unwatchedLanguageCount(); as ulc) { &middot; {{ ulc }} languages}@if (unwatchedGenreCount(); as ugc) { &middot; {{ ugc }} genres}@if (unwatchedDirectorCount(); as udc) { &middot; {{ udc }} directors}</p>
         </div>
 
         <div class="explore__random">
@@ -947,6 +947,18 @@ export class ExploreComponent implements OnInit {
       }
     }
     return genres.size > 1 ? genres.size : null;
+  });
+
+  readonly unwatchedDirectorCount = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return null;
+    const dirs = new Set<string>();
+    for (const m of this.catalog.movies()) {
+      if (m.isStreamable && !watchedIds.has(m.id)) {
+        for (const d of m.directors) dirs.add(d);
+      }
+    }
+    return dirs.size > 1 ? dirs.size : null;
   });
 
   readonly totalUnwatchedStreamable = computed(() => {
