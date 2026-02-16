@@ -62,6 +62,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (topNonEnglishLang(); as lang) {
           <p class="hero__avg-rating">Top non-English language: {{ lang.name }} ({{ lang.count }} films)</p>
         }
+        @if (avgCatalogRating(); as acr) {
+          <p class="hero__avg-rating">Average catalog rating: &#9733; {{ acr }}</p>
+        }
       </div>
     </section>
 
@@ -1207,6 +1210,12 @@ export class HomeComponent implements OnInit {
   readonly silentEraCount = computed(() =>
     this.catalog.movies().filter((m) => m.year < 1930).length
   );
+
+  readonly avgCatalogRating = computed(() => {
+    const rated = this.catalog.movies().filter((m) => m.voteAverage > 0);
+    if (rated.length === 0) return null;
+    return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
+  });
 
   readonly topNonEnglishLang = computed(() => {
     const LANG_NAMES: Record<string, string> = {

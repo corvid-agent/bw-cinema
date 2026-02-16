@@ -150,6 +150,13 @@ const MOODS: Mood[] = [
             <span class="explore__director-explore-count">{{ dir.count }} unwatched films</span>
           </a>
         }
+        @if (genreToExplore(); as genre) {
+          <a class="explore__director-explore" [routerLink]="['/genre', genre.name]">
+            <span class="explore__director-explore-label">Genre to Explore</span>
+            <span class="explore__director-explore-name">{{ genre.name }}</span>
+            <span class="explore__director-explore-count">{{ genre.count }} unwatched films</span>
+          </a>
+        }
 
         @if (!activeMood()) {
           @if (topMood(); as tm) {
@@ -847,6 +854,22 @@ export class ExploreComponent implements OnInit {
     }
     const best = [...dirCounts.entries()]
       .filter(([, c]) => c >= 3)
+      .sort((a, b) => b[1] - a[1]);
+    return best.length > 0 ? { name: best[0][0], count: best[0][1] } : null;
+  });
+
+  readonly genreToExplore = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return null;
+    const genreCounts = new Map<string, number>();
+    for (const m of this.catalog.movies()) {
+      if (!m.isStreamable || watchedIds.has(m.id)) continue;
+      for (const g of m.genres) {
+        genreCounts.set(g, (genreCounts.get(g) ?? 0) + 1);
+      }
+    }
+    const best = [...genreCounts.entries()]
+      .filter(([, c]) => c >= 5)
       .sort((a, b) => b[1] - a[1]);
     return best.length > 0 ? { name: best[0][0], count: best[0][1] } : null;
   });
