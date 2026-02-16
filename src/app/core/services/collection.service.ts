@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import type { WatchlistItem, WatchedItem, UserCollection } from '../models/collection.model';
+import type { WatchlistItem, WatchedItem, UserCollection, Playlist } from '../models/collection.model';
 
 const STORAGE_KEY = 'bw-cinema-collection';
 const PROGRESS_KEY = 'bw-cinema-watch-progress';
@@ -14,6 +14,7 @@ export class CollectionService {
   readonly watchlist = signal<WatchlistItem[]>([]);
   readonly watched = signal<WatchedItem[]>([]);
   readonly favorites = signal<string[]>([]);
+  readonly playlists = signal<Playlist[]>([]);
   readonly watchProgress = signal<WatchProgress[]>([]);
 
   readonly watchlistIds = computed(() => new Set(this.watchlist().map((w) => w.movieId)));
@@ -103,6 +104,53 @@ export class CollectionService {
     this.saveProgress();
   }
 
+  // Playlists
+  createPlaylist(name: string): Playlist {
+    const playlist: Playlist = {
+      id: crypto.randomUUID(),
+      name,
+      movieIds: [],
+      createdAt: Date.now(),
+    };
+    this.playlists.update((list) => [...list, playlist]);
+    this.save();
+    return playlist;
+  }
+
+  renamePlaylist(id: string, name: string): void {
+    this.playlists.update((list) =>
+      list.map((p) => (p.id === id ? { ...p, name } : p))
+    );
+    this.save();
+  }
+
+  deletePlaylist(id: string): void {
+    this.playlists.update((list) => list.filter((p) => p.id !== id));
+    this.save();
+  }
+
+  addToPlaylist(playlistId: string, movieId: string): void {
+    this.playlists.update((list) =>
+      list.map((p) =>
+        p.id === playlistId && !p.movieIds.includes(movieId)
+          ? { ...p, movieIds: [...p.movieIds, movieId] }
+          : p
+      )
+    );
+    this.save();
+  }
+
+  removeFromPlaylist(playlistId: string, movieId: string): void {
+    this.playlists.update((list) =>
+      list.map((p) =>
+        p.id === playlistId
+          ? { ...p, movieIds: p.movieIds.filter((id) => id !== movieId) }
+          : p
+      )
+    );
+    this.save();
+  }
+
   isInWatchlist(movieId: string): boolean {
     return this.watchlistIds().has(movieId);
   }
@@ -116,6 +164,7 @@ export class CollectionService {
       watchlist: this.watchlist(),
       watched: this.watched(),
       favorites: this.favorites(),
+      playlists: this.playlists(),
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(collection));
@@ -132,6 +181,7 @@ export class CollectionService {
         this.watchlist.set(collection.watchlist ?? []);
         this.watched.set((collection.watched ?? []).map((w) => ({ ...w, notes: w.notes ?? null })));
         this.favorites.set(collection.favorites ?? []);
+        this.playlists.set(collection.playlists ?? []);
       }
     } catch {
       // Invalid stored data, start fresh

@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal, input, computed } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, ChangeDetectionStrategy, inject, OnInit, signal, input, computed, HostListener } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { MovieService } from '../../core/services/movie.service';
@@ -113,6 +113,18 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                 }
                 @if (!collection.isWatched(m.id)) {
                   <button class="btn-secondary" (click)="markWatched(m.id)">Mark Watched</button>
+                }
+                @if (collection.playlists().length > 0) {
+                  <div class="detail__playlist-wrap">
+                    <button class="btn-ghost detail__playlist-btn" (click)="playlistMenuOpen.set(!playlistMenuOpen())">+ Playlist</button>
+                    @if (playlistMenuOpen()) {
+                      <div class="detail__share-menu">
+                        @for (pl of collection.playlists(); track pl.id) {
+                          <button class="detail__share-option" (click)="addToPlaylist(pl.id, m.id)">{{ pl.name }}</button>
+                        }
+                      </div>
+                    }
+                  </div>
                 }
                 <div class="detail__share-wrap">
                   <button class="btn-ghost detail__share-btn" (click)="shareMenuOpen.set(!shareMenuOpen())" aria-label="Share this film">
@@ -466,6 +478,12 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       color: var(--text-tertiary);
       margin: 0;
     }
+    .detail__playlist-wrap {
+      position: relative;
+    }
+    .detail__playlist-btn {
+      font-size: 0.9rem;
+    }
     .detail__share-wrap {
       position: relative;
     }
@@ -659,6 +677,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
 export class MovieComponent implements OnInit {
   readonly id = input.required<string>();
 
+  private readonly router = inject(Router);
   private readonly catalogService = inject(CatalogService);
   private readonly movieService = inject(MovieService);
   protected readonly collection = inject(CollectionService);
@@ -672,11 +691,26 @@ export class MovieComponent implements OnInit {
   readonly loading = signal(true);
   readonly streamingUrl = signal<string | null>(null);
   readonly shareMenuOpen = signal(false);
+  readonly playlistMenuOpen = signal(false);
   private readonly summary = signal<MovieSummary | null>(null);
   readonly similarFilms = computed(() => {
     const s = this.summary();
     return s ? this.catalogService.getSimilar(s) : [];
   });
+
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+    if (event.key === 'j' || event.key === 'k') {
+      const movies = this.catalogService.movies();
+      const idx = movies.findIndex((m) => m.id === this.id());
+      if (idx === -1) return;
+      const next = event.key === 'j' ? idx + 1 : idx - 1;
+      if (next >= 0 && next < movies.length) {
+        this.router.navigate(['/movie', movies[next].id]);
+      }
+    }
+  }
 
   async ngOnInit(): Promise<void> {
     await this.catalogService.load();
@@ -765,6 +799,13 @@ export class MovieComponent implements OnInit {
       this.metaService.updateTag({ property: 'og:image', content: movie.posterUrl });
       this.metaService.updateTag({ name: 'twitter:image', content: movie.posterUrl });
     }
+  }
+
+  addToPlaylist(playlistId: string, movieId: string): void {
+    this.collection.addToPlaylist(playlistId, movieId);
+    const pl = this.collection.playlists().find((p) => p.id === playlistId);
+    this.notifications.show(`Added to ${pl?.name ?? 'playlist'}`, 'success');
+    this.playlistMenuOpen.set(false);
   }
 
   shareTwitter(movie: MovieDetail): void {

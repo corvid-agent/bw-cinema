@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal, computed, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { SearchBarComponent } from '../../shared/components/search-bar.component';
@@ -51,6 +51,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
                 </select>
               </div>
               <app-view-toggle [(mode)]="viewMode" />
+              <button class="browse__surprise" (click)="surpriseMe()" title="Random film">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/><polyline points="21 12 16.5 14.6 16.5 19.79"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+              </button>
             </div>
 
             <div appKeyboardNav>
@@ -114,6 +117,26 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       border-radius: var(--radius-lg);
       background-color: var(--bg-surface);
     }
+    .browse__surprise {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      min-height: 40px;
+      padding: 0;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--accent-gold);
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+    .browse__surprise:hover {
+      background: var(--accent-gold-dim);
+      border-color: var(--accent-gold);
+    }
     .browse__load-more {
       text-align: center;
       padding: var(--space-2xl) 0 var(--space-md);
@@ -158,6 +181,7 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
 export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   protected readonly catalog = inject(CatalogService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   private static loadLangPref(): string[] {
     try {
@@ -220,6 +244,13 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     const [sortBy, sortDirection] = value.split('-') as [CatalogFilter['sortBy'], CatalogFilter['sortDirection']];
     this.filter.update((f) => ({ ...f, sortBy, sortDirection }));
     this.page.set(1);
+  }
+
+  surpriseMe(): void {
+    const films = this.filteredMovies();
+    if (films.length === 0) return;
+    const pick = films[Math.floor(Math.random() * films.length)];
+    this.router.navigate(['/movie', pick.id]);
   }
 
   ngAfterViewInit(): void {

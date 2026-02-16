@@ -62,6 +62,18 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
             </button>
             <button
               class="collection__tab"
+              [class.collection__tab--active]="activeTab() === 'playlists'"
+              (click)="activeTab.set('playlists')"
+              role="tab"
+              [attr.aria-selected]="activeTab() === 'playlists'"
+            >
+              Playlists
+              @if (collectionService.playlists().length > 0) {
+                <span class="collection__count">{{ collectionService.playlists().length }}</span>
+              }
+            </button>
+            <button
+              class="collection__tab"
               [class.collection__tab--active]="activeTab() === 'stats'"
               (click)="activeTab.set('stats')"
               role="tab"
@@ -91,6 +103,11 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   Letterboxd
                 </button>
+                <label class="btn-ghost collection__export collection__import-label">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Import
+                  <input type="file" accept=".csv" class="sr-only" (change)="importLetterboxd($event)" />
+                </label>
               }
               <app-view-toggle [(mode)]="viewMode" />
             </div>
@@ -156,6 +173,65 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                 <p class="collection__empty-text">Tap the heart icon on any film to add it to your favorites.</p>
                 <a class="btn-primary" routerLink="/browse">Browse Films</a>
               </div>
+            }
+          </div>
+        }
+
+        @if (activeTab() === 'playlists') {
+          <div role="tabpanel" class="playlists">
+            <div class="playlists__create">
+              <input
+                type="text"
+                class="playlists__input"
+                placeholder="New playlist name..."
+                [value]="newPlaylistName()"
+                (input)="newPlaylistName.set($any($event.target).value)"
+                (keydown.enter)="createPlaylist()"
+              />
+              <button class="btn-secondary" (click)="createPlaylist()" [disabled]="!newPlaylistName().trim()">Create</button>
+            </div>
+
+            @if (collectionService.playlists().length === 0) {
+              <div class="collection__empty">
+                <p class="collection__empty-title">No playlists yet</p>
+                <p class="collection__empty-text">Create a playlist to organize your favorite films into custom lists.</p>
+              </div>
+            } @else {
+              @for (pl of collectionService.playlists(); track pl.id) {
+                <div class="playlists__card">
+                  <div class="playlists__header">
+                    @if (editingPlaylistId() === pl.id) {
+                      <input
+                        type="text"
+                        class="playlists__rename-input"
+                        [value]="editPlaylistName()"
+                        (input)="editPlaylistName.set($any($event.target).value)"
+                        (keydown.enter)="saveRename(pl.id)"
+                        (blur)="saveRename(pl.id)"
+                      />
+                    } @else {
+                      <h3 class="playlists__name" (click)="startRename(pl)">{{ pl.name }}</h3>
+                    }
+                    <span class="playlists__count">{{ pl.movieIds.length }} films</span>
+                    <button class="btn-ghost playlists__delete" (click)="deletePlaylist(pl.id)" aria-label="Delete playlist">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                  </div>
+                  @if (playlistMovies(pl.id).length > 0) {
+                    <div class="playlists__movies">
+                      @for (m of playlistMovies(pl.id); track m.id) {
+                        <a class="playlists__movie" [routerLink]="['/movie', m.id]">
+                          @if (m.posterUrl) {
+                            <img [src]="m.posterUrl" [alt]="m.title" loading="lazy" />
+                          } @else {
+                            <div class="playlists__movie-placeholder">{{ m.title[0] }}</div>
+                          }
+                        </a>
+                      }
+                    </div>
+                  }
+                </div>
+              }
             }
           </div>
         }
@@ -231,6 +307,21 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                           <div class="stats__bar-fill" [style.width.%]="r.pct"></div>
                         </div>
                         <span class="stats__bar-count">{{ r.count }}</span>
+                      </div>
+                    }
+                  </div>
+                </section>
+              }
+
+              @if (monthlyTrends().length > 1) {
+                <section class="stats__section stats__trends">
+                  <h3>Monthly Activity</h3>
+                  <div class="stats__trend-chart">
+                    @for (m of monthlyTrends(); track m.label) {
+                      <div class="stats__trend-col">
+                        <span class="stats__trend-count">{{ m.count }}</span>
+                        <div class="stats__trend-bar" [style.height.%]="m.pct"></div>
+                        <span class="stats__trend-label">{{ m.label }}</span>
                       </div>
                     }
                   </div>
@@ -325,6 +416,9 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       gap: 6px;
       font-size: 0.85rem;
       white-space: nowrap;
+    }
+    .collection__import-label {
+      cursor: pointer;
     }
     .collection__empty {
       text-align: center;
@@ -431,6 +525,137 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       margin-top: var(--space-xl);
       max-width: 500px;
     }
+    /* Monthly Trends */
+    .stats__trends {
+      margin-top: var(--space-xl);
+    }
+    .stats__trend-chart {
+      display: flex;
+      gap: var(--space-xs);
+      align-items: flex-end;
+      height: 160px;
+      padding-top: var(--space-md);
+    }
+    .stats__trend-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      height: 100%;
+      justify-content: flex-end;
+    }
+    .stats__trend-count {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+    }
+    .stats__trend-bar {
+      width: 100%;
+      max-width: 40px;
+      min-height: 4px;
+      background-color: var(--accent-gold);
+      border-radius: 3px 3px 0 0;
+      transition: height 0.4s ease;
+    }
+    .stats__trend-label {
+      font-size: 0.65rem;
+      color: var(--text-tertiary);
+      white-space: nowrap;
+    }
+    /* Playlists */
+    .playlists__create {
+      display: flex;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-xl);
+    }
+    .playlists__input {
+      flex: 1;
+      max-width: 320px;
+      padding: var(--space-sm) var(--space-md);
+      background-color: var(--bg-surface);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      font-size: 0.95rem;
+    }
+    .playlists__input:focus {
+      border-color: var(--accent-gold);
+      outline: none;
+    }
+    .playlists__card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+    .playlists__header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-sm);
+    }
+    .playlists__name {
+      font-size: 1.1rem;
+      margin: 0;
+      cursor: pointer;
+    }
+    .playlists__name:hover {
+      color: var(--accent-gold);
+    }
+    .playlists__rename-input {
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: var(--bg-raised);
+      border: 1px solid var(--accent-gold);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      padding: 2px 8px;
+    }
+    .playlists__count {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+    }
+    .playlists__delete {
+      margin-left: auto;
+      color: var(--text-tertiary);
+      min-width: 36px;
+      min-height: 36px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .playlists__delete:hover {
+      color: #e53e3e;
+    }
+    .playlists__movies {
+      display: flex;
+      gap: var(--space-xs);
+      overflow-x: auto;
+      padding-bottom: var(--space-xs);
+    }
+    .playlists__movie {
+      flex: 0 0 60px;
+    }
+    .playlists__movie img {
+      width: 60px;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+    }
+    .playlists__movie-placeholder {
+      width: 60px;
+      aspect-ratio: 2 / 3;
+      background: var(--bg-raised);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-heading);
+      color: var(--text-tertiary);
+      font-size: 1.2rem;
+    }
     /* Timeline */
     .timeline {
       margin-top: var(--space-2xl);
@@ -506,10 +731,10 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
 })
 export class CollectionComponent implements OnInit {
   protected readonly catalog = inject(CatalogService);
-  private readonly collectionService = inject(CollectionService);
+  protected readonly collectionService = inject(CollectionService);
   private readonly notifications = inject(NotificationService);
 
-  readonly activeTab = signal<'watchlist' | 'watched' | 'favorites' | 'stats'>('watchlist');
+  readonly activeTab = signal<'watchlist' | 'watched' | 'favorites' | 'playlists' | 'stats'>('watchlist');
   readonly sortBy = signal<SortOption>('added-desc');
   readonly viewMode = signal<ViewMode>('grid');
 
@@ -589,6 +814,61 @@ export class CollectionComponent implements OnInit {
       .map((r) => ({ name: String(r), count: buckets.get(r) ?? 0, pct: ((buckets.get(r) ?? 0) / max) * 100 }))
       .filter((r) => r.count > 0);
   });
+
+  // Monthly trends
+  readonly monthlyTrends = computed(() => {
+    const watched = this.collectionService.watched();
+    if (watched.length === 0) return [];
+    const months = new Map<string, number>();
+    for (const w of watched) {
+      const d = new Date(w.watchedAt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      months.set(key, (months.get(key) ?? 0) + 1);
+    }
+    const sorted = [...months.entries()].sort((a, b) => a[0].localeCompare(b[0])).slice(-12);
+    const max = Math.max(...sorted.map(([, c]) => c));
+    return sorted.map(([key, count]) => {
+      const [y, m] = key.split('-');
+      const label = new Date(parseInt(y), parseInt(m) - 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      return { label, count, pct: (count / max) * 100 };
+    });
+  });
+
+  // Playlists
+  readonly newPlaylistName = signal('');
+  readonly editingPlaylistId = signal<string | null>(null);
+  readonly editPlaylistName = signal('');
+
+  playlistMovies(playlistId: string): MovieSummary[] {
+    const pl = this.collectionService.playlists().find((p) => p.id === playlistId);
+    if (!pl) return [];
+    const movies = this.catalog.movies();
+    return pl.movieIds.map((id) => movies.find((m) => m.id === id)).filter((m): m is MovieSummary => !!m);
+  }
+
+  createPlaylist(): void {
+    const name = this.newPlaylistName().trim();
+    if (!name) return;
+    this.collectionService.createPlaylist(name);
+    this.newPlaylistName.set('');
+    this.notifications.show('Playlist created', 'success');
+  }
+
+  startRename(pl: { id: string; name: string }): void {
+    this.editingPlaylistId.set(pl.id);
+    this.editPlaylistName.set(pl.name);
+  }
+
+  saveRename(id: string): void {
+    const name = this.editPlaylistName().trim();
+    if (name) this.collectionService.renamePlaylist(id, name);
+    this.editingPlaylistId.set(null);
+  }
+
+  deletePlaylist(id: string): void {
+    this.collectionService.deletePlaylist(id);
+    this.notifications.show('Playlist deleted', 'info');
+  }
 
   readonly watchTimeline = computed(() => {
     const movieMap = new Map(this.catalog.movies().map((m) => [m.id, m]));
@@ -671,6 +951,95 @@ export class CollectionComponent implements OnInit {
     a.click();
     URL.revokeObjectURL(url);
     this.notifications.show('Letterboxd CSV exported', 'success');
+  }
+
+  importLetterboxd(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const text = reader.result as string;
+        const lines = text.split('\n').filter((l) => l.trim());
+        if (lines.length < 2) {
+          this.notifications.show('CSV file is empty', 'error');
+          return;
+        }
+        const header = lines[0].toLowerCase();
+        const hasImdb = header.includes('imdbid');
+        const hasTitle = header.includes('title');
+        if (!hasImdb && !hasTitle) {
+          this.notifications.show('CSV must have imdbID or Title column', 'error');
+          return;
+        }
+
+        const cols = this.parseCsvRow(lines[0]);
+        const imdbIdx = cols.findIndex((c) => c.toLowerCase().trim() === 'imdbid');
+        const titleIdx = cols.findIndex((c) => c.toLowerCase().trim() === 'title');
+        const yearIdx = cols.findIndex((c) => c.toLowerCase().trim() === 'year');
+        const ratingIdx = cols.findIndex((c) => c.toLowerCase().trim().includes('rating'));
+
+        const movies = this.catalog.movies();
+        let matched = 0;
+
+        for (let i = 1; i < lines.length; i++) {
+          const row = this.parseCsvRow(lines[i]);
+          if (row.length === 0) continue;
+
+          let movie: MovieSummary | undefined;
+          if (imdbIdx >= 0 && row[imdbIdx]) {
+            movie = movies.find((m) => m.imdbId === row[imdbIdx].trim());
+          }
+          if (!movie && titleIdx >= 0 && row[titleIdx]) {
+            const title = row[titleIdx].trim().toLowerCase();
+            const year = yearIdx >= 0 ? parseInt(row[yearIdx], 10) : NaN;
+            movie = movies.find((m) =>
+              m.title.toLowerCase() === title && (isNaN(year) || m.year === year)
+            );
+          }
+
+          if (movie && !this.collectionService.isWatched(movie.id)) {
+            const rating = ratingIdx >= 0 ? parseFloat(row[ratingIdx]) : NaN;
+            this.collectionService.markWatched(movie.id, isNaN(rating) ? null : Math.round(rating * 2) / 2);
+            matched++;
+          }
+        }
+
+        this.notifications.show(`Imported ${matched} film${matched !== 1 ? 's' : ''}`, 'success');
+      } catch {
+        this.notifications.show('Failed to parse CSV file', 'error');
+      }
+      input.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  private parseCsvRow(row: string): string[] {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < row.length; i++) {
+      const ch = row[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (row[i + 1] === '"') { current += '"'; i++; }
+          else inQuotes = false;
+        } else {
+          current += ch;
+        }
+      } else if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ',') {
+        result.push(current);
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+    result.push(current);
+    return result;
   }
 
   exportBackup(): void {

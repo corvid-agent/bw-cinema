@@ -10,8 +10,16 @@ export interface WatchedItem {
   notes: string | null;
 }
 
+export interface Playlist {
+  id: string;
+  name: string;
+  movieIds: string[];
+  createdAt: number;
+}
+
 export interface UserCollection {
   watchlist: WatchlistItem[];
   watched: WatchedItem[];
   favorites: string[];
+  playlists?: Playlist[];
 }

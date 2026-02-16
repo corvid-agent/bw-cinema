@@ -12,7 +12,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
     <a class="card" [routerLink]="['/movie', movie().id]" [attr.aria-label]="movie().title + ', ' + movie().year + (movie().voteAverage > 0 ? ', rated ' + movie().voteAverage.toFixed(1) + ' out of 10' : '') + (movie().isStreamable ? ', free to watch' : '')">
       <div class="card__poster">
         @if (movie().posterUrl && !imgFailed()) {
-          <img appLazyImage [src]="movie().posterUrl" [alt]="movie().title + ' poster'" (error)="imgFailed.set(true)" />
+          <img appLazyImage [src]="movie().posterUrl" [alt]="movie().title + ' poster'" [class.loaded]="imgLoaded()" (load)="onImageLoad()" (error)="imgFailed.set(true)" />
         } @else {
           <div class="card__poster-placeholder">
             <span class="card__placeholder-title">{{ movie().title }}</span>
@@ -78,7 +78,11 @@ import type { MovieSummary } from '../../core/models/movie.model';
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.4s ease;
+      transition: transform 0.4s ease, filter 0.4s ease;
+      filter: blur(8px);
+    }
+    .card__poster img.loaded {
+      filter: blur(0);
     }
     .card:hover .card__poster img {
       transform: scale(1.05);
@@ -193,5 +197,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
 export class MovieCardComponent {
   readonly movie = input.required<MovieSummary>();
   readonly imgFailed = signal(false);
+  readonly imgLoaded = signal(false);
   protected readonly collection = inject(CollectionService);
+
+  onImageLoad(): void {
+    this.imgLoaded.set(true);
+  }
 }
