@@ -21,6 +21,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
         <div class="watch__header">
           <a [routerLink]="['/movie', id()]" class="watch__back">&larr; Back to details</a>
           <h1>{{ movieTitle() }}</h1>
+          @if (movieGenres()) {
+            <p class="watch__genres">{{ movieGenres() }}</p>
+          }
           <p class="text-secondary">Streaming via {{ src.label }}</p>
         </div>
 
@@ -163,6 +166,11 @@ import type { MovieSummary } from '../../core/models/movie.model';
   styles: [`
     .watch { padding: var(--space-xl) 0; }
     .watch__header { margin-bottom: var(--space-lg); }
+    .watch__genres {
+      font-size: 0.85rem;
+      color: var(--accent-gold);
+      margin: 0 0 var(--space-xs);
+    }
     .watch__back {
       display: inline-block;
       margin-bottom: var(--space-md);
@@ -528,6 +536,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly directorFilms = signal<MovieSummary[]>([]);
   readonly directorName = signal('');
   readonly watchedAgo = signal('');
+  readonly movieGenres = signal('');
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -547,6 +556,7 @@ export class WatchComponent implements OnInit, OnDestroy {
       this.movieTitle.set(movie.title);
       this.movieImdbId.set(movie.imdbId);
       this.encodedTitle.set(encodeURIComponent(movie.title));
+      if (movie.genres.length > 0) this.movieGenres.set(movie.genres.slice(0, 3).join(' / '));
       this.titleService.setTitle(`Watch ${movie.title} — BW Cinema`);
       const src = this.streamingService.getSource(movie.internetArchiveId, movie.youtubeId);
       this.source.set(src);

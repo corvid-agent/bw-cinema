@@ -584,6 +584,13 @@ export class CompareComponent implements OnInit {
     if (a.voteAverage > 0 && b.voteAverage > 0 && ratingDiff < 0.3) {
       notes.push('Nearly identical ratings');
     }
+    if (a.language && b.language) {
+      if (a.language === b.language) {
+        if (a.language !== 'en') notes.push(`Both in ${a.language.toUpperCase()}`);
+      } else {
+        notes.push(`${a.language.toUpperCase()} vs ${b.language.toUpperCase()}`);
+      }
+    }
     return notes;
   });
 

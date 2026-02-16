@@ -64,6 +64,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="decade__stat-label">Peak Year ({{ py.count }})</span>
               </div>
             }
+            @if (ratingVsCatalog(); as rv) {
+              <div class="decade__stat">
+                <span class="decade__stat-value" [class.decade__stat-value--positive]="rv.startsWith('+')">{{ rv }}</span>
+                <span class="decade__stat-label">vs Catalog Avg</span>
+              </div>
+            }
           </div>
 
           @if (decadeFact(); as fact) {
@@ -243,6 +249,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-tertiary);
+    }
+    .decade__stat-value--positive {
+      color: #198754;
     }
     .decade__fact {
       font-style: italic;
@@ -628,6 +637,18 @@ export class DecadeComponent implements OnInit {
     const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     if (!best || best[1] < 2) return null;
     return { year: best[0], count: best[1] };
+  });
+
+  readonly ratingVsCatalog = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length < 5) return null;
+    const decAvg = rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length;
+    const allRated = this.catalog.movies().filter((m) => m.voteAverage > 0);
+    if (allRated.length === 0) return null;
+    const catAvg = allRated.reduce((s, m) => s + m.voteAverage, 0) / allRated.length;
+    const diff = decAvg - catAvg;
+    if (Math.abs(diff) < 0.2) return null;
+    return diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
   });
 
   readonly streamablePct = computed(() => {
