@@ -24,7 +24,6 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             <h1 class="director__name">{{ name() }}</h1>
             <p class="director__meta">{{ films().length }} film{{ films().length !== 1 ? 's' : '' }} in catalog</p>
           </div>
-          <app-view-toggle [(mode)]="viewMode" />
         </div>
 
         @if (films().length > 0) {
@@ -55,10 +54,40 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             </div>
           }
 
+          <div class="director__view-bar">
+            <div class="director__sort-btns">
+              <button
+                class="director__sort-btn"
+                [class.director__sort-btn--active]="sortMode() === 'rating'"
+                (click)="sortMode.set('rating')"
+              >Top Rated</button>
+              <button
+                class="director__sort-btn"
+                [class.director__sort-btn--active]="sortMode() === 'chronological'"
+                (click)="sortMode.set('chronological')"
+              >Chronological</button>
+            </div>
+            <app-view-toggle [(mode)]="viewMode" />
+          </div>
+
           @if (viewMode() === 'grid') {
-            <app-movie-grid [movies]="films()" />
+            <app-movie-grid [movies]="sortedFilms()" />
           } @else {
-            <app-movie-list [movies]="films()" />
+            <app-movie-list [movies]="sortedFilms()" />
+          }
+
+          @if (collaborators().length > 0) {
+            <div class="director__collaborators">
+              <h2 class="director__section-title">Frequent Collaborators</h2>
+              <div class="director__collab-list">
+                @for (c of collaborators(); track c.name) {
+                  <a class="director__collab-card" [routerLink]="['/director', c.name]">
+                    <span class="director__collab-name">{{ c.name }}</span>
+                    <span class="director__collab-count">{{ c.count }} shared film{{ c.count !== 1 ? 's' : '' }}</span>
+                  </a>
+                }
+              </div>
+            </div>
           }
         } @else {
           <div class="director__empty">
@@ -139,6 +168,74 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       color: var(--accent-gold);
       background-color: var(--accent-gold-dim);
     }
+    .director__view-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+    }
+    .director__sort-btns {
+      display: flex;
+      gap: var(--space-xs);
+    }
+    .director__sort-btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .director__sort-btn:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .director__sort-btn--active {
+      background: var(--accent-gold-dim);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .director__section-title {
+      font-size: 1.2rem;
+      margin: var(--space-2xl) 0 var(--space-lg);
+    }
+    .director__collaborators {
+      border-top: 1px solid var(--border);
+      padding-top: var(--space-lg);
+      margin-top: var(--space-xl);
+    }
+    .director__collab-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-md);
+    }
+    .director__collab-card {
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .director__collab-card:hover {
+      border-color: var(--accent-gold);
+      color: inherit;
+    }
+    .director__collab-name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .director__collab-count {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
     .director__empty {
       text-align: center;
       padding: var(--space-3xl);
@@ -167,11 +264,36 @@ export class DirectorComponent implements OnInit {
   private readonly titleService = inject(Title);
 
   readonly viewMode = signal<ViewMode>('grid');
+  readonly sortMode = signal<'rating' | 'chronological'>('rating');
+
   readonly films = computed(() =>
     this.catalog.movies()
       .filter((m) => m.directors.some((d) => d === this.name()))
-      .sort((a, b) => b.voteAverage - a.voteAverage)
   );
+
+  readonly sortedFilms = computed(() => {
+    const f = [...this.films()];
+    if (this.sortMode() === 'chronological') {
+      return f.sort((a, b) => a.year - b.year);
+    }
+    return f.sort((a, b) => b.voteAverage - a.voteAverage);
+  });
+
+  readonly collaborators = computed(() => {
+    const counts = new Map<string, number>();
+    for (const m of this.films()) {
+      for (const d of m.directors) {
+        if (d !== this.name()) {
+          counts.set(d, (counts.get(d) ?? 0) + 1);
+        }
+      }
+    }
+    return [...counts.entries()]
+      .filter(([, count]) => count >= 1)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name, count]) => ({ name, count }));
+  });
 
   readonly yearRange = computed(() => {
     const f = this.films();

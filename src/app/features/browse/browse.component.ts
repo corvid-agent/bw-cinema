@@ -81,13 +81,22 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
               </button>
             </div>
 
-            <div appKeyboardNav>
-              @if (viewMode() === 'grid') {
-                <app-movie-grid [movies]="paginatedMovies()" />
-              } @else {
-                <app-movie-list [movies]="paginatedMovies()" />
-              }
-            </div>
+            @if (filteredMovies().length === 0) {
+              <div class="browse__empty">
+                <svg class="browse__empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                <p class="browse__empty-title">No films found matching your criteria</p>
+                <p class="browse__empty-hint">Try adjusting your filters or search query</p>
+                <button class="btn-secondary" (click)="clearFilters()">Clear All Filters</button>
+              </div>
+            } @else {
+              <div appKeyboardNav>
+                @if (viewMode() === 'grid') {
+                  <app-movie-grid [movies]="paginatedMovies()" />
+                } @else {
+                  <app-movie-list [movies]="paginatedMovies()" />
+                }
+              </div>
+            }
 
             @if (paginatedMovies().length < filteredMovies().length) {
               <div class="browse__load-more" #loadMoreSentinel>
@@ -187,6 +196,25 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       font-size: 0.8rem;
       color: var(--text-tertiary);
       font-weight: 400;
+    }
+    .browse__empty {
+      text-align: center;
+      padding: var(--space-3xl) var(--space-lg);
+    }
+    .browse__empty-icon {
+      color: var(--text-tertiary);
+      margin-bottom: var(--space-md);
+      opacity: 0.5;
+    }
+    .browse__empty-title {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin: 0 0 var(--space-xs);
+    }
+    .browse__empty-hint {
+      font-size: 0.9rem;
+      color: var(--text-tertiary);
+      margin: 0 0 var(--space-lg);
     }
     .browse__lang select {
       min-width: 130px;
@@ -398,6 +426,23 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
 
   toggleStreamableOnly(): void {
     this.filter.update((f) => ({ ...f, streamableOnly: !f.streamableOnly }));
+    this.page.set(1);
+    this.syncUrl();
+  }
+
+  clearFilters(): void {
+    this.filter.set({
+      query: '',
+      decades: [],
+      genres: [],
+      directors: [],
+      languages: [],
+      streamableOnly: true,
+      minRating: 0,
+      yearRange: null,
+      sortBy: 'rating',
+      sortDirection: 'desc',
+    });
     this.page.set(1);
     this.syncUrl();
   }

@@ -31,6 +31,11 @@ import { Component, ChangeDetectionStrategy, signal, HostListener } from '@angul
       z-index: 50;
     }
     .btt:hover { background-color: var(--accent-cream); }
+    @media (max-width: 768px) {
+      .btt {
+        bottom: calc(var(--space-xl) + 60px);
+      }
+    }
   `],
 })
 export class BackToTopComponent {

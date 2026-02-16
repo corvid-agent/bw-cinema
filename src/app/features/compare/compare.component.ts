@@ -40,7 +40,11 @@ import type { MovieSummary } from '../../core/models/movie.model';
           }
         </div>
 
-        <div class="compare__vs">VS</div>
+        <div class="compare__vs">
+          <button class="compare__swap" (click)="swap()" title="Swap films" aria-label="Swap films">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </button>
+        </div>
 
         <div class="compare__picker">
           <label for="film-b" class="compare__picker-label">Film 2</label>
@@ -118,10 +122,25 @@ import type { MovieSummary } from '../../core/models/movie.model';
             <div class="compare__cell">{{ filmA()!.isStreamable ? 'Yes' : 'No' }}</div>
             <div class="compare__cell">{{ filmB()!.isStreamable ? 'Yes' : 'No' }}</div>
           </div>
-          @if (sharedGenres().length > 0) {
+          <div class="compare__row">
+            <div class="compare__cell compare__cell--label">Source</div>
+            <div class="compare__cell">{{ getStreamSource(filmA()!) }}</div>
+            <div class="compare__cell">{{ getStreamSource(filmB()!) }}</div>
+          </div>
+          @if (sharedGenres().length > 0 || sharedDirectors().length > 0) {
             <div class="compare__shared">
-              <span class="compare__shared-label">Shared genres:</span>
-              {{ sharedGenres().join(', ') }}
+              @if (sharedGenres().length > 0) {
+                <div>
+                  <span class="compare__shared-label">Shared genres:</span>
+                  {{ sharedGenres().join(', ') }}
+                </div>
+              }
+              @if (sharedDirectors().length > 0) {
+                <div>
+                  <span class="compare__shared-label">Shared directors:</span>
+                  {{ sharedDirectors().join(', ') }}
+                </div>
+              }
             </div>
           }
         </div>
@@ -221,6 +240,31 @@ import type { MovieSummary } from '../../core/models/movie.model';
       color: var(--text-tertiary);
       font-weight: 700;
       flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .compare__swap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      min-height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .compare__swap:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      background: var(--accent-gold-dim);
     }
     .compare__table {
       background-color: var(--bg-surface);
@@ -325,6 +369,14 @@ export class CompareComponent implements OnInit {
     return a.genres.filter((g) => setB.has(g));
   });
 
+  readonly sharedDirectors = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return [];
+    const setB = new Set(b.directors);
+    return a.directors.filter((d) => setB.has(d));
+  });
+
   ngOnInit(): void {
     this.catalog.load();
   }
@@ -337,6 +389,24 @@ export class CompareComponent implements OnInit {
   onSearchB(event: Event): void {
     this.queryB.set((event.target as HTMLInputElement).value);
     this.showDropB.set(true);
+  }
+
+  swap(): void {
+    const a = this.filmA();
+    const b = this.filmB();
+    const qA = this.queryA();
+    const qB = this.queryB();
+    this.filmA.set(b);
+    this.filmB.set(a);
+    this.queryA.set(qB);
+    this.queryB.set(qA);
+  }
+
+  getStreamSource(movie: MovieSummary): string {
+    if (movie.internetArchiveId) return 'Internet Archive';
+    if (movie.youtubeId) return 'YouTube';
+    if (movie.imdbId) return 'IMDb (info only)';
+    return 'Not available';
   }
 
   selectA(movie: MovieSummary): void {

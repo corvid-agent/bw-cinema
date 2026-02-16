@@ -98,7 +98,10 @@ export class CatalogService {
 
     if (filter.languages.length > 0) {
       const langSet = new Set(filter.languages);
-      results = results.filter((m) => m.language && langSet.has(m.language));
+      const includeNull = langSet.has('English');
+      results = results.filter((m) =>
+        (m.language && langSet.has(m.language)) || (includeNull && !m.language)
+      );
     }
 
     if (filter.yearRange) {
