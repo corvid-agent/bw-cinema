@@ -413,6 +413,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">avg film age</span>
               </div>
             }
+            @if (medianFilmAge() > 0) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ medianFilmAge() }}yr</span>
+                <span class="stats__fact-text">median film age</span>
+              </div>
+            }
             @if (streamableAvgRating(); as sar) {
               <div class="stats__fact-card">
                 <span class="stats__fact-number">{{ sar }}</span>
@@ -1088,6 +1094,15 @@ export class StatsComponent implements OnInit {
     if (movies.length === 0) return 0;
     const now = new Date().getFullYear();
     return Math.round(movies.reduce((s, m) => s + (now - m.year), 0) / movies.length);
+  });
+
+  readonly medianFilmAge = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return 0;
+    const now = new Date().getFullYear();
+    const ages = movies.map((m) => now - m.year).sort((a, b) => a - b);
+    const mid = Math.floor(ages.length / 2);
+    return ages.length % 2 === 0 ? Math.round((ages[mid - 1] + ages[mid]) / 2) : ages[mid];
   });
 
   readonly streamableAvgRating = computed(() => {

@@ -348,6 +348,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Unique Directors</span>
                   </div>
                 }
+                @if (watchedNonEnglishCount() > 0) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ watchedNonEnglishCount() }}</span>
+                    <span class="stats__card-label">Non-English Films</span>
+                  </div>
+                }
               </div>
 
               @if (nextMilestone(); as milestone) {
@@ -1625,6 +1631,12 @@ export class CollectionComponent implements OnInit {
       for (const d of m.directors) dirs.add(d);
     }
     return dirs.size;
+  });
+
+  readonly watchedNonEnglishCount = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 2) return 0;
+    return films.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
   });
 
   private computeStreaks(): { current: number; longest: number } {

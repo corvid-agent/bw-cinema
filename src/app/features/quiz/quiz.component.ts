@@ -90,6 +90,9 @@ interface QuizStep {
           @if (resultCoDirectedCount(); as rcdc) {
             <p class="quiz__decade-range">{{ rcdc }} co-directed films</p>
           }
+          @if (resultNonEnglishCount(); as rnec) {
+            <p class="quiz__decade-range">{{ rnec }} non-English films</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -515,6 +518,13 @@ export class QuizComponent implements OnInit {
     const films = this.results();
     if (films.length < 3) return null;
     const count = films.filter((m) => m.directors.length > 1).length;
+    return count > 0 ? count : null;
+  });
+
+  readonly resultNonEnglishCount = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const count = films.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
     return count > 0 ? count : null;
   });
 
