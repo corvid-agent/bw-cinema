@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed, i
 import { Router, RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
+import { CollectionService } from '../../core/services/collection.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { MovieListComponent } from '../../shared/components/movie-list.component';
 import { ViewToggleComponent, type ViewMode } from '../../shared/components/view-toggle.component';
@@ -100,6 +101,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             }
           </div>
 
+          @if (watchedInGenre() > 0) {
+            <p class="genre__fact">You've watched {{ watchedInGenre() }} {{ name() }} film{{ watchedInGenre() !== 1 ? 's' : '' }}</p>
+          }
           @if (highestRatedTitle(); as hrt) {
             <p class="genre__fact">Top rated: {{ hrt.title }} (&#9733; {{ hrt.rating }})</p>
           }
@@ -595,6 +599,7 @@ export class GenreComponent implements OnInit {
   readonly name = input.required<string>();
 
   protected readonly catalog = inject(CatalogService);
+  private readonly collection = inject(CollectionService);
   private readonly titleService = inject(Title);
   private readonly router = inject(Router);
 
@@ -647,6 +652,12 @@ export class GenreComponent implements OnInit {
   readonly silentEraCount = computed(() =>
     this.films().filter((m) => m.year < 1930).length
   );
+
+  readonly watchedInGenre = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return 0;
+    return this.films().filter((m) => watchedIds.has(m.id)).length;
+  });
 
   readonly streamablePct = computed(() => {
     const f = this.films();

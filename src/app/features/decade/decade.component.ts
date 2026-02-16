@@ -106,6 +106,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="decade__stat-label">Languages</span>
               </div>
             }
+            @if (highRatedPct(); as hrp) {
+              <div class="decade__stat">
+                <span class="decade__stat-value">{{ hrp }}%</span>
+                <span class="decade__stat-label">Rated 7.0+</span>
+              </div>
+            }
           </div>
 
           @if (decadeFact(); as fact) {
@@ -700,6 +706,14 @@ export class DecadeComponent implements OnInit {
     const f = this.films();
     if (f.length === 0) return 0;
     return Math.round((f.filter((m) => m.isStreamable).length / f.length) * 100);
+  });
+
+  readonly highRatedPct = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length < 10) return null;
+    const high = rated.filter((m) => m.voteAverage >= 7.0).length;
+    const pct = Math.round((high / rated.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly coDirectedCount = computed(() =>

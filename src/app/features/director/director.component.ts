@@ -108,6 +108,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Film Age (yrs)</span>
               </div>
             }
+            @if (uniqueGenreCount() > 2) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ uniqueGenreCount() }}</span>
+                <span class="director__stat-label">Genres</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -658,6 +664,12 @@ export class DirectorComponent implements OnInit {
       if (m.language) langs.add(m.language);
     }
     return langs.size;
+  });
+
+  readonly uniqueGenreCount = computed(() => {
+    const genres = new Set<string>();
+    for (const m of this.films()) for (const g of m.genres) genres.add(g);
+    return genres.size;
   });
 
   readonly primaryGenre = computed(() => {
