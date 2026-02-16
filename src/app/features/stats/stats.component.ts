@@ -210,6 +210,16 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
               </div>
             </a>
           }
+          @if (highestRatedDirector(); as dir) {
+            <a class="stats__highlight" [routerLink]="['/director', dir.name]">
+              <div class="stats__highlight-initial">{{ dir.name[0] }}</div>
+              <div class="stats__highlight-text">
+                <span class="stats__highlight-label">Highest Rated Director</span>
+                <span class="stats__highlight-value">{{ dir.name }}</span>
+                <span class="stats__highlight-meta">&#9733; {{ dir.avgRating }} avg ({{ dir.count }} films)</span>
+              </div>
+            </a>
+          }
         </div>
 
         <section class="stats__fun-facts">
@@ -542,6 +552,24 @@ export class StatsComponent implements OnInit {
   readonly mostFilmedDirector = computed(() => {
     const stats = this.directorStats();
     return stats.length > 0 ? stats[0] : null;
+  });
+
+  readonly highestRatedDirector = computed(() => {
+    const dirMap = new Map<string, { total: number; count: number }>();
+    for (const m of this.catalog.movies()) {
+      if (m.voteAverage === 0) continue;
+      for (const d of m.directors) {
+        const entry = dirMap.get(d) ?? { total: 0, count: 0 };
+        entry.total += m.voteAverage;
+        entry.count++;
+        dirMap.set(d, entry);
+      }
+    }
+    const eligible = [...dirMap.entries()]
+      .filter(([, v]) => v.count >= 5)
+      .map(([name, v]) => ({ name, count: v.count, avgRating: (v.total / v.count).toFixed(1) }))
+      .sort((a, b) => parseFloat(b.avgRating) - parseFloat(a.avgRating));
+    return eligible[0] ?? null;
   });
 
   readonly avgRating = computed(() => {
