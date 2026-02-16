@@ -82,6 +82,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="decade__stat-label">{{ mpd.name }}</span>
               </a>
             }
+            @if (uniqueGenreCount() > 1) {
+              <div class="decade__stat">
+                <span class="decade__stat-value">{{ uniqueGenreCount() }}</span>
+                <span class="decade__stat-label">Genres</span>
+              </div>
+            }
           </div>
 
           @if (decadeFact(); as fact) {
@@ -681,6 +687,14 @@ export class DecadeComponent implements OnInit {
   readonly coDirectedCount = computed(() =>
     this.films().filter((m) => m.directors.length > 1).length
   );
+
+  readonly uniqueGenreCount = computed(() => {
+    const genres = new Set<string>();
+    for (const m of this.films()) {
+      for (const g of m.genres) genres.add(g);
+    }
+    return genres.size;
+  });
 
   readonly mostProlificDirector = computed(() => {
     const f = this.films();

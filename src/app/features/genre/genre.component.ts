@@ -80,6 +80,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="genre__stat-label">Pure {{ name() }}</span>
               </div>
             }
+            @if (ratingVsCatalog(); as rv) {
+              <div class="genre__stat">
+                <span class="genre__stat-value" [class.genre__stat-value--positive]="rv.startsWith('+')">{{ rv }}</span>
+                <span class="genre__stat-label">vs Catalog Avg</span>
+              </div>
+            }
           </div>
 
           @if (notableFact()) {
@@ -254,6 +260,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-tertiary);
+    }
+    .genre__stat-value--positive {
+      color: #198754;
     }
     .genre__top-film {
       margin-bottom: var(--space-xl);
@@ -715,6 +724,18 @@ export class GenreComponent implements OnInit {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
       .map(([name, count]) => ({ name, count }));
+  });
+
+  readonly ratingVsCatalog = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length < 5) return null;
+    const genreAvg = rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length;
+    const allRated = this.catalog.movies().filter((m) => m.voteAverage > 0);
+    if (allRated.length === 0) return null;
+    const catAvg = allRated.reduce((s, m) => s + m.voteAverage, 0) / allRated.length;
+    const diff = genreAvg - catAvg;
+    if (Math.abs(diff) < 0.2) return null;
+    return diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
   });
 
   readonly exclusiveCount = computed(() => {

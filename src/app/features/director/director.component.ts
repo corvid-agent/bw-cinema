@@ -84,6 +84,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Longest Gap</span>
               </div>
             }
+            @if (streamablePct(); as sp) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ sp }}%</span>
+                <span class="director__stat-label">Streamable</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -809,6 +815,14 @@ export class DirectorComponent implements OnInit {
     }
     if (maxGap < 5) return null;
     return maxGap;
+  });
+
+  readonly streamablePct = computed(() => {
+    const f = this.films();
+    if (f.length < 2) return null;
+    const pct = Math.round((this.streamableCount() / f.length) * 100);
+    if (pct === 0 || pct === 100) return null;
+    return pct;
   });
 
   ngOnInit(): void {
