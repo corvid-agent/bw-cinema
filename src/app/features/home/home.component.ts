@@ -77,6 +77,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (coDirectedCount(); as cdc) {
           <p class="hero__avg-rating">{{ cdc }} co-directed films in catalog</p>
         }
+        @if (avgFilmAge() > 0) {
+          <p class="hero__avg-rating">Average film age: {{ avgFilmAge() }} years</p>
+        }
       </div>
     </section>
 
@@ -1287,6 +1290,13 @@ export class HomeComponent implements OnInit {
   readonly coDirectedCount = computed(() => {
     const count = this.catalog.movies().filter((m) => m.directors.length > 1).length;
     return count > 0 ? count : null;
+  });
+
+  readonly avgFilmAge = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return 0;
+    const now = new Date().getFullYear();
+    return Math.round(movies.reduce((s, m) => s + (now - m.year), 0) / movies.length);
   });
 
   readonly decadeSpan = computed(() => {

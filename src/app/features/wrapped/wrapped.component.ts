@@ -190,6 +190,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Repeat Directors</span>
               </div>
             }
+            @if (nonEnglishWatchedCount() > 0) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ nonEnglishWatchedCount() }}</span>
+                <span class="wrapped__hero-label">Non-English Films</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -907,6 +913,12 @@ export class WrappedComponent implements OnInit {
       if (c >= 2) repeats++;
     }
     return repeats;
+  });
+
+  readonly nonEnglishWatchedCount = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 3) return 0;
+    return films.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
   });
 
   readonly avgFilmAge = computed(() => {
