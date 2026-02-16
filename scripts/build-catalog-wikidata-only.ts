@@ -18,6 +18,7 @@ SELECT DISTINCT
   ?imdbId ?iaId ?youtubeId ?tmdbId
   (GROUP_CONCAT(DISTINCT ?directorLabel; SEPARATOR="|") AS ?directors)
   (GROUP_CONCAT(DISTINCT ?genreLabel; SEPARATOR="|") AS ?genres)
+  (SAMPLE(?langLabel) AS ?language)
 WHERE {
   ?film wdt:P31 wd:Q11424 .
   ?film wdt:P462 wd:Q838368 .
@@ -38,6 +39,11 @@ WHERE {
     ?genre rdfs:label ?genreLabel .
     FILTER(LANG(?genreLabel) = "en")
   }
+  OPTIONAL {
+    ?film wdt:P364 ?lang .
+    ?lang rdfs:label ?langLabel .
+    FILTER(LANG(?langLabel) = "en")
+  }
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . }
 }
 GROUP BY ?film ?filmLabel ?year ?imdbId ?iaId ?youtubeId ?tmdbId
@@ -56,6 +62,7 @@ interface MovieSummary {
   voteAverage: number;
   genres: string[];
   directors: string[];
+  language: string | null;
   isStreamable: boolean;
 }
 
@@ -88,6 +95,7 @@ async function main() {
         tmdbId?: { value: string };
         directors?: { value: string };
         genres?: { value: string };
+        language?: { value: string };
       }>;
     };
   };
@@ -114,6 +122,7 @@ async function main() {
         voteAverage: 0,
         genres: b.genres?.value ? [...new Set(b.genres.value.split('|').filter(Boolean))] : [],
         directors: b.directors?.value ? [...new Set(b.directors.value.split('|').filter(Boolean))] : [],
+        language: b.language?.value ?? null,
         isStreamable: !!(b.iaId?.value || b.youtubeId?.value),
       };
     })
@@ -156,11 +165,15 @@ async function main() {
   // Compute metadata
   const directorCounts = new Map<string, number>();
   const decadeSet = new Set<number>();
+  const langCounts = new Map<string, number>();
 
   for (const movie of curated) {
     decadeSet.add(Math.floor(movie.year / 10) * 10);
     for (const director of movie.directors) {
       directorCounts.set(director, (directorCounts.get(director) ?? 0) + 1);
+    }
+    if (movie.language) {
+      langCounts.set(movie.language, (langCounts.get(movie.language) ?? 0) + 1);
     }
   }
 
@@ -169,6 +182,7 @@ async function main() {
     totalMovies: curated.length,
     genres: [...topGenres],
     decades: [...decadeSet].sort(),
+    languages: [...langCounts.entries()].sort((a, b) => b[1] - a[1]).map(([l]) => l),
     topDirectors: [...directorCounts.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 50)

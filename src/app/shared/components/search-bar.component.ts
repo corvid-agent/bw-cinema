@@ -20,7 +20,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
         placeholder="Search by title, director, or year..."
         [value]="query()"
         (input)="onInput($event)"
-        (focus)="showSuggestions.set(suggestions().length > 0)"
+        (focus)="onFocus()"
         (keydown)="onKeydown($event)"
         aria-label="Search films"
         aria-autocomplete="list"
@@ -41,6 +41,20 @@ import type { MovieSummary } from '../../core/models/movie.model';
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           }
         </button>
+      }
+      @if (!showSuggestions() && showHistory() && searchHistory().length > 0) {
+        <div class="search__history">
+          <div class="search__history-header">
+            <span class="search__history-label">Recent Searches</span>
+            <button class="search__history-clear" (mousedown)="clearHistory()" type="button">Clear</button>
+          </div>
+          @for (term of searchHistory(); track term) {
+            <button class="search__history-item" (mousedown)="selectHistory(term)" type="button">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              {{ term }}
+            </button>
+          }
+        </div>
       }
       @if (showSuggestions() && suggestions().length > 0) {
         <ul class="search__suggestions" role="listbox" id="search-suggestions">
@@ -167,6 +181,67 @@ import type { MovieSummary } from '../../core/models/movie.model';
       white-space: nowrap;
       flex-shrink: 0;
     }
+    .search__history {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin: 4px 0 0;
+      padding: var(--space-xs);
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-bright);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      z-index: 50;
+    }
+    .search__history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-xs) var(--space-sm);
+    }
+    .search__history-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+      font-weight: 600;
+    }
+    .search__history-clear {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      min-height: auto;
+      min-width: auto;
+    }
+    .search__history-clear:hover { color: var(--accent-gold); }
+    .search__history-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      width: 100%;
+      padding: 8px var(--space-sm);
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-align: left;
+      border-radius: var(--radius);
+      min-height: auto;
+      min-width: auto;
+    }
+    .search__history-item:hover {
+      background-color: var(--bg-hover);
+      color: var(--text-primary);
+    }
+    .search__history-item svg {
+      color: var(--text-tertiary);
+      flex-shrink: 0;
+    }
   `],
 })
 export class SearchBarComponent implements OnDestroy {
@@ -174,10 +249,15 @@ export class SearchBarComponent implements OnDestroy {
   readonly query = signal('');
   readonly suggestions = signal<MovieSummary[]>([]);
   readonly showSuggestions = signal(false);
+  readonly showHistory = signal(false);
   readonly activeIndex = signal(-1);
   readonly isListening = signal(false);
+  readonly searchHistory = signal<string[]>(this.loadHistory());
 
   readonly speechSupported = typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+
+  private static readonly HISTORY_KEY = 'bw-cinema-search-history';
+  private static readonly MAX_HISTORY = 10;
 
   private readonly catalog = inject(CatalogService);
   private readonly elRef = inject(ElementRef);
@@ -188,6 +268,7 @@ export class SearchBarComponent implements OnDestroy {
   onDocClick(event: Event): void {
     if (!this.elRef.nativeElement.contains(event.target)) {
       this.showSuggestions.set(false);
+      this.showHistory.set(false);
     }
   }
 
@@ -201,10 +282,12 @@ export class SearchBarComponent implements OnDestroy {
     this.query.set(value);
     this.activeIndex.set(-1);
 
+    this.showHistory.set(false);
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
     this.debounceTimer = setTimeout(() => {
       this.searched.emit(value);
       this.updateSuggestions(value);
+      this.addToHistory(value);
     }, 300);
   }
 
@@ -233,10 +316,49 @@ export class SearchBarComponent implements OnDestroy {
     }
   }
 
+  onFocus(): void {
+    if (this.suggestions().length > 0) {
+      this.showSuggestions.set(true);
+    } else if (this.query().length === 0) {
+      this.showHistory.set(true);
+    }
+  }
+
   selectSuggestion(movie: MovieSummary): void {
     this.showSuggestions.set(false);
+    this.showHistory.set(false);
     this.query.set(movie.title);
+    this.addToHistory(movie.title);
     this.searched.emit(movie.title);
+  }
+
+  selectHistory(term: string): void {
+    this.showHistory.set(false);
+    this.query.set(term);
+    this.searched.emit(term);
+    this.updateSuggestions(term);
+  }
+
+  clearHistory(): void {
+    this.searchHistory.set([]);
+    this.showHistory.set(false);
+    try { localStorage.removeItem(SearchBarComponent.HISTORY_KEY); } catch { /* noop */ }
+  }
+
+  private addToHistory(term: string): void {
+    const trimmed = term.trim();
+    if (trimmed.length < 2) return;
+    const current = this.searchHistory().filter((t) => t !== trimmed);
+    const updated = [trimmed, ...current].slice(0, SearchBarComponent.MAX_HISTORY);
+    this.searchHistory.set(updated);
+    try { localStorage.setItem(SearchBarComponent.HISTORY_KEY, JSON.stringify(updated)); } catch { /* noop */ }
+  }
+
+  private loadHistory(): string[] {
+    try {
+      const raw = localStorage.getItem('bw-cinema-search-history');
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
   }
 
   toggleVoice(): void {

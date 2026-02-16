@@ -10,6 +10,7 @@ export interface MovieSummary {
   voteAverage: number;
   genres: string[];
   directors: string[];
+  language: string | null;
   isStreamable: boolean;
 }
 

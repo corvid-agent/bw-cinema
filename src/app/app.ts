@@ -1,19 +1,21 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './shared/components/header.component';
 import { FooterComponent } from './shared/components/footer.component';
 import { ToastContainerComponent } from './shared/components/toast-container.component';
 import { BackToTopComponent } from './shared/components/back-to-top.component';
+import { BottomNavComponent } from './shared/components/bottom-nav.component';
 import { ThemeService } from './core/services/theme.service';
 import { KeyboardShortcutsService } from './core/services/keyboard-shortcuts.service';
 import { AccessibilityService } from './core/services/accessibility.service';
+import { NotificationService } from './core/services/notification.service';
 
 const ONBOARDING_KEY = 'bw-cinema-onboarded';
 
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, HeaderComponent, FooterComponent, ToastContainerComponent, BackToTopComponent],
+  imports: [RouterOutlet, HeaderComponent, FooterComponent, ToastContainerComponent, BackToTopComponent, BottomNavComponent],
   template: `
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <app-header />
@@ -23,6 +25,7 @@ const ONBOARDING_KEY = 'bw-cinema-onboarded';
     <app-footer />
     <app-toast-container />
     <app-back-to-top />
+    <app-bottom-nav />
 
     @if (showOnboarding) {
       <div class="onboarding-overlay" role="dialog" aria-label="Welcome">
@@ -133,6 +136,11 @@ const ONBOARDING_KEY = 'bw-cinema-onboarded';
   styles: [`
     main {
       min-height: calc(100vh - 60px - 100px);
+    }
+    @media (max-width: 768px) {
+      main {
+        padding-bottom: 72px;
+      }
     }
     .shortcuts-overlay {
       position: fixed;
@@ -419,12 +427,16 @@ const ONBOARDING_KEY = 'bw-cinema-onboarded';
     }
   `],
 })
-export class App implements OnInit {
+export class App implements OnInit, OnDestroy {
   private readonly theme = inject(ThemeService);
   protected readonly shortcuts = inject(KeyboardShortcutsService);
   protected readonly a11y = inject(AccessibilityService);
+  private readonly notifications = inject(NotificationService);
 
   showOnboarding = false;
+
+  private onlineHandler = () => this.notifications.show('You\'re back online', 'success');
+  private offlineHandler = () => this.notifications.show('You\'re offline — cached content still available', 'info', 5000);
 
   ngOnInit(): void {
     this.theme.init();
@@ -435,6 +447,14 @@ export class App implements OnInit {
         this.showOnboarding = true;
       }
     } catch { /* noop */ }
+
+    window.addEventListener('online', this.onlineHandler);
+    window.addEventListener('offline', this.offlineHandler);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('online', this.onlineHandler);
+    window.removeEventListener('offline', this.offlineHandler);
   }
 
   dismissOnboarding(): void {

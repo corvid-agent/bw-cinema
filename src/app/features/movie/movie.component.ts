@@ -10,16 +10,17 @@ import { RecentlyViewedService } from '../../core/services/recently-viewed.servi
 import { RatingStarsComponent } from '../../shared/components/rating-stars.component';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
+import { SkeletonDetailComponent } from '../../shared/components/skeleton-detail.component';
 import { RuntimePipe } from '../../shared/pipes/runtime.pipe';
 import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
 
 @Component({
   selector: 'app-movie',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RatingStarsComponent, MovieGridComponent, LoadingSpinnerComponent, RuntimePipe],
+  imports: [RouterLink, RatingStarsComponent, MovieGridComponent, LoadingSpinnerComponent, SkeletonDetailComponent, RuntimePipe],
   template: `
     @if (loading()) {
-      <app-loading-spinner />
+      <app-skeleton-detail />
     } @else if (movie(); as m) {
       <div class="detail">
         <div class="detail__hero">

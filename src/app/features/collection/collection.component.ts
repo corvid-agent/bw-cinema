@@ -215,6 +215,26 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                   </div>
                 </section>
               </div>
+
+              @if (watchTimeline().length > 0) {
+                <section class="timeline">
+                  <h3>Watch History</h3>
+                  <div class="timeline__list">
+                    @for (entry of watchTimeline(); track entry.movieId) {
+                      <div class="timeline__item">
+                        <div class="timeline__dot"></div>
+                        <div class="timeline__content">
+                          <a class="timeline__title" [routerLink]="['/movie', entry.movieId]">{{ entry.title }}</a>
+                          <span class="timeline__date">{{ entry.dateLabel }}</span>
+                          @if (entry.rating) {
+                            <span class="timeline__rating">&#9733; {{ entry.rating }}/10</span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </section>
+              }
             }
           </div>
         }
@@ -386,6 +406,65 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       display: inline-flex;
       align-items: center;
     }
+    /* Timeline */
+    .timeline {
+      margin-top: var(--space-2xl);
+    }
+    .timeline h3 {
+      margin-bottom: var(--space-lg);
+    }
+    .timeline__list {
+      position: relative;
+      padding-left: var(--space-lg);
+    }
+    .timeline__list::before {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background-color: var(--border);
+    }
+    .timeline__item {
+      position: relative;
+      display: flex;
+      gap: var(--space-md);
+      padding-bottom: var(--space-md);
+    }
+    .timeline__dot {
+      position: absolute;
+      left: calc(-1 * var(--space-lg) + 2px);
+      top: 4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--accent-gold);
+      border: 2px solid var(--bg-deep);
+      flex-shrink: 0;
+    }
+    .timeline__content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .timeline__title {
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+    }
+    .timeline__title:hover {
+      color: var(--accent-gold);
+    }
+    .timeline__date {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+    }
+    .timeline__rating {
+      font-size: 0.8rem;
+      color: var(--accent-gold);
+    }
     @media (max-width: 768px) {
       .collection__controls {
         flex-direction: column;
@@ -471,6 +550,23 @@ export class CollectionComponent implements OnInit {
   readonly decadeStats = computed(() => this.computeStats(
     this.watchedMovies().map((m) => `${Math.floor(m.year / 10) * 10}s`)
   ));
+
+  readonly watchTimeline = computed(() => {
+    const movieMap = new Map(this.catalog.movies().map((m) => [m.id, m]));
+    return [...this.collectionService.watched()]
+      .sort((a, b) => b.watchedAt - a.watchedAt)
+      .slice(0, 20)
+      .map((w) => {
+        const movie = movieMap.get(w.movieId);
+        const d = new Date(w.watchedAt);
+        return {
+          movieId: w.movieId,
+          title: movie?.title ?? 'Unknown Film',
+          dateLabel: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          rating: w.userRating,
+        };
+      });
+  });
 
   ngOnInit(): void {
     this.catalog.load();

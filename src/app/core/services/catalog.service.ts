@@ -36,6 +36,16 @@ export class CatalogService {
     return candidates[seed % candidates.length];
   });
 
+  readonly availableLanguages = computed(() => {
+    const counts = new Map<string, number>();
+    for (const m of this.movies()) {
+      if (m.language) counts.set(m.language, (counts.get(m.language) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([lang]) => lang);
+  });
+
   async load(): Promise<void> {
     if (this.loaded()) return;
     this.loading.set(true);
@@ -43,7 +53,9 @@ export class CatalogService {
       const catalog = await firstValueFrom(
         this.http.get<Catalog>('assets/data/catalog.json')
       );
-      this.movies.set(catalog.movies);
+      // Backfill language field for catalogs generated before language support
+      const movies = catalog.movies.map((m) => ({ ...m, language: m.language ?? null }));
+      this.movies.set(movies);
       this.meta.set(catalog.meta);
       this.loaded.set(true);
     } finally {
@@ -80,6 +92,11 @@ export class CatalogService {
       results = results.filter((m) =>
         m.directors.some((d) => dirLower.includes(d.toLowerCase()))
       );
+    }
+
+    if (filter.languages.length > 0) {
+      const langSet = new Set(filter.languages);
+      results = results.filter((m) => m.language && langSet.has(m.language));
     }
 
     if (filter.yearRange) {

@@ -30,6 +30,7 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
               [availableDecades]="catalog.meta()?.decades ?? []"
               [availableGenres]="catalog.meta()?.genres ?? []"
               [availableDirectors]="catalog.meta()?.topDirectors ?? []"
+              [availableLanguages]="catalog.availableLanguages()"
               (filterChanged)="onFilterChange($event)"
             />
           </aside>
@@ -170,6 +171,7 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     decades: [],
     genres: [],
     directors: [],
+    languages: [],
     streamableOnly: false,
     minRating: 0,
     yearRange: null,
@@ -200,7 +202,7 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     this.page.set(1);
   }
 
-  onFilterChange(filters: { decades: number[]; genres: string[]; directors: string[]; streamableOnly: boolean; minRating: number; yearRange: [number, number] | null }): void {
+  onFilterChange(filters: { decades: number[]; genres: string[]; directors: string[]; languages: string[]; streamableOnly: boolean; minRating: number; yearRange: [number, number] | null }): void {
     this.filter.update((f) => ({ ...f, ...filters }));
     this.page.set(1);
   }

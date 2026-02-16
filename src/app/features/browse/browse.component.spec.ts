@@ -12,6 +12,7 @@ const mockCatalog: Catalog = {
     totalMovies: 2,
     genres: ['Drama', 'Comedy'],
     decades: [1940, 1950],
+    languages: [],
     topDirectors: [],
   },
   movies: [
@@ -27,6 +28,7 @@ const mockCatalog: Catalog = {
       voteAverage: 8.0,
       genres: ['Drama'],
       directors: ['Dir A'],
+      language: null,
       isStreamable: true,
     },
     {
@@ -41,6 +43,7 @@ const mockCatalog: Catalog = {
       voteAverage: 6.0,
       genres: ['Comedy'],
       directors: ['Dir B'],
+      language: null,
       isStreamable: false,
     },
   ],

@@ -16,6 +16,7 @@ const mockMovie: MovieSummary = {
   voteAverage: 8.0,
   genres: ['Drama'],
   directors: ['John Director'],
+  language: null,
   isStreamable: true,
 };
 

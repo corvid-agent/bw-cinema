@@ -115,6 +115,27 @@ import type { DirectorCount } from '../../core/models/catalog.model';
         </div>
       </div>
 
+      <div class="filters__group">
+        <button class="filters__toggle" (click)="languagesOpen.set(!languagesOpen())">
+          <span>Language</span>
+          <span class="filters__chevron" [class.open]="languagesOpen()">&#9662;</span>
+        </button>
+        @if (languagesOpen()) {
+          <div class="filters__options">
+            @for (lang of availableLanguages(); track lang) {
+              <label class="filters__checkbox">
+                <input
+                  type="checkbox"
+                  [checked]="selectedLanguages().has(lang)"
+                  (change)="toggleLanguage(lang)"
+                />
+                <span>{{ lang }}</span>
+              </label>
+            }
+          </div>
+        }
+      </div>
+
       <div class="filters__group filters__group--inline">
         <label class="filters__checkbox filters__checkbox--toggle">
           <input
@@ -295,10 +316,12 @@ export class FilterPanelComponent {
   readonly availableDecades = input<number[]>([]);
   readonly availableGenres = input<string[]>([]);
   readonly availableDirectors = input<DirectorCount[]>([]);
+  readonly availableLanguages = input<string[]>([]);
 
   readonly selectedDecades = signal(new Set<number>());
   readonly selectedGenres = signal(new Set<string>());
   readonly selectedDirectors = signal(new Set<string>());
+  readonly selectedLanguages = signal(new Set<string>());
   readonly streamableOnly = signal(false);
   readonly minRating = signal(0);
   readonly directorQuery = signal('');
@@ -314,6 +337,7 @@ export class FilterPanelComponent {
   readonly decadesOpen = signal(false);
   readonly genresOpen = signal(false);
   readonly directorsOpen = signal(false);
+  readonly languagesOpen = signal(false);
 
   readonly filteredDirectors = computed(() => {
     const q = this.directorQuery().toLowerCase();
@@ -326,6 +350,7 @@ export class FilterPanelComponent {
     decades: number[];
     genres: string[];
     directors: string[];
+    languages: string[];
     streamableOnly: boolean;
     minRating: number;
     yearRange: [number, number] | null;
@@ -346,6 +371,16 @@ export class FilterPanelComponent {
       const next = new Set(set);
       if (next.has(genre)) next.delete(genre);
       else next.add(genre);
+      return next;
+    });
+    this.emitFilter();
+  }
+
+  toggleLanguage(lang: string): void {
+    this.selectedLanguages.update((set) => {
+      const next = new Set(set);
+      if (next.has(lang)) next.delete(lang);
+      else next.add(lang);
       return next;
     });
     this.emitFilter();
@@ -386,6 +421,7 @@ export class FilterPanelComponent {
     this.selectedDecades.set(new Set());
     this.selectedGenres.set(new Set());
     this.selectedDirectors.set(new Set());
+    this.selectedLanguages.set(new Set());
     this.streamableOnly.set(false);
     this.minRating.set(0);
     this.directorQuery.set('');
@@ -405,6 +441,7 @@ export class FilterPanelComponent {
       decades: [...this.selectedDecades()],
       genres: [...this.selectedGenres()],
       directors: [...this.selectedDirectors()],
+      languages: [...this.selectedLanguages()],
       streamableOnly: this.streamableOnly(),
       minRating: this.minRating(),
       yearRange,

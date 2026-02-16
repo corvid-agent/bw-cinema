@@ -10,6 +10,7 @@ export interface CatalogMeta {
   totalMovies: number;
   genres: string[];
   decades: number[];
+  languages: string[];
   topDirectors: DirectorCount[];
 }
 
@@ -23,6 +24,7 @@ export interface CatalogFilter {
   decades: number[];
   genres: string[];
   directors: string[];
+  languages: string[];
   streamableOnly: boolean;
   minRating: number;
   yearRange: [number, number] | null;
