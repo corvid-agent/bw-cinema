@@ -1977,6 +1977,16 @@ export class CollectionComponent implements OnInit {
       insights.push({ label: 'Streamable %', value: `${Math.round((streamableWatched / watched.length) * 100)}%` });
     }
 
+    // Unique directors watched
+    const uniqueDirs = new Set<string>();
+    for (const w of watched) {
+      const m = movieMap.get(w.movieId);
+      if (m) for (const d of m.directors) uniqueDirs.add(d);
+    }
+    if (uniqueDirs.size >= 2) {
+      insights.push({ label: 'Unique Directors', value: `${uniqueDirs.size}` });
+    }
+
     // Rating bias vs TMDb
     if (ratedItems.length >= 3) {
       let userTotal = 0;

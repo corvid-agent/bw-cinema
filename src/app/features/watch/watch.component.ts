@@ -29,6 +29,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (movieRating()) {
               <span class="watch__header-rating">&middot; &#9733; {{ movieRating() }}</span>
             }
+            @if (directorName()) {
+              <span class="watch__header-rating">&middot; <a [routerLink]="['/director', directorName()]" class="watch__header-director">{{ directorName() }}</a></span>
+            }
           </p>
         </div>
 
@@ -184,6 +187,13 @@ import type { MovieSummary } from '../../core/models/movie.model';
     .watch__header-rating {
       color: var(--accent-gold);
       font-weight: 600;
+    }
+    .watch__header-director {
+      color: var(--accent-gold);
+      text-decoration: none;
+    }
+    .watch__header-director:hover {
+      text-decoration: underline;
     }
     .watch__back {
       display: inline-block;
