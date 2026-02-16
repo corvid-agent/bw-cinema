@@ -366,6 +366,23 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                 </div>
               </section>
 
+              @if (directorStats().length > 0) {
+                <section class="stats__section">
+                  <h3>Top Directors</h3>
+                  <div class="stats__bars">
+                    @for (d of directorStats(); track d.name) {
+                      <div class="stats__bar-row">
+                        <a class="stats__bar-label stats__bar-label--link" [routerLink]="['/director', d.name]">{{ d.name }}</a>
+                        <div class="stats__bar-track">
+                          <div class="stats__bar-fill" [style.width.%]="d.pct"></div>
+                        </div>
+                        <span class="stats__bar-count">{{ d.count }}</span>
+                      </div>
+                    }
+                  </div>
+                </section>
+              }
+
               <div class="stats__sections">
                 <section class="stats__section">
                   <h3>Top Genres</h3>
@@ -735,6 +752,14 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       min-width: 24px;
       font-size: 0.8rem;
       color: var(--text-tertiary);
+    }
+    .stats__bar-label--link {
+      text-decoration: none;
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+    .stats__bar-label--link:hover {
+      color: var(--accent-gold);
     }
 
     .collection__backup {
@@ -1430,6 +1455,19 @@ export class CollectionComponent implements OnInit {
   readonly decadeStats = computed(() => this.computeStats(
     this.watchedMovies().map((m) => `${Math.floor(m.year / 10) * 10}s`)
   ));
+
+  readonly directorStats = computed(() => {
+    const dirCounts = new Map<string, number>();
+    for (const m of this.watchedMovies()) {
+      for (const d of m.directors) dirCounts.set(d, (dirCounts.get(d) ?? 0) + 1);
+    }
+    const sorted = [...dirCounts.entries()]
+      .filter(([, c]) => c >= 2)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8);
+    const max = sorted[0]?.[1] ?? 1;
+    return sorted.map(([name, count]) => ({ name, count, pct: (count / max) * 100 }));
+  });
 
   readonly ratingDistribution = computed(() => {
     const rated = this.collectionService.watched().filter((w) => w.userRating != null);

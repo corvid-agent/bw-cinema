@@ -43,6 +43,10 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             <span class="hero__stat-value">{{ decadeSpan() }}</span>
             <span class="hero__stat-label">Decades</span>
           </div>
+          <div class="hero__stat">
+            <span class="hero__stat-value">{{ languageCount() }}</span>
+            <span class="hero__stat-label">Languages</span>
+          </div>
         </div>
       </div>
     </section>
@@ -942,6 +946,13 @@ export class HomeComponent implements OnInit {
   readonly streamableCount = computed(() => {
     const count = this.catalog.movies().filter((m) => m.isStreamable).length;
     return count > 1000 ? `${(count / 1000).toFixed(1)}k` : `${count}`;
+  });
+  readonly languageCount = computed(() => {
+    const langs = new Set<string>();
+    for (const m of this.catalog.movies()) {
+      if (m.language) langs.add(m.language);
+    }
+    return langs.size;
   });
   readonly decadeSpan = computed(() => {
     const d = this.decades();

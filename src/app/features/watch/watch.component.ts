@@ -60,6 +60,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
           <a class="watch__external-link" [href]="src.externalUrl" target="_blank" rel="noopener">
             Watch on {{ src.label }} &nearr;
           </a>
+          <button class="watch__share-btn" (click)="shareFilm()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Share
+          </button>
         </div>
 
         @if (upNext(); as next) {
@@ -223,6 +227,24 @@ import type { MovieSummary } from '../../core/models/movie.model';
     .watch__external-link {
       font-size: 0.9rem;
       color: var(--text-secondary);
+    }
+    .watch__share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: var(--space-sm) var(--space-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .watch__share-btn:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
     }
     .watch__up-next {
       max-width: 500px;
@@ -450,6 +472,15 @@ export class WatchComponent implements OnInit, OnDestroy {
       .filter((x) => x.score > 0)
       .sort((a, b) => b.score - a.score);
     return candidates[0]?.movie ?? null;
+  }
+
+  shareFilm(): void {
+    const url = `${window.location.origin}/watch/${this.id()}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.notifications.show('Watch link copied to clipboard', 'success');
+    }).catch(() => {
+      this.notifications.show('Failed to copy link', 'error');
+    });
   }
 
   toggleFullscreen(): void {

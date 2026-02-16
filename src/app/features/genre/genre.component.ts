@@ -48,6 +48,26 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             </div>
           </div>
 
+          @if (topFilm(); as top) {
+            <div class="genre__top-film">
+              <a class="genre__top-film-card" [routerLink]="['/movie', top.id]">
+                @if (top.posterUrl) {
+                  <img class="genre__top-film-poster" [src]="top.posterUrl" [alt]="top.title" loading="lazy" />
+                } @else {
+                  <div class="genre__top-film-placeholder">{{ top.title[0] }}</div>
+                }
+                <div class="genre__top-film-info">
+                  <span class="genre__top-film-label">Highest Rated</span>
+                  <strong class="genre__top-film-title">{{ top.title }}</strong>
+                  <span class="genre__top-film-meta">{{ top.year }} &middot; {{ top.directors.join(', ') }}</span>
+                  @if (top.voteAverage > 0) {
+                    <span class="genre__top-film-rating">&#9733; {{ top.voteAverage.toFixed(1) }}</span>
+                  }
+                </div>
+              </a>
+            </div>
+          }
+
           <div class="genre__view-bar">
             <div class="genre__sort-btns">
               <button class="genre__sort-btn" [class.genre__sort-btn--active]="sortMode() === 'rating'" (click)="sortMode.set('rating')">Top Rated</button>
@@ -169,6 +189,71 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-tertiary);
+    }
+    .genre__top-film {
+      margin-bottom: var(--space-xl);
+    }
+    .genre__top-film-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-lg);
+      padding: var(--space-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .genre__top-film-card:hover {
+      border-color: var(--accent-gold);
+      box-shadow: var(--shadow-md);
+      color: inherit;
+    }
+    .genre__top-film-poster {
+      width: 60px;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .genre__top-film-placeholder {
+      width: 60px;
+      aspect-ratio: 2 / 3;
+      background: var(--bg-raised);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-heading);
+      color: var(--text-tertiary);
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .genre__top-film-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .genre__top-film-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-gold);
+      font-weight: 600;
+    }
+    .genre__top-film-title {
+      font-size: 1.1rem;
+    }
+    .genre__top-film-meta {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .genre__top-film-rating {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent-gold);
     }
     .genre__view-bar {
       display: flex;
@@ -386,6 +471,12 @@ export class GenreComponent implements OnInit {
   readonly streamableCount = computed(() =>
     this.films().filter((m) => m.isStreamable).length
   );
+
+  readonly topFilm = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length === 0) return null;
+    return rated.reduce((best, m) => m.voteAverage > best.voteAverage ? m : best);
+  });
 
   readonly topDirectors = computed(() => {
     const dirMap = new Map<string, { count: number; totalRating: number }>();
