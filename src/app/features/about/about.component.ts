@@ -49,46 +49,56 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
         <div class="about__faq">
           <details class="about__faq-item">
             <summary>What is the public domain?</summary>
-            <p>
-              Works in the public domain are no longer under copyright protection and can be freely
-              distributed and viewed by anyone. Many classic films — particularly those released before
-              1928, or those whose copyrights were not properly renewed — have entered the public domain.
-              The Internet Archive hosts thousands of these films for free streaming.
-            </p>
+            <div class="about__faq-content"><div>
+              <p>
+                Works in the public domain are no longer under copyright protection and can be freely
+                distributed and viewed by anyone. Many classic films — particularly those released before
+                1928, or those whose copyrights were not properly renewed — have entered the public domain.
+                The Internet Archive hosts thousands of these films for free streaming.
+              </p>
+            </div></div>
           </details>
           <details class="about__faq-item">
             <summary>Why can't I watch some films?</summary>
-            <p>
-              Not all films in our catalog are in the public domain. Films that are still under copyright
-              cannot be freely streamed. For these films, we provide links to IMDb and the Internet Archive
-              so you can find them through other channels. Look for the <strong>IA</strong> (Internet Archive)
-              or <strong>YT</strong> (YouTube) badges on film cards to identify freely streamable titles.
-            </p>
+            <div class="about__faq-content"><div>
+              <p>
+                Not all films in our catalog are in the public domain. Films that are still under copyright
+                cannot be freely streamed. For these films, we provide links to IMDb and the Internet Archive
+                so you can find them through other channels. Look for the <strong>IA</strong> (Internet Archive)
+                or <strong>YT</strong> (YouTube) badges on film cards to identify freely streamable titles.
+              </p>
+            </div></div>
           </details>
           <details class="about__faq-item">
             <summary>How often is the catalog updated?</summary>
-            <p>
-              Our catalog is compiled from Wikidata and enriched with metadata from TMDB. The core
-              catalog is updated periodically as new public domain films are identified and as
-              streaming availability changes.
-            </p>
+            <div class="about__faq-content"><div>
+              <p>
+                Our catalog is compiled from Wikidata and enriched with metadata from TMDB. The core
+                catalog is updated periodically as new public domain films are identified and as
+                streaming availability changes.
+              </p>
+            </div></div>
           </details>
           <details class="about__faq-item">
             <summary>Where is my data stored?</summary>
-            <p>
-              All your personal data — your watchlist, watched films, ratings, reviews, and playlists —
-              is stored locally in your browser using localStorage. Nothing is sent to any server.
-              This means your data stays private, but also that it won't sync across devices.
-              You can export your collection from the Collection page.
-            </p>
+            <div class="about__faq-content"><div>
+              <p>
+                All your personal data — your watchlist, watched films, ratings, reviews, and playlists —
+                is stored locally in your browser using localStorage. Nothing is sent to any server.
+                This means your data stays private, but also that it won't sync across devices.
+                You can export your collection from the Collection page.
+              </p>
+            </div></div>
           </details>
           <details class="about__faq-item">
             <summary>How do I report a problem?</summary>
-            <p>
-              If you find incorrect film data, broken streaming links, or have suggestions for
-              improvements, please open an issue on our
-              <a href="https://github.com/corvid-agent/bw-cinema/issues" target="_blank" rel="noopener">GitHub repository</a>.
-            </p>
+            <div class="about__faq-content"><div>
+              <p>
+                If you find incorrect film data, broken streaming links, or have suggestions for
+                improvements, please open an issue on our
+                <a href="https://github.com/corvid-agent/bw-cinema/issues" target="_blank" rel="noopener">GitHub repository</a>.
+              </p>
+            </div></div>
           </details>
         </div>
       </section>
@@ -154,6 +164,10 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .about__faq-item[open] {
+      border-color: var(--accent-gold);
     }
     .about__faq-item summary {
       padding: var(--space-md) var(--space-lg);
@@ -164,18 +178,34 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
       display: flex;
       align-items: center;
       justify-content: space-between;
+      transition: color 0.2s;
+    }
+    .about__faq-item summary:hover {
+      color: var(--accent-gold);
     }
     .about__faq-item summary::after {
       content: '+';
       font-size: 1.2rem;
       color: var(--accent-gold);
       font-weight: 400;
-      transition: transform 0.2s;
+      transition: transform 0.3s;
     }
     .about__faq-item[open] summary::after {
       content: '-';
+      transform: rotate(180deg);
     }
     .about__faq-item summary::-webkit-details-marker { display: none; }
+    .about__faq-item .about__faq-content {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.3s ease;
+    }
+    .about__faq-item[open] .about__faq-content {
+      grid-template-rows: 1fr;
+    }
+    .about__faq-content > div {
+      overflow: hidden;
+    }
     .about__faq-item p {
       padding: 0 var(--space-lg) var(--space-lg);
       margin: 0;

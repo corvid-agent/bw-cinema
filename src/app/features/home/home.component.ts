@@ -120,7 +120,10 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
           <div class="decades">
             @for (decade of decades(); track decade) {
               <a class="decade-card" [routerLink]="['/decade', decade]">
-                <span class="decade-card__year">{{ decade }}s</span>
+                <div class="decade-card__info">
+                  <span class="decade-card__year">{{ decade }}s</span>
+                  <span class="decade-card__count">{{ decadeFilmCounts().get(decade) ?? 0 }} films</span>
+                </div>
                 <span class="decade-card__arrow">&rarr;</span>
               </a>
             }
@@ -348,11 +351,20 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       border-color: var(--accent-gold);
       background-color: var(--accent-gold-dim);
     }
+    .decade-card__info {
+      display: flex;
+      flex-direction: column;
+    }
     .decade-card__year {
       font-family: var(--font-heading);
       font-size: 1.3rem;
       font-weight: 700;
       color: var(--text-primary);
+    }
+    .decade-card__count {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      margin-top: 2px;
     }
     .decade-card:hover .decade-card__year {
       color: var(--accent-gold);
@@ -605,7 +617,17 @@ export class HomeComponent implements OnInit {
   private readonly recentlyViewedService = inject(RecentlyViewedService);
 
   readonly currentYear = new Date().getFullYear();
+  private readonly gemSeed = signal(0);
   readonly decades = computed(() => this.catalog.meta()?.decades ?? []);
+  readonly decadeFilmCounts = computed(() => {
+    const movies = this.catalog.movies();
+    const counts = new Map<number, number>();
+    for (const m of movies) {
+      const d = Math.floor(m.year / 10) * 10;
+      counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    return counts;
+  });
   readonly genres = computed(() => this.catalog.meta()?.genres.slice(0, 12) ?? []);
   readonly recentMovies = computed(() => {
     const ids = this.recentlyViewedService.ids();
@@ -624,12 +646,11 @@ export class HomeComponent implements OnInit {
       .filter((m): m is NonNullable<typeof m> => !!m);
   });
 
-  readonly hiddenGems = computed(() =>
-    this.catalog.movies()
-      .filter((m) => m.voteAverage >= 7.0 && m.voteAverage <= 8.0 && m.isStreamable && m.posterUrl)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 12)
-  );
+  readonly hiddenGems = computed(() => {
+    const gems = this.catalog.movies()
+      .filter((m) => m.voteAverage >= 7.0 && m.voteAverage <= 8.0 && m.isStreamable && m.posterUrl);
+    return this.seededShuffle([...gems], this.gemSeed()).slice(0, 12);
+  });
 
   readonly watchlistNext = computed(() => {
     const watchlistIds = this.collectionService.watchlistIds();
@@ -661,6 +682,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.catalog.load();
+    this.gemSeed.set(Date.now());
   }
 
   onSearch(query: string): void {
@@ -682,5 +704,18 @@ export class HomeComponent implements OnInit {
     if (streamable.length === 0) return;
     const pick = streamable[Math.floor(Math.random() * streamable.length)];
     this.router.navigate(['/movie', pick.id]);
+  }
+
+  private seededShuffle<T>(arr: T[], seed: number): T[] {
+    let s = seed;
+    const random = () => {
+      s = (s * 1103515245 + 12345) & 0x7fffffff;
+      return s / 0x7fffffff;
+    };
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
   }
 }

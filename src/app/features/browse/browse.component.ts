@@ -84,6 +84,18 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
               </button>
             </div>
 
+            @if (filterChips().length > 0) {
+              <div class="browse__chips">
+                @for (chip of filterChips(); track chip.label) {
+                  <button class="browse__chip" (click)="removeChip(chip)">
+                    {{ chip.label }}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                }
+                <button class="browse__chip browse__chip--clear" (click)="clearFilters()">Clear all</button>
+              </div>
+            }
+
             @if (filteredMovies().length === 0) {
               <div class="browse__empty">
                 <svg class="browse__empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
@@ -173,6 +185,42 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
     .browse__surprise:hover {
       background: var(--accent-gold-dim);
       border-color: var(--accent-gold);
+    }
+    .browse__chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-md);
+    }
+    .browse__chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: var(--accent-gold-dim);
+      border: 1px solid var(--accent-gold);
+      border-radius: 14px;
+      color: var(--accent-gold);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      min-height: auto;
+      min-width: auto;
+    }
+    .browse__chip:hover {
+      background: var(--accent-gold);
+      color: var(--bg-deep);
+    }
+    .browse__chip--clear {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text-tertiary);
+    }
+    .browse__chip--clear:hover {
+      background: var(--bg-raised);
+      border-color: var(--text-tertiary);
+      color: var(--text-secondary);
     }
     .browse__load-more {
       text-align: center;
@@ -355,6 +403,19 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     return count;
   });
 
+  readonly filterChips = computed(() => {
+    const f = this.filter();
+    const chips: { label: string; type: string; value: string | number }[] = [];
+    for (const d of f.decades) chips.push({ label: `${d}s`, type: 'decade', value: d });
+    for (const g of f.genres) chips.push({ label: g, type: 'genre', value: g });
+    for (const d of f.directors) chips.push({ label: d, type: 'director', value: d });
+    for (const l of f.languages) chips.push({ label: l, type: 'language', value: l });
+    if (f.minRating > 0) chips.push({ label: `${f.minRating}+ rating`, type: 'minRating', value: f.minRating });
+    if (f.yearRange) chips.push({ label: `${f.yearRange[0]}–${f.yearRange[1]}`, type: 'yearRange', value: 0 });
+    if (f.query) chips.push({ label: `"${f.query}"`, type: 'query', value: f.query });
+    return chips;
+  });
+
   readonly filteredMovies = computed(() => this.catalog.search(this.filter()));
   readonly paginatedMovies = computed(() =>
     this.filteredMovies().slice(0, this.page() * this.pageSize)
@@ -432,6 +493,23 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
 
   toggleStreamableOnly(): void {
     this.filter.update((f) => ({ ...f, streamableOnly: !f.streamableOnly }));
+    this.page.set(1);
+    this.syncUrl();
+  }
+
+  removeChip(chip: { type: string; value: string | number }): void {
+    this.filter.update((f) => {
+      switch (chip.type) {
+        case 'decade': return { ...f, decades: f.decades.filter((d) => d !== chip.value) };
+        case 'genre': return { ...f, genres: f.genres.filter((g) => g !== chip.value) };
+        case 'director': return { ...f, directors: f.directors.filter((d) => d !== chip.value) };
+        case 'language': return { ...f, languages: f.languages.filter((l) => l !== chip.value) };
+        case 'minRating': return { ...f, minRating: 0 };
+        case 'yearRange': return { ...f, yearRange: null };
+        case 'query': return { ...f, query: '' };
+        default: return f;
+      }
+    });
     this.page.set(1);
     this.syncUrl();
   }

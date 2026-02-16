@@ -5,12 +5,13 @@ import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { StreamingService, StreamingSource } from '../../core/services/streaming.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
+import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import type { MovieSummary } from '../../core/models/movie.model';
 
 @Component({
   selector: 'app-watch',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LoadingSpinnerComponent],
+  imports: [RouterLink, LoadingSpinnerComponent, MovieGridComponent],
   template: `
     @if (loading()) {
       <app-loading-spinner />
@@ -88,6 +89,13 @@ import type { MovieSummary } from '../../core/models/movie.model';
           </p>
           <a routerLink="/about" class="watch__learn-more">Learn more &rarr;</a>
         </div>
+
+        @if (similarFilms().length > 0) {
+          <div class="watch__similar">
+            <h3>Similar Films You Can Watch</h3>
+            <app-movie-grid [movies]="similarFilms()" />
+          </div>
+        }
       </div>
     }
   `,
@@ -212,6 +220,15 @@ import type { MovieSummary } from '../../core/models/movie.model';
       font-weight: 600;
       color: var(--accent-gold);
     }
+    .watch__similar {
+      max-width: 800px;
+      margin: var(--space-2xl) auto 0;
+      text-align: left;
+    }
+    .watch__similar h3 {
+      font-size: 1.2rem;
+      margin-bottom: var(--space-lg);
+    }
   `],
 })
 export class WatchComponent implements OnInit, OnDestroy {
@@ -232,6 +249,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly source = signal<StreamingSource | null>(null);
   readonly safeUrl = signal<SafeResourceUrl>('');
   readonly isFullscreen = signal(false);
+  readonly similarFilms = signal<MovieSummary[]>([]);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -250,6 +268,8 @@ export class WatchComponent implements OnInit, OnDestroy {
       if (src) {
         this.safeUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(src.embedUrl));
         this.collectionService.trackProgress(movie.id);
+      } else {
+        this.similarFilms.set(this.findSimilar(movie));
       }
     }
     this.loading.set(false);
@@ -261,6 +281,25 @@ export class WatchComponent implements OnInit, OnDestroy {
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {});
     }
+  }
+
+  private findSimilar(movie: MovieSummary): MovieSummary[] {
+    const genreSet = new Set(movie.genres.map((g) => g.toLowerCase()));
+    const decade = Math.floor(movie.year / 10) * 10;
+    return this.catalogService.movies()
+      .filter((m) => m.id !== movie.id && m.isStreamable)
+      .map((m) => {
+        let score = 0;
+        const mGenres = m.genres.map((g) => g.toLowerCase());
+        for (const g of mGenres) if (genreSet.has(g)) score += 3;
+        if (Math.floor(m.year / 10) * 10 === decade) score += 2;
+        if (m.voteAverage >= 6) score += 1;
+        return { movie: m, score };
+      })
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score || b.movie.voteAverage - a.movie.voteAverage)
+      .slice(0, 6)
+      .map((x) => x.movie);
   }
 
   toggleFullscreen(): void {

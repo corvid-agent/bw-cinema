@@ -73,11 +73,20 @@ const MOODS: Mood[] = [
               <p class="explore__section-desc">Based on your watched films</p>
               <app-movie-grid [movies]="recommendations()" />
             </section>
+          } @else {
+            <section class="explore__section explore__start-watching">
+              <div class="explore__start-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </div>
+              <h3>Start watching to get personalized picks</h3>
+              <p class="explore__section-desc">Mark films as watched and we'll recommend similar titles</p>
+            </section>
           }
 
           @if (recentlyAdded().length > 0) {
             <section class="explore__section">
-              <h2>Recently Added to Catalog</h2>
+              <h2>More to Discover</h2>
+              <p class="explore__section-desc">Highly rated streamable films from the catalog</p>
               <app-movie-grid [movies]="recentlyAdded()" />
             </section>
           }
@@ -98,10 +107,17 @@ const MOODS: Mood[] = [
               <button class="btn-secondary" (click)="shuffleMood()">Shuffle</button>
               <span class="explore__mood-count">{{ moodFilms().length }} films found</span>
             </div>
-            <app-movie-grid [movies]="moodFilmsPage()" />
-            @if (moodFilmsPage().length < moodFilms().length) {
-              <div class="explore__load-more">
-                <button class="btn-secondary" (click)="loadMore()">Load More</button>
+            @if (moodFilms().length > 0) {
+              <app-movie-grid [movies]="moodFilmsPage()" />
+              @if (moodFilmsPage().length < moodFilms().length) {
+                <div class="explore__load-more">
+                  <button class="btn-secondary" (click)="loadMore()">Load More</button>
+                </div>
+              }
+            } @else {
+              <div class="explore__mood-empty">
+                <p>No streamable films found for this mood.</p>
+                <button class="btn-secondary" (click)="activeMood.set(null)">Try another mood</button>
               </div>
             }
           </div>
@@ -237,6 +253,25 @@ const MOODS: Mood[] = [
     .explore__load-more {
       text-align: center;
       padding: var(--space-xl) 0;
+    }
+    .explore__mood-empty {
+      text-align: center;
+      padding: var(--space-3xl);
+      color: var(--text-tertiary);
+    }
+    .explore__start-watching {
+      text-align: center;
+      padding: var(--space-2xl);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .explore__start-icon {
+      color: var(--accent-gold);
+      margin-bottom: var(--space-md);
+    }
+    .explore__start-watching h3 {
+      margin-bottom: var(--space-xs);
     }
     @media (max-width: 480px) {
       .explore__random {
