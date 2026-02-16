@@ -52,6 +52,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="genre__stat-label">Peak Decade ({{ peak.count }})</span>
               </div>
             }
+            @if (directorCount() > 1) {
+              <div class="genre__stat">
+                <span class="genre__stat-value">{{ directorCount() }}</span>
+                <span class="genre__stat-label">Directors</span>
+              </div>
+            }
           </div>
 
           @if (notableFact()) {
@@ -577,6 +583,12 @@ export class GenreComponent implements OnInit {
   readonly streamableCount = computed(() =>
     this.films().filter((m) => m.isStreamable).length
   );
+
+  readonly directorCount = computed(() => {
+    const dirs = new Set<string>();
+    for (const m of this.films()) for (const d of m.directors) dirs.add(d);
+    return dirs.size;
+  });
 
   readonly topFilm = computed(() => {
     const rated = this.films().filter((m) => m.voteAverage > 0);

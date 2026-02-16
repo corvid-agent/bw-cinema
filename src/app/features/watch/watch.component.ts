@@ -59,6 +59,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             <span class="watch__watched-badge">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               Watched
+              @if (watchedAgo()) {
+                <span class="watch__watched-ago">{{ watchedAgo() }}</span>
+              }
             </span>
           }
           <a class="watch__external-link" [href]="src.externalUrl" target="_blank" rel="noopener">
@@ -249,6 +252,12 @@ import type { MovieSummary } from '../../core/models/movie.model';
       border-radius: var(--radius-lg);
       font-size: 0.9rem;
       font-weight: 600;
+    }
+    .watch__watched-ago {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--text-tertiary);
+      margin-left: 4px;
     }
     .watch__external-link {
       font-size: 0.9rem;
@@ -518,6 +527,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly similarFilms = signal<MovieSummary[]>([]);
   readonly directorFilms = signal<MovieSummary[]>([]);
   readonly directorName = signal('');
+  readonly watchedAgo = signal('');
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -541,6 +551,10 @@ export class WatchComponent implements OnInit, OnDestroy {
       const src = this.streamingService.getSource(movie.internetArchiveId, movie.youtubeId);
       this.source.set(src);
       this.isWatched.set(this.collectionService.isWatched(movie.id));
+      if (this.isWatched()) {
+        const entry = this.collectionService.watched().find((w) => w.movieId === movie.id);
+        if (entry) this.watchedAgo.set(this.timeAgo(entry.watchedAt));
+      }
       if (src) {
         this.safeUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(src.embedUrl));
         this.collectionService.trackProgress(movie.id);
@@ -596,6 +610,7 @@ export class WatchComponent implements OnInit, OnDestroy {
     if (this.collectionService.isWatched(movieId)) return;
     this.collectionService.markWatched(movieId);
     this.isWatched.set(true);
+    this.watchedAgo.set('just now');
     this.notifications.show(`Marked "${this.movieTitle()}" as watched`, 'success');
   }
 
@@ -635,6 +650,20 @@ export class WatchComponent implements OnInit, OnDestroy {
     }).catch(() => {
       this.notifications.show('Failed to copy link', 'error');
     });
+  }
+
+  private timeAgo(ts: number): string {
+    const diff = Date.now() - ts;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days === 1) return 'yesterday';
+    if (days < 30) return `${days}d ago`;
+    const months = Math.floor(days / 30);
+    return months === 1 ? '1 month ago' : `${months} months ago`;
   }
 
   toggleFullscreen(): void {

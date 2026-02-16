@@ -34,6 +34,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
             @if (rs.topGenre) {
               <span class="browse__results-sep">&middot;</span> Mostly {{ rs.topGenre }}
             }
+            @if (rs.langCount) {
+              <span class="browse__results-sep">&middot;</span> {{ rs.langCount }} languages
+            }
           </p>
         }
       </div>
@@ -598,7 +601,9 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     const genreCounts = new Map<string, number>();
     for (const m of films) for (const g of m.genres) genreCounts.set(g, (genreCounts.get(g) ?? 0) + 1);
     const topGenre = [...genreCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
-    return { avgRating, minYear, maxYear, topGenre };
+    const langs = new Set(films.filter((m) => m.language).map((m) => m.language));
+    const langCount = langs.size > 1 ? langs.size : null;
+    return { avgRating, minYear, maxYear, topGenre, langCount };
   });
   readonly streamableResultCount = computed(() =>
     this.filteredMovies().filter((m) => m.isStreamable).length
