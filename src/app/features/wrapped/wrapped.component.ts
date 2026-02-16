@@ -91,7 +91,7 @@ interface WrappedStats {
                 <div class="wrapped__bars">
                   @for (g of stats().topGenres.slice(0, 5); track g.name) {
                     <div class="wrapped__bar-row">
-                      <span class="wrapped__bar-label">{{ g.name }}</span>
+                      <a class="wrapped__bar-label wrapped__bar-label--link" [routerLink]="['/genre', g.name]">{{ g.name }}</a>
                       <div class="wrapped__bar-track">
                         <div class="wrapped__bar-fill" [style.width.%]="barWidth(g.count)"></div>
                       </div>
@@ -108,7 +108,7 @@ interface WrappedStats {
                 <div class="wrapped__bars">
                   @for (d of stats().topDirectors.slice(0, 5); track d.name) {
                     <div class="wrapped__bar-row">
-                      <span class="wrapped__bar-label">{{ d.name }}</span>
+                      <a class="wrapped__bar-label wrapped__bar-label--link" [routerLink]="['/director', d.name]">{{ d.name }}</a>
                       <div class="wrapped__bar-track">
                         <div class="wrapped__bar-fill" [style.width.%]="barWidth(d.count)"></div>
                       </div>
@@ -125,7 +125,7 @@ interface WrappedStats {
                 <div class="wrapped__bars">
                   @for (d of stats().topDecades.slice(0, 5); track d.decade) {
                     <div class="wrapped__bar-row">
-                      <span class="wrapped__bar-label">{{ d.decade }}s</span>
+                      <a class="wrapped__bar-label wrapped__bar-label--link" [routerLink]="['/decade', d.decade]">{{ d.decade }}s</a>
                       <div class="wrapped__bar-track">
                         <div class="wrapped__bar-fill" [style.width.%]="barWidth(d.count)"></div>
                       </div>
@@ -368,6 +368,14 @@ interface WrappedStats {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    .wrapped__bar-label--link {
+      text-decoration: none;
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+    .wrapped__bar-label--link:hover {
+      color: var(--accent-gold);
     }
     .wrapped__bar-track {
       flex: 1;

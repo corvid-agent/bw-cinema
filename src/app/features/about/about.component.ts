@@ -1,9 +1,11 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, computed } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
 
 @Component({
   selector: 'app-about',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink],
   template: `
     <div class="about container">
       <h1>About BW Cinema</h1>
@@ -133,6 +135,54 @@ import { CatalogService } from '../../core/services/catalog.service';
               </p>
             </div></div>
           </details>
+        </div>
+      </section>
+
+      <section class="about__section">
+        <h2>Features</h2>
+        <div class="about__features">
+          <a class="about__feature" routerLink="/browse">
+            <span class="about__feature-icon">&#9776;</span>
+            <div>
+              <h3>Browse &amp; Filter</h3>
+              <p>Search, filter by decade, genre, and sort thousands of classic films</p>
+            </div>
+          </a>
+          <a class="about__feature" routerLink="/quiz">
+            <span class="about__feature-icon">?</span>
+            <div>
+              <h3>What Should I Watch?</h3>
+              <p>Take a quick quiz and get personalized film recommendations</p>
+            </div>
+          </a>
+          <a class="about__feature" routerLink="/explore">
+            <span class="about__feature-icon">&#9670;</span>
+            <div>
+              <h3>Explore by Mood</h3>
+              <p>Discover films by mood, theme, or let fate decide with random picks</p>
+            </div>
+          </a>
+          <a class="about__feature" routerLink="/wrapped">
+            <span class="about__feature-icon">&#9733;</span>
+            <div>
+              <h3>Year in Review</h3>
+              <p>See your annual viewing stats, top genres, and favorite directors</p>
+            </div>
+          </a>
+          <a class="about__feature" routerLink="/stats">
+            <span class="about__feature-icon">&#9638;</span>
+            <div>
+              <h3>Catalog Stats</h3>
+              <p>Explore statistics across the entire catalog — decades, genres, directors</p>
+            </div>
+          </a>
+          <a class="about__feature" routerLink="/collection">
+            <span class="about__feature-icon">&#9829;</span>
+            <div>
+              <h3>Your Collection</h3>
+              <p>Track watched films, build a watchlist, rate and review your favorites</p>
+            </div>
+          </a>
         </div>
       </section>
 
@@ -323,9 +373,57 @@ import { CatalogService } from '../../core/services/catalog.service';
       letter-spacing: 0.06em;
       font-weight: 600;
     }
+    .about__features {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
+      margin-top: var(--space-md);
+    }
+    .about__feature {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      padding: var(--space-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .about__feature:hover {
+      border-color: var(--accent-gold);
+      background: var(--bg-raised);
+      color: inherit;
+    }
+    .about__feature-icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--accent-gold-dim);
+      color: var(--accent-gold);
+      font-size: 1rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .about__feature h3 {
+      font-size: 0.95rem;
+      margin: 0 0 2px;
+      color: var(--text-primary);
+    }
+    .about__feature:hover h3 { color: var(--accent-gold); }
+    .about__feature p {
+      font-size: 0.8rem;
+      margin: 0;
+      line-height: 1.5;
+    }
     @media (max-width: 480px) {
       .about__stats { grid-template-columns: repeat(2, 1fr); }
       .about__stat-value { font-size: 1.4rem; }
+      .about__features { grid-template-columns: 1fr; }
     }
   `],
 })

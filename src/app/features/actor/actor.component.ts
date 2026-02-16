@@ -68,6 +68,21 @@ import type { MovieSummary } from '../../core/models/movie.model';
             </div>
           }
 
+          @if (bestFilm(); as best) {
+            <a class="actor__best-film-card" [routerLink]="['/movie', best.id]">
+              @if (best.posterUrl) {
+                <img class="actor__best-film-poster" [src]="best.posterUrl" [alt]="best.title" loading="lazy" />
+              } @else {
+                <div class="actor__best-film-poster actor__best-film-poster--placeholder">&#9733;</div>
+              }
+              <div class="actor__best-film-info">
+                <span class="actor__best-film-label">Highest Rated Film</span>
+                <span class="actor__best-film-title">{{ best.title }}</span>
+                <span class="actor__best-film-meta">{{ best.year }} · &#9733; {{ best.voteAverage.toFixed(1) }}</span>
+              </div>
+            </a>
+          }
+
           @if (topDirectors().length > 0) {
             <div class="actor__collabs">
               <h3>Frequent Collaborators</h3>
@@ -332,6 +347,67 @@ import type { MovieSummary } from '../../core/models/movie.model';
       padding: var(--space-3xl);
       color: var(--text-tertiary);
     }
+    .actor__best-film-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: inherit;
+      margin-bottom: var(--space-xl);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .actor__best-film-card:hover {
+      border-color: var(--accent-gold);
+      background: var(--bg-raised);
+      color: inherit;
+    }
+    .actor__best-film-poster {
+      width: 48px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+    .actor__best-film-poster--placeholder {
+      background: var(--bg-raised);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--accent-gold);
+    }
+    .actor__best-film-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .actor__best-film-label {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    .actor__best-film-title {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .actor__best-film-card:hover .actor__best-film-title {
+      color: var(--accent-gold);
+    }
+    .actor__best-film-meta {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
     @media (max-width: 768px) {
       .actor__header { flex-direction: column; gap: var(--space-md); }
     }
@@ -432,6 +508,12 @@ export class ActorComponent implements OnInit {
       (b[1].totalRating / b[1].count) > (a[1].totalRating / a[1].count) ? b : a
     );
     return best[0];
+  });
+
+  readonly bestFilm = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length === 0) return null;
+    return rated.reduce((best, m) => m.voteAverage > best.voteAverage ? m : best);
   });
 
   readonly topDirectors = computed(() => {
