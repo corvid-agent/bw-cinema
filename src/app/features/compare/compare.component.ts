@@ -230,6 +230,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (bothSilentEra()) {
                 <span class="compare__overlap"> &middot; both silent-era</span>
               }
+              @if (combinedTitleLength(); as ctl) {
+                <span class="compare__overlap"> &middot; {{ ctl }} chars combined</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -837,6 +840,14 @@ export class CompareComponent implements OnInit {
     const a = this.filmA();
     const b = this.filmB();
     return !!(a && b && a.language && a.language !== 'English' && a.language !== 'en' && b.language && b.language !== 'English' && b.language !== 'en');
+  });
+
+  readonly combinedTitleLength = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return null;
+    const total = a.title.length + b.title.length;
+    return total >= 10 ? total : null;
   });
 
   readonly bothSilentEra = computed(() => {

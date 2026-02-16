@@ -443,6 +443,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">avg title length (chars)</span>
               </div>
             }
+            @if (multiLanguageDirectorCount(); as mldc) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ mldc }}</span>
+                <span class="stats__fact-text">multilingual directors</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1167,6 +1173,21 @@ export class StatsComponent implements OnInit {
     const count = movies.filter((m) => m.directors.length > 1).length;
     const pct = Math.round((count / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly multiLanguageDirectorCount = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    const directorLangs = new Map<string, Set<string>>();
+    for (const m of movies) {
+      if (!m.language) continue;
+      for (const d of m.directors) {
+        if (!directorLangs.has(d)) directorLangs.set(d, new Set());
+        directorLangs.get(d)!.add(m.language);
+      }
+    }
+    const count = [...directorLangs.values()].filter((langs) => langs.size >= 2).length;
+    return count > 0 ? count : null;
   });
 
   readonly avgTitleLength = computed(() => {
