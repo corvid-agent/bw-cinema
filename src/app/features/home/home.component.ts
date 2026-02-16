@@ -47,6 +47,10 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             <span class="hero__stat-value">{{ languageCount() }}</span>
             <span class="hero__stat-label">Languages</span>
           </div>
+          <div class="hero__stat">
+            <span class="hero__stat-value">{{ directorCount() }}</span>
+            <span class="hero__stat-label">Directors</span>
+          </div>
         </div>
       </div>
     </section>
@@ -1169,6 +1173,13 @@ export class HomeComponent implements OnInit {
       if (m.language) langs.add(m.language);
     }
     return langs.size;
+  });
+  readonly directorCount = computed(() => {
+    const dirs = new Set<string>();
+    for (const m of this.catalog.movies()) {
+      for (const d of m.directors) dirs.add(d);
+    }
+    return dirs.size > 1000 ? `${(dirs.size / 1000).toFixed(1)}k` : `${dirs.size}`;
   });
   readonly decadeSpan = computed(() => {
     const d = this.decades();

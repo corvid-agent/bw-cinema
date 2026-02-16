@@ -54,6 +54,10 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
               <span class="decade__stat-value">{{ streamablePct() }}%</span>
               <span class="decade__stat-label">Streamable</span>
             </div>
+            <div class="decade__stat">
+              <span class="decade__stat-value">{{ directorCount() }}</span>
+              <span class="decade__stat-label">Directors</span>
+            </div>
           </div>
 
           @if (decadeFact(); as fact) {
@@ -600,6 +604,14 @@ export class DecadeComponent implements OnInit {
     }
     const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
     return sorted[0]?.[0] ?? '—';
+  });
+
+  readonly directorCount = computed(() => {
+    const dirs = new Set<string>();
+    for (const m of this.films()) {
+      for (const d of m.directors) dirs.add(d);
+    }
+    return dirs.size;
   });
 
   readonly streamablePct = computed(() => {
