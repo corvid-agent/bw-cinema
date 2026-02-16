@@ -37,6 +37,12 @@ import type { MovieSummary } from '../../core/models/movie.model';
               <span>{{ filmA()!.title }} ({{ filmA()!.year }})</span>
               <button class="compare__clear" (click)="filmA.set(null); queryA.set('')" aria-label="Clear film 1">&times;</button>
             </div>
+          } @else {
+            <div class="compare__quick-picks">
+              @for (m of quickPicks().slice(0, 4); track m.id) {
+                <button class="compare__quick-btn" (click)="selectA(m)">{{ m.title }}</button>
+              }
+            </div>
           }
         </div>
 
@@ -69,6 +75,12 @@ import type { MovieSummary } from '../../core/models/movie.model';
             <div class="compare__selected">
               <span>{{ filmB()!.title }} ({{ filmB()!.year }})</span>
               <button class="compare__clear" (click)="filmB.set(null); queryB.set('')" aria-label="Clear film 2">&times;</button>
+            </div>
+          } @else {
+            <div class="compare__quick-picks">
+              @for (m of quickPicks().slice(4, 8); track m.id) {
+                <button class="compare__quick-btn" (click)="selectB(m)">{{ m.title }}</button>
+              }
             </div>
           }
         </div>
@@ -318,6 +330,28 @@ import type { MovieSummary } from '../../core/models/movie.model';
       font-size: 1rem;
       text-align: center;
     }
+    .compare__quick-picks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      margin-top: var(--space-sm);
+    }
+    .compare__quick-btn {
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      border-radius: 12px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .compare__quick-btn:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      background: var(--accent-gold-dim);
+    }
     .compare__shared {
       padding: var(--space-md);
       font-size: 0.9rem;
@@ -362,6 +396,13 @@ export class CompareComponent implements OnInit {
 
   readonly resultsA = computed(() => this.searchFilms(this.queryA()));
   readonly resultsB = computed(() => this.searchFilms(this.queryB()));
+
+  readonly quickPicks = computed(() =>
+    this.catalog.movies()
+      .filter((m) => m.voteAverage >= 7.5 && m.posterUrl && m.isStreamable)
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 8)
+  );
 
   readonly sharedGenres = computed(() => {
     const a = this.filmA();

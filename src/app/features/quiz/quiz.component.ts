@@ -1,6 +1,8 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
+import { CollectionService } from '../../core/services/collection.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
 import type { MovieSummary } from '../../core/models/movie.model';
 
@@ -68,7 +70,11 @@ interface QuizStep {
             }
           </div>
           <div class="quiz__result-actions">
-            <button class="btn-secondary" (click)="shuffle()">Shuffle Recommendations</button>
+            <button class="btn-secondary" (click)="shuffle()">Shuffle</button>
+            <button class="quiz__add-all" (click)="addAllToWatchlist()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add All to Watchlist
+            </button>
             <button class="btn-ghost" (click)="restart()">Start Over</button>
           </div>
         </div>
@@ -198,6 +204,24 @@ interface QuizStep {
       justify-content: center;
       flex-wrap: wrap;
     }
+    .quiz__add-all {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: var(--space-sm) var(--space-lg);
+      background: var(--accent-gold-dim);
+      border: 1px solid var(--accent-gold);
+      border-radius: var(--radius-lg);
+      color: var(--accent-gold);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quiz__add-all:hover {
+      background: var(--accent-gold);
+      color: var(--bg-deep);
+    }
     @media (max-width: 480px) {
       .quiz__result-grid { grid-template-columns: repeat(2, 1fr); }
     }
@@ -205,6 +229,8 @@ interface QuizStep {
 })
 export class QuizComponent implements OnInit {
   protected readonly catalog = inject(CatalogService);
+  private readonly collection = inject(CollectionService);
+  private readonly notifications = inject(NotificationService);
 
   private readonly steps: QuizStep[] = [
     {
@@ -274,6 +300,22 @@ export class QuizComponent implements OnInit {
 
   shuffle(): void {
     this.computeResults();
+  }
+
+  addAllToWatchlist(): void {
+    const films = this.results();
+    let added = 0;
+    for (const m of films) {
+      if (!this.collection.isInWatchlist(m.id) && !this.collection.isWatched(m.id)) {
+        this.collection.addToWatchlist(m.id);
+        added++;
+      }
+    }
+    if (added > 0) {
+      this.notifications.show(`Added ${added} film${added > 1 ? 's' : ''} to watchlist`, 'success');
+    } else {
+      this.notifications.show('All films already in your collection', 'info');
+    }
   }
 
   restart(): void {
