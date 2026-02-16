@@ -74,6 +74,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             <span class="card__divider">&middot;</span>
             <span class="card__genre">{{ movie().genres[0] }}</span>
           }
+          @if (movie().language && movie().language !== 'en') {
+            <span class="card__lang">{{ (movie().language ?? '').toUpperCase() }}</span>
+          }
         </div>
       </div>
     </a>
@@ -233,6 +236,16 @@ import type { MovieSummary } from '../../core/models/movie.model';
     .card__hover-genres {
       font-size: 0.7rem;
       color: rgba(255,255,255,0.7);
+    }
+    .card__lang {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: var(--bg-raised);
+      color: var(--text-tertiary);
+      letter-spacing: 0.04em;
+      margin-left: auto;
     }
     .card__heart {
       position: absolute;

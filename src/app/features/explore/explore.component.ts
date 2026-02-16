@@ -53,7 +53,37 @@ const MOODS: Mood[] = [
               Pick an Unwatched Film
             </button>
           }
+          <button class="explore__random-btn explore__random-btn--secondary" (click)="pickDoubleFeature()">
+            Double Feature
+          </button>
         </div>
+
+        @if (doubleFeature().length === 2) {
+          <div class="explore__double">
+            <h2>Tonight's Double Feature</h2>
+            <p class="explore__double-desc">Two complementary films for a perfect movie night</p>
+            <div class="explore__double-pair">
+              @for (m of doubleFeature(); track m.id) {
+                <a class="explore__double-card" [routerLink]="['/movie', m.id]">
+                  @if (m.posterUrl) {
+                    <img [src]="m.posterUrl" [alt]="m.title" />
+                  } @else {
+                    <div class="explore__double-placeholder">{{ m.title }}</div>
+                  }
+                  <div class="explore__double-info">
+                    <h3>{{ m.title }}</h3>
+                    <p>{{ m.year }} &middot; {{ m.directors.join(', ') }}</p>
+                    <p class="explore__double-genres">{{ m.genres.slice(0, 2).join(', ') }}</p>
+                  </div>
+                </a>
+              }
+            </div>
+            <div class="explore__double-actions">
+              <button class="btn-secondary" (click)="pickDoubleFeature()">Shuffle Pair</button>
+              <button class="btn-ghost" (click)="doubleFeature.set([])">Dismiss</button>
+            </div>
+          </div>
+        }
 
         @if (!activeMood()) {
           <div class="explore__moods">
@@ -228,6 +258,72 @@ const MOODS: Mood[] = [
       padding: 2px 8px;
       border-radius: 8px;
     }
+    .explore__double {
+      margin-bottom: var(--space-2xl);
+      padding: var(--space-xl);
+      background: var(--bg-surface);
+      border: 1px solid var(--accent-gold);
+      border-radius: var(--radius-xl);
+      text-align: center;
+    }
+    .explore__double h2 { margin-bottom: var(--space-xs); }
+    .explore__double-desc {
+      color: var(--text-tertiary);
+      font-size: 0.9rem;
+      margin: 0 0 var(--space-xl);
+    }
+    .explore__double-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-xl);
+      margin-bottom: var(--space-lg);
+    }
+    .explore__double-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s;
+    }
+    .explore__double-card:hover { color: inherit; transform: translateY(-4px); }
+    .explore__double-card img {
+      width: 160px;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-poster);
+      margin-bottom: var(--space-md);
+    }
+    .explore__double-placeholder {
+      width: 160px;
+      aspect-ratio: 2 / 3;
+      background: var(--bg-raised);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      text-align: center;
+      padding: var(--space-sm);
+      margin-bottom: var(--space-md);
+    }
+    .explore__double-info h3 { font-size: 1rem; margin: 0 0 4px; }
+    .explore__double-info p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+    .explore__double-genres {
+      color: var(--accent-gold) !important;
+      font-weight: 600;
+    }
+    .explore__double-actions {
+      display: flex;
+      gap: var(--space-md);
+      justify-content: center;
+    }
     .explore__section {
       margin-bottom: var(--space-2xl);
     }
@@ -293,6 +389,9 @@ const MOODS: Mood[] = [
       margin-bottom: var(--space-xs);
     }
     @media (max-width: 480px) {
+      .explore__double-pair { grid-template-columns: 1fr; gap: var(--space-lg); }
+      .explore__double-card img { width: 120px; }
+      .explore__double { padding: var(--space-md); }
       .explore__random {
         flex-direction: column;
       }
@@ -315,6 +414,7 @@ export class ExploreComponent implements OnInit {
 
   readonly moods = MOODS;
   readonly activeMood = signal<Mood | null>(null);
+  readonly doubleFeature = signal<MovieSummary[]>([]);
   readonly moodPage = signal(1);
   private readonly shuffleSeed = signal(0);
 
@@ -412,6 +512,32 @@ export class ExploreComponent implements OnInit {
 
   loadMore(): void {
     this.moodPage.update((p) => p + 1);
+  }
+
+  pickDoubleFeature(): void {
+    const watchedIds = this.collection.watchedIds();
+    const films = this.catalog.movies().filter((m) => m.isStreamable && !watchedIds.has(m.id) && m.posterUrl && m.voteAverage >= 6);
+    if (films.length < 2) return;
+    // Pick a random first film
+    const first = films[Math.floor(Math.random() * films.length)];
+    // Find a complementary second film: shared genre, different director, similar decade
+    const firstGenres = new Set(first.genres.map((g) => g.toLowerCase()));
+    const firstDecade = Math.floor(first.year / 10) * 10;
+    const candidates = films
+      .filter((m) => m.id !== first.id)
+      .map((m) => {
+        let score = 0;
+        if (m.genres.some((g) => firstGenres.has(g.toLowerCase()))) score += 3;
+        if (Math.floor(m.year / 10) * 10 === firstDecade) score += 1;
+        if (!m.directors.some((d) => first.directors.includes(d))) score += 1;
+        return { movie: m, score };
+      })
+      .filter((x) => x.score >= 3)
+      .sort((a, b) => b.score - a.score);
+    const second = candidates.length > 0
+      ? candidates[Math.floor(Math.random() * Math.min(candidates.length, 10))].movie
+      : films.filter((m) => m.id !== first.id)[Math.floor(Math.random() * (films.length - 1))];
+    this.doubleFeature.set([first, second]);
   }
 
   pickUnwatched(): void {
