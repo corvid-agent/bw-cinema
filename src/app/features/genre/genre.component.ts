@@ -99,6 +99,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="genre__stat-label">{{ mpd.name }}</span>
               </a>
             }
+            @if (avgFilmAge() > 0) {
+              <div class="genre__stat">
+                <span class="genre__stat-value">{{ avgFilmAge() }}</span>
+                <span class="genre__stat-label">Avg Film Age (yrs)</span>
+              </div>
+            }
           </div>
 
           @if (newestFilmYear(); as nfy) {
@@ -816,6 +822,13 @@ export class GenreComponent implements OnInit {
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     if (!top || top[1] < 3) return null;
     return { name: top[0], count: top[1] };
+  });
+
+  readonly avgFilmAge = computed(() => {
+    const f = this.films();
+    if (f.length < 2) return 0;
+    const now = new Date().getFullYear();
+    return Math.round(f.reduce((s, m) => s + (now - m.year), 0) / f.length);
   });
 
   readonly decadeBreakdown = computed(() => {

@@ -401,6 +401,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">most free films ({{ tsd.count }})</span>
               </div>
             }
+            @if (avgFilmAge() > 0) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ avgFilmAge() }}yr</span>
+                <span class="stats__fact-text">avg film age</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1055,6 +1061,13 @@ export class StatsComponent implements OnInit {
     }
     const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return best ? { decade: best[0], count: best[1] } : null;
+  });
+
+  readonly avgFilmAge = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return 0;
+    const now = new Date().getFullYear();
+    return Math.round(movies.reduce((s, m) => s + (now - m.year), 0) / movies.length);
   });
 
   readonly avgGenresPerFilm = computed(() => {

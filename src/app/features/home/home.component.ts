@@ -68,6 +68,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (totalWatchedCount() > 0) {
           <p class="hero__avg-rating">You've watched {{ totalWatchedCount() }} film{{ totalWatchedCount() !== 1 ? 's' : '' }}@if (watchlistSize() > 0) { &middot; {{ watchlistSize() }} in watchlist}@if (favoritesCount() > 0) { &middot; {{ favoritesCount() }} favorite{{ favoritesCount() !== 1 ? 's' : '' }}}@if (avgWatchedRating(); as awr) { &middot; avg &#9733; {{ awr }}}</p>
         }
+        @if (topDecadeName(); as tdn) {
+          <p class="hero__avg-rating">Most films from the {{ tdn }}</p>
+        }
         @if (oldestFilmYear(); as ofy) {
           <p class="hero__avg-rating">Films dating back to {{ ofy }}@if (newestFilmYear(); as nfy) { , up to {{ nfy }}}</p>
         }
@@ -1265,6 +1268,17 @@ export class HomeComponent implements OnInit {
     const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     if (!best || best[1] < 10) return null;
     return { name: LANG_NAMES[best[0]] ?? best[0].toUpperCase(), count: best[1] };
+  });
+
+  readonly topDecadeName = computed(() => {
+    const counts = this.decadeFilmCounts();
+    if (counts.size < 2) return null;
+    let best = 0;
+    let bestDecade = 0;
+    for (const [decade, count] of counts) {
+      if (count > best) { best = count; bestDecade = decade; }
+    }
+    return best > 0 ? `${bestDecade}s` : null;
   });
 
   readonly decadeSpan = computed(() => {
