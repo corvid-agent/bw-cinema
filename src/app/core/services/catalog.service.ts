@@ -13,12 +13,18 @@ export class CatalogService {
   readonly loading = signal(false);
   readonly loaded = signal(false);
 
-  readonly featured = computed(() =>
-    this.movies()
-      .filter((m) => m.isStreamable && m.voteAverage >= 7)
-      .sort((a, b) => b.voteAverage - a.voteAverage)
-      .slice(0, 12)
-  );
+  readonly featured = computed(() => {
+    const streamable = this.movies().filter((m) => m.isStreamable);
+    // Prefer films with ratings, fall back to streamable films with genres
+    const rated = streamable.filter((m) => m.voteAverage >= 7);
+    if (rated.length >= 12) {
+      return rated.sort((a, b) => b.voteAverage - a.voteAverage).slice(0, 12);
+    }
+    // Without TMDb ratings, feature streamable films that have genre info
+    return streamable
+      .filter((m) => m.genres.length > 0)
+      .slice(0, 12);
+  });
 
   async load(): Promise<void> {
     if (this.loaded()) return;
