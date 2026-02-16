@@ -68,6 +68,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
               <span class="genre__stat-value">{{ streamablePct() }}%</span>
               <span class="genre__stat-label">Streamable</span>
             </div>
+            @if (avgYear()) {
+              <div class="genre__stat">
+                <span class="genre__stat-value">{{ avgYear() }}</span>
+                <span class="genre__stat-label">Avg Year</span>
+              </div>
+            }
           </div>
 
           @if (notableFact()) {
@@ -608,6 +614,12 @@ export class GenreComponent implements OnInit {
     const f = this.films();
     if (f.length === 0) return 0;
     return Math.round((f.filter((m) => m.isStreamable).length / f.length) * 100);
+  });
+
+  readonly avgYear = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    return Math.round(f.reduce((s, m) => s + m.year, 0) / f.length);
   });
 
   readonly topFilm = computed(() => {

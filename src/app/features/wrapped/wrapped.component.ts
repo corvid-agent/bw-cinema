@@ -124,6 +124,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Free to Stream</span>
               </div>
             }
+            @if (avgFilmAge() > 0) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ avgFilmAge() }}</span>
+                <span class="wrapped__hero-label">Avg Film Age (yrs)</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -757,6 +763,14 @@ export class WrappedComponent implements OnInit {
     if (films.length === 0) return 0;
     const streamable = films.filter((m) => m.isStreamable).length;
     return Math.round((streamable / films.length) * 100);
+  });
+
+  readonly avgFilmAge = computed(() => {
+    const films = this.yearFilms();
+    const year = this.selectedYear();
+    if (films.length < 2) return 0;
+    const avg = films.reduce((s, m) => s + (year - m.year), 0) / films.length;
+    return Math.round(avg);
   });
 
   private maxBarValue = computed(() => {
