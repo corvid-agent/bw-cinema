@@ -59,6 +59,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (silentEraCount() > 0) {
           <p class="hero__avg-rating">Including {{ silentEraCount() }} silent-era films (pre-1930)</p>
         }
+        @if (topNonEnglishLang(); as lang) {
+          <p class="hero__avg-rating">Top non-English language: {{ lang.name }} ({{ lang.count }} films)</p>
+        }
       </div>
     </section>
 
@@ -1204,6 +1207,23 @@ export class HomeComponent implements OnInit {
   readonly silentEraCount = computed(() =>
     this.catalog.movies().filter((m) => m.year < 1930).length
   );
+
+  readonly topNonEnglishLang = computed(() => {
+    const LANG_NAMES: Record<string, string> = {
+      fr: 'French', de: 'German', ja: 'Japanese', it: 'Italian', es: 'Spanish',
+      ru: 'Russian', sv: 'Swedish', da: 'Danish', pt: 'Portuguese', nl: 'Dutch',
+      zh: 'Chinese', ko: 'Korean', pl: 'Polish', cs: 'Czech', hu: 'Hungarian',
+    };
+    const counts = new Map<string, number>();
+    for (const m of this.catalog.movies()) {
+      if (m.language && m.language !== 'en') {
+        counts.set(m.language, (counts.get(m.language) ?? 0) + 1);
+      }
+    }
+    const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (!best || best[1] < 10) return null;
+    return { name: LANG_NAMES[best[0]] ?? best[0].toUpperCase(), count: best[1] };
+  });
 
   readonly decadeSpan = computed(() => {
     const d = this.decades();

@@ -136,6 +136,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Avg Film Age (yrs)</span>
               </div>
             }
+            @if (avgCatalogRating(); as acr) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ acr }}</span>
+                <span class="wrapped__hero-label">Avg TMDb Rating</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -775,6 +781,13 @@ export class WrappedComponent implements OnInit {
     const films = this.yearFilms();
     if (films.length < 2) return 0;
     return new Set(films.map((m) => Math.floor(m.year / 10) * 10)).size;
+  });
+
+  readonly avgCatalogRating = computed(() => {
+    const films = this.yearFilms();
+    const rated = films.filter((m) => m.voteAverage > 0);
+    if (rated.length < 3) return null;
+    return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
   });
 
   readonly avgFilmAge = computed(() => {

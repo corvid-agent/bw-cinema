@@ -335,6 +335,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">avg films per director</span>
               </div>
             }
+            @if (oneFilmDirectorCount() > 0) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ oneFilmDirectorCount() }}</span>
+                <span class="stats__fact-text">one-film directors</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -912,6 +918,14 @@ export class StatsComponent implements OnInit {
   readonly uniqueLanguageCount = computed(() => {
     const langs = new Set(this.catalog.movies().filter((m) => m.language).map((m) => m.language));
     return langs.size;
+  });
+
+  readonly oneFilmDirectorCount = computed(() => {
+    const counts = new Map<string, number>();
+    for (const m of this.catalog.movies()) {
+      for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    return [...counts.values()].filter((c) => c === 1).length;
   });
 
   readonly genrePairs = computed(() => {
