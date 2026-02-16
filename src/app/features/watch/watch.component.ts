@@ -4,6 +4,7 @@ import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser'
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { StreamingService, StreamingSource } from '../../core/services/streaming.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import type { MovieSummary } from '../../core/models/movie.model';
@@ -44,13 +45,40 @@ import type { MovieSummary } from '../../core/models/movie.model';
           </button>
         </div>
 
-        <div class="watch__fallback">
-          <p>Having trouble?
-            <a [href]="src.externalUrl" target="_blank" rel="noopener">
-              Watch directly on {{ src.label }} (opens in new tab)
-            </a>
-          </p>
+        <div class="watch__actions">
+          @if (!isWatched()) {
+            <button class="watch__mark-btn" (click)="markWatched()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Mark as Watched
+            </button>
+          } @else {
+            <span class="watch__watched-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Watched
+            </span>
+          }
+          <a class="watch__external-link" [href]="src.externalUrl" target="_blank" rel="noopener">
+            Watch on {{ src.label }} &nearr;
+          </a>
         </div>
+
+        @if (upNext(); as next) {
+          <div class="watch__up-next">
+            <span class="watch__up-next-label">Up Next</span>
+            <a class="watch__up-next-card" [routerLink]="['/watch', next.id]">
+              @if (next.posterUrl) {
+                <img [src]="next.posterUrl" [alt]="next.title" />
+              }
+              <div class="watch__up-next-info">
+                <strong>{{ next.title }}</strong>
+                <span>{{ next.year }} · {{ next.genres.slice(0, 2).join(', ') }}</span>
+                @if (next.voteAverage > 0) {
+                  <span class="watch__up-next-rating">&#9733; {{ next.voteAverage.toFixed(1) }}</span>
+                }
+              </div>
+            </a>
+          </div>
+        }
       </div>
     } @else {
       <div class="watch__unavailable container">
@@ -155,10 +183,101 @@ import type { MovieSummary } from '../../core/models/movie.model';
       max-width: 100%;
       border-radius: 0;
     }
-    .watch__fallback {
-      text-align: center;
+    .watch__actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-md);
       margin-top: var(--space-lg);
+      flex-wrap: wrap;
+    }
+    .watch__mark-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-xl);
+      background: linear-gradient(135deg, var(--accent-gold) 0%, #c49b2c 100%);
+      color: var(--bg-deep);
+      border: none;
+      border-radius: var(--radius-lg);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .watch__mark-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+    }
+    .watch__watched-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: var(--space-sm) var(--space-lg);
+      background: var(--accent-gold-dim);
+      color: var(--accent-gold);
+      border-radius: var(--radius-lg);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .watch__external-link {
+      font-size: 0.9rem;
       color: var(--text-secondary);
+    }
+    .watch__up-next {
+      max-width: 500px;
+      margin: var(--space-xl) auto 0;
+    }
+    .watch__up-next-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-tertiary);
+      margin-bottom: var(--space-sm);
+    }
+    .watch__up-next-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .watch__up-next-card:hover {
+      border-color: var(--accent-gold);
+      background: var(--bg-raised);
+      color: inherit;
+    }
+    .watch__up-next-card img {
+      width: 48px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      aspect-ratio: 2 / 3;
+      flex-shrink: 0;
+    }
+    .watch__up-next-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .watch__up-next-info strong {
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+    .watch__up-next-info span {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    .watch__up-next-rating {
+      color: var(--accent-gold) !important;
+      font-weight: 600;
     }
     .watch__unavailable {
       padding: var(--space-2xl) 0;
@@ -239,6 +358,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   private readonly streamingService = inject(StreamingService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly titleService = inject(Title);
+  private readonly notifications = inject(NotificationService);
 
   @ViewChild('playerContainer') playerContainer!: ElementRef<HTMLElement>;
 
@@ -249,6 +369,8 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly source = signal<StreamingSource | null>(null);
   readonly safeUrl = signal<SafeResourceUrl>('');
   readonly isFullscreen = signal(false);
+  readonly isWatched = signal(false);
+  readonly upNext = signal<MovieSummary | null>(null);
   readonly similarFilms = signal<MovieSummary[]>([]);
 
   private fullscreenHandler = () => {
@@ -265,9 +387,11 @@ export class WatchComponent implements OnInit, OnDestroy {
       this.titleService.setTitle(`Watch ${movie.title} — BW Cinema`);
       const src = this.streamingService.getSource(movie.internetArchiveId, movie.youtubeId);
       this.source.set(src);
+      this.isWatched.set(this.collectionService.isWatched(movie.id));
       if (src) {
         this.safeUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(src.embedUrl));
         this.collectionService.trackProgress(movie.id);
+        this.upNext.set(this.findUpNext(movie));
       } else {
         this.similarFilms.set(this.findSimilar(movie));
       }
@@ -300,6 +424,32 @@ export class WatchComponent implements OnInit, OnDestroy {
       .sort((a, b) => b.score - a.score || b.movie.voteAverage - a.movie.voteAverage)
       .slice(0, 6)
       .map((x) => x.movie);
+  }
+
+  markWatched(): void {
+    const movieId = this.id();
+    if (this.collectionService.isWatched(movieId)) return;
+    this.collectionService.markWatched(movieId);
+    this.isWatched.set(true);
+    this.notifications.show(`Marked "${this.movieTitle()}" as watched`, 'success');
+  }
+
+  private findUpNext(movie: MovieSummary): MovieSummary | null {
+    const watchlistIds = this.collectionService.watchlistIds();
+    const watchedIds = this.collectionService.watchedIds();
+    const genreSet = new Set(movie.genres.map((g) => g.toLowerCase()));
+    const candidates = this.catalogService.movies()
+      .filter((m) => m.id !== movie.id && m.isStreamable && !watchedIds.has(m.id) && m.posterUrl)
+      .map((m) => {
+        let score = 0;
+        if (watchlistIds.has(m.id)) score += 5;
+        for (const g of m.genres) if (genreSet.has(g.toLowerCase())) score += 2;
+        if (m.voteAverage >= 7) score += 1;
+        return { movie: m, score };
+      })
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score);
+    return candidates[0]?.movie ?? null;
   }
 
   toggleFullscreen(): void {
