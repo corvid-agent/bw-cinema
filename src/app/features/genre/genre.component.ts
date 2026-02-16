@@ -58,6 +58,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="genre__stat-label">Directors</span>
               </div>
             }
+            @if (silentEraCount() > 0) {
+              <div class="genre__stat">
+                <span class="genre__stat-value">{{ silentEraCount() }}</span>
+                <span class="genre__stat-label">Silent Era</span>
+              </div>
+            }
           </div>
 
           @if (notableFact()) {
@@ -589,6 +595,10 @@ export class GenreComponent implements OnInit {
     for (const m of this.films()) for (const d of m.directors) dirs.add(d);
     return dirs.size;
   });
+
+  readonly silentEraCount = computed(() =>
+    this.films().filter((m) => m.year < 1930).length
+  );
 
   readonly topFilm = computed(() => {
     const rated = this.films().filter((m) => m.voteAverage > 0);

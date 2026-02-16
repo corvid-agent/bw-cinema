@@ -66,6 +66,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Primary Genre</span>
               </div>
             }
+            @if (ratingVsCatalog(); as rv) {
+              <div class="director__stat">
+                <span class="director__stat-value" [class.director__stat-value--positive]="rv.startsWith('+')">{{ rv }}</span>
+                <span class="director__stat-label">vs Catalog Avg</span>
+              </div>
+            }
           </div>
 
           @if (bestFilm(); as best) {
@@ -244,6 +250,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-tertiary);
+    }
+    .director__stat-value--positive {
+      color: #198754;
     }
     .director__best-film {
       margin-bottom: var(--space-xl);
@@ -608,6 +617,18 @@ export class DirectorComponent implements OnInit {
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     if (!top || top[1] < 2) return null;
     return top[0];
+  });
+
+  readonly ratingVsCatalog = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length < 3) return null;
+    const dirAvg = rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length;
+    const allRated = this.catalog.movies().filter((m) => m.voteAverage > 0);
+    if (allRated.length === 0) return null;
+    const catAvg = allRated.reduce((s, m) => s + m.voteAverage, 0) / allRated.length;
+    const diff = dirAvg - catAvg;
+    if (Math.abs(diff) < 0.2) return null;
+    return diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
   });
 
   readonly prolificYear = computed(() => {

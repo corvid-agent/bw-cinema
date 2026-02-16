@@ -139,6 +139,9 @@ const MOODS: Mood[] = [
           @if (topMood(); as tm) {
             <p class="explore__top-mood">Your most-explored mood: <strong>{{ tm.mood.name }}</strong> ({{ tm.count }} films)</p>
           }
+          @if (leastExploredMood(); as lm) {
+            <p class="explore__least-mood">Least explored: <strong>{{ lm.mood.name }}</strong> — {{ lm.pct }}% watched. Try something new!</p>
+          }
           <div class="explore__moods">
             @for (mood of moods; track mood.id) {
               <button class="explore__mood-card" (click)="selectMood(mood)">
@@ -288,6 +291,14 @@ const MOODS: Mood[] = [
     }
     .explore__top-mood strong {
       color: var(--accent-gold);
+    }
+    .explore__least-mood {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      margin: 0 0 var(--space-md);
+    }
+    .explore__least-mood strong {
+      color: var(--text-secondary);
     }
     .explore__moods {
       display: grid;
@@ -709,6 +720,18 @@ export class ExploreComponent implements OnInit {
       }
     }
     return best;
+  });
+
+  readonly leastExploredMood = computed(() => {
+    const progress = this.watchProgress();
+    if (!progress || progress.length < 2) return null;
+    const withWatched = progress.filter((p) => p.total > 0 && p.watched > 0);
+    if (withWatched.length < 2) return null;
+    const least = withWatched.reduce((a, b) => a.pct < b.pct ? a : b);
+    if (least.pct >= 80) return null;
+    const mood = MOODS.find((m) => m.name === least.name);
+    if (!mood) return null;
+    return { mood, pct: least.pct };
   });
 
   moodWatchedCount(mood: Mood): number {
