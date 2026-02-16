@@ -50,7 +50,15 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
               <span class="decade__stat-value">{{ languageCount() }}</span>
               <span class="decade__stat-label">Languages</span>
             </div>
+            <div class="decade__stat">
+              <span class="decade__stat-value">{{ streamablePct() }}%</span>
+              <span class="decade__stat-label">Streamable</span>
+            </div>
           </div>
+
+          @if (decadeFact(); as fact) {
+            <p class="decade__fact">{{ fact }}</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -225,6 +233,13 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-tertiary);
+    }
+    .decade__fact {
+      font-style: italic;
+      color: var(--accent-gold);
+      font-size: 0.95rem;
+      margin: 0 0 var(--space-xl);
+      padding: var(--space-sm) 0;
     }
     .decade__best-film {
       margin-bottom: var(--space-xl);
@@ -585,6 +600,29 @@ export class DecadeComponent implements OnInit {
     }
     const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
     return sorted[0]?.[0] ?? '—';
+  });
+
+  readonly streamablePct = computed(() => {
+    const f = this.films();
+    if (f.length === 0) return 0;
+    return Math.round((f.filter((m) => m.isStreamable).length / f.length) * 100);
+  });
+
+  readonly decadeFact = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const streamable = f.filter((m) => m.isStreamable);
+    const directors = new Set(f.flatMap((m) => m.directors));
+    const langs = new Set(f.map((m) => m.language).filter(Boolean));
+    const rated = f.filter((m) => m.voteAverage > 0);
+    const avg = rated.length > 0 ? rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length : 0;
+
+    if (streamable.length === f.length) return `Every film from the ${this.decadeLabel()} is free to watch.`;
+    if (avg >= 7.5 && rated.length >= 10) return `An exceptional decade — ${avg.toFixed(1)} average rating across ${rated.length} rated films.`;
+    if (langs.size >= 8) return `A truly global decade with films in ${langs.size} languages.`;
+    if (directors.size >= f.length * 0.85 && f.length >= 20) return `Remarkably diverse — ${directors.size} directors across ${f.length} films.`;
+    if (streamable.length >= 100) return `${streamable.length} films from this decade available to watch for free.`;
+    return null;
   });
 
   readonly genreBreakdown = computed(() => {

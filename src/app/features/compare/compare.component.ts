@@ -174,6 +174,12 @@ import type { MovieSummary } from '../../core/models/movie.model';
             <div class="compare__cell">{{ getStreamSource(filmA()!) }}</div>
             <div class="compare__cell">{{ getStreamSource(filmB()!) }}</div>
           </div>
+          @if (similarityScore() > 0) {
+            <div class="compare__similarity">
+              <span class="compare__similarity-pct">{{ similarityScore() }}%</span>
+              <span class="compare__similarity-label">Similarity</span>
+            </div>
+          }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
             <div class="compare__shared">
               @for (note of comparisonNotes(); track note) {
@@ -434,6 +440,27 @@ import type { MovieSummary } from '../../core/models/movie.model';
     .compare__cell--links a:hover {
       color: var(--accent-gold);
     }
+    .compare__similarity {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      padding: var(--space-md);
+      border-top: 1px solid var(--border);
+    }
+    .compare__similarity-pct {
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+    }
+    .compare__similarity-label {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
     .compare__note {
       color: var(--accent-gold);
       font-weight: 600;
@@ -537,6 +564,39 @@ export class CompareComponent implements OnInit {
       notes.push('Nearly identical ratings');
     }
     return notes;
+  });
+
+  readonly similarityScore = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return 0;
+    let score = 0;
+    let maxScore = 0;
+    // Shared genres (up to 30 points)
+    maxScore += 30;
+    const genresA = new Set(a.genres);
+    const shared = b.genres.filter((g) => genresA.has(g)).length;
+    const totalGenres = new Set([...a.genres, ...b.genres]).size;
+    if (totalGenres > 0) score += Math.round((shared / totalGenres) * 30);
+    // Same decade (15 points)
+    maxScore += 15;
+    if (Math.floor(a.year / 10) === Math.floor(b.year / 10)) score += 15;
+    else if (Math.abs(a.year - b.year) <= 15) score += 7;
+    // Same language (15 points)
+    maxScore += 15;
+    if (a.language && b.language && a.language === b.language) score += 15;
+    // Rating proximity (20 points)
+    maxScore += 20;
+    if (a.voteAverage > 0 && b.voteAverage > 0) {
+      const diff = Math.abs(a.voteAverage - b.voteAverage);
+      score += Math.round(Math.max(0, 20 - diff * 4));
+    }
+    // Shared directors (20 points)
+    maxScore += 20;
+    const dirsA = new Set(a.directors);
+    const sharedDirs = b.directors.filter((d) => dirsA.has(d)).length;
+    if (sharedDirs > 0) score += 20;
+    return Math.round((score / maxScore) * 100);
   });
 
   readonly sharedDirectors = computed(() => {

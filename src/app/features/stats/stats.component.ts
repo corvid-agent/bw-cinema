@@ -242,6 +242,16 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
               </div>
             </a>
           }
+          @if (mostVersatileDirector(); as dir) {
+            <a class="stats__highlight" [routerLink]="['/director', dir.name]">
+              <div class="stats__highlight-initial">{{ dir.name[0] }}</div>
+              <div class="stats__highlight-text">
+                <span class="stats__highlight-label">Most Versatile Director</span>
+                <span class="stats__highlight-value">{{ dir.name }}</span>
+                <span class="stats__highlight-meta">{{ dir.genreCount }} genres across {{ dir.count }} films</span>
+              </div>
+            </a>
+          }
         </div>
 
         <section class="stats__fun-facts">
@@ -270,6 +280,14 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
             <div class="stats__fact-card">
               <span class="stats__fact-number">{{ multiGenreCount() }}</span>
               <span class="stats__fact-text">films span 3+ genres</span>
+            </div>
+            <div class="stats__fact-card">
+              <span class="stats__fact-number">{{ peakYear() }}</span>
+              <span class="stats__fact-text">year with the most films</span>
+            </div>
+            <div class="stats__fact-card">
+              <span class="stats__fact-number">{{ soloDirectorFilms() }}</span>
+              <span class="stats__fact-text">single-director films</span>
             </div>
           </div>
         </section>
@@ -765,6 +783,40 @@ export class StatsComponent implements OnInit {
 
   readonly multiGenreCount = computed(() =>
     this.catalog.movies().filter((m) => m.genres.length >= 3).length
+  );
+
+  readonly mostVersatileDirector = computed(() => {
+    const dirGenres = new Map<string, { genres: Set<string>; count: number }>();
+    for (const m of this.catalog.movies()) {
+      for (const d of m.directors) {
+        const entry = dirGenres.get(d) ?? { genres: new Set(), count: 0 };
+        for (const g of m.genres) entry.genres.add(g);
+        entry.count++;
+        dirGenres.set(d, entry);
+      }
+    }
+    const eligible = [...dirGenres.entries()]
+      .filter(([, v]) => v.count >= 5)
+      .map(([name, v]) => ({ name, genreCount: v.genres.size, count: v.count }))
+      .sort((a, b) => b.genreCount - a.genreCount);
+    return eligible[0] ?? null;
+  });
+
+  readonly peakYear = computed(() => {
+    const counts = new Map<number, number>();
+    for (const m of this.catalog.movies()) {
+      counts.set(m.year, (counts.get(m.year) ?? 0) + 1);
+    }
+    let best = 0;
+    let bestYear = 0;
+    for (const [year, count] of counts) {
+      if (count > best) { best = count; bestYear = year; }
+    }
+    return bestYear;
+  });
+
+  readonly soloDirectorFilms = computed(() =>
+    this.catalog.movies().filter((m) => m.directors.length === 1).length
   );
 
   readonly genrePairs = computed(() => {
