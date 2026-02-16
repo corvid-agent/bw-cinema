@@ -99,6 +99,9 @@ interface QuizStep {
           @if (resultMedianYear(); as rmy) {
             <p class="quiz__decade-range">Median year: {{ rmy }}</p>
           }
+          @if (resultStreamablePct(); as rsp) {
+            <p class="quiz__decade-range">{{ rsp }}% free to watch</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -539,6 +542,13 @@ export class QuizComponent implements OnInit {
     if (films.length < 3) return null;
     const count = films.filter((m) => m.year < 1930).length;
     return count > 0 ? count : null;
+  });
+
+  readonly resultStreamablePct = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const pct = Math.round((films.filter((m) => m.isStreamable).length / films.length) * 100);
+    return pct > 0 ? pct : null;
   });
 
   readonly resultMedianYear = computed(() => {

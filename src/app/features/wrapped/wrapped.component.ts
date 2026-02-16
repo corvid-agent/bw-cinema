@@ -208,6 +208,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Silent Era</span>
               </div>
             }
+            @if (coDirectedPct(); as cdp) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ cdp }}%</span>
+                <span class="wrapped__hero-label">Co-directed</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -1008,6 +1014,14 @@ export class WrappedComponent implements OnInit {
       );
     }
   }
+
+  readonly coDirectedPct = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 5) return null;
+    const count = films.filter((m) => m.directors.length > 1).length;
+    const pct = Math.round((count / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
+  });
 
   readonly silentEraWatchedPct = computed(() => {
     const films = this.yearFilms();
