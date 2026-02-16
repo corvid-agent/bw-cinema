@@ -353,6 +353,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">one-film directors</span>
               </div>
             }
+            @if (unratedFilmCount() > 0) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ unratedFilmCount() }}</span>
+                <span class="stats__fact-text">films without ratings</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -937,6 +943,10 @@ export class StatsComponent implements OnInit {
     const langs = new Set(this.catalog.movies().filter((m) => m.language).map((m) => m.language));
     return langs.size;
   });
+
+  readonly unratedFilmCount = computed(() =>
+    this.catalog.movies().filter((m) => m.voteAverage === 0).length
+  );
 
   readonly oneFilmDirectorCount = computed(() => {
     const counts = new Map<string, number>();

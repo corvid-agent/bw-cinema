@@ -158,6 +158,15 @@ const MOODS: Mood[] = [
           </a>
         }
 
+        @if (unwatchedDecadeBreakdown(); as udb) {
+          <div class="explore__unwatched-decades">
+            <span class="explore__unwatched-decades-label">Unwatched by decade:</span>
+            @for (d of udb; track d.decade) {
+              <a class="explore__unwatched-decade-chip" [routerLink]="['/decade', d.decade]">{{ d.decade }}s <span class="explore__unwatched-decade-count">{{ d.count }}</span></a>
+            }
+          </div>
+        }
+
         @if (!activeMood()) {
           @if (topMood(); as tm) {
             <p class="explore__top-mood">Your most-explored mood: <strong>{{ tm.mood.name }}</strong> ({{ tm.count }} films)</p>
@@ -692,6 +701,42 @@ const MOODS: Mood[] = [
       color: var(--text-tertiary);
       flex-shrink: 0;
     }
+    .explore__unwatched-decades {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-lg);
+    }
+    .explore__unwatched-decades-label {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      font-weight: 600;
+    }
+    .explore__unwatched-decade-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .explore__unwatched-decade-chip:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .explore__unwatched-decade-count {
+      font-size: 0.65rem;
+      background: var(--bg-raised);
+      padding: 1px 5px;
+      border-radius: 6px;
+      color: var(--text-tertiary);
+    }
     .explore__next-up-rating {
       font-family: var(--font-heading);
       font-size: 1.1rem;
@@ -881,6 +926,23 @@ export class ExploreComponent implements OnInit {
       .filter((m) => m.isStreamable && !watchedIds.has(m.id) && m.voteAverage > 0)
       .sort((a, b) => b.voteAverage - a.voteAverage);
     return films.length > 0 ? films[0] : null;
+  });
+
+  readonly unwatchedDecadeBreakdown = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return null;
+    const counts = new Map<number, number>();
+    for (const m of this.catalog.movies()) {
+      if (m.isStreamable && !watchedIds.has(m.id)) {
+        const d = Math.floor(m.year / 10) * 10;
+        counts.set(d, (counts.get(d) ?? 0) + 1);
+      }
+    }
+    const entries = [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([decade, count]) => ({ decade, count }));
+    return entries.length > 0 ? entries : null;
   });
 
   moodWatchedCount(mood: Mood): number {

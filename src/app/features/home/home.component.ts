@@ -65,6 +65,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (avgCatalogRating(); as acr) {
           <p class="hero__avg-rating">Average catalog rating: &#9733; {{ acr }}</p>
         }
+        @if (oldestFilmYear(); as ofy) {
+          <p class="hero__avg-rating">Films dating back to {{ ofy }}</p>
+        }
       </div>
     </section>
 
@@ -1210,6 +1213,12 @@ export class HomeComponent implements OnInit {
   readonly silentEraCount = computed(() =>
     this.catalog.movies().filter((m) => m.year < 1930).length
   );
+
+  readonly oldestFilmYear = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    return movies.reduce((oldest, m) => m.year < oldest ? m.year : oldest, Infinity);
+  });
 
   readonly avgCatalogRating = computed(() => {
     const rated = this.catalog.movies().filter((m) => m.voteAverage > 0);
