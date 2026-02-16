@@ -59,12 +59,14 @@ describe('MovieCardComponent', () => {
     expect(link.getAttribute('href')).toBe('/movie/Q100');
   });
 
-  it('should show placeholder when no poster', () => {
+  it('should show placeholder with title when no poster', () => {
     const noPosterMovie = { ...mockMovie, posterUrl: null };
     fixture.componentRef.setInput('movie', noPosterMovie);
     fixture.detectChanges();
-    const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).toContain('No Poster');
+    const placeholder = fixture.nativeElement.querySelector('.card__poster-placeholder');
+    expect(placeholder).toBeTruthy();
+    expect(placeholder.textContent).toContain('Test Classic');
+    expect(placeholder.textContent).toContain('1945');
   });
 
   it('should hide badge when not streamable', () => {

@@ -13,18 +13,28 @@ import type { MovieSummary } from '../../core/models/movie.model';
           <img [src]="movie().posterUrl" [alt]="movie().title + ' poster'" loading="lazy" />
         } @else {
           <div class="card__poster-placeholder">
-            <span>No Poster</span>
+            <span class="card__film-icon">&#127902;</span>
+            <span class="card__placeholder-title">{{ movie().title }}</span>
+            <span class="card__placeholder-year">{{ movie().year }}</span>
+            @if (movie().directors.length > 0) {
+              <span class="card__placeholder-director">{{ movie().directors[0] }}</span>
+            }
           </div>
         }
         @if (movie().isStreamable) {
-          <span class="card__badge">Watch Free</span>
+          <span class="card__badge">&#9654; Watch Free</span>
         }
       </div>
       <div class="card__info">
         <h3 class="card__title">{{ movie().title }}</h3>
-        <p class="card__year">{{ movie().year }}</p>
+        <div class="card__meta">
+          <span class="card__year">{{ movie().year }}</span>
+          @if (movie().genres.length > 0) {
+            <span class="card__genre">&bull; {{ movie().genres[0] }}</span>
+          }
+        </div>
         @if (movie().voteAverage > 0) {
-          <p class="card__rating">{{ movie().voteAverage.toFixed(1) }}</p>
+          <p class="card__rating">&#9733; {{ movie().voteAverage.toFixed(1) }}</p>
         }
       </div>
     </a>
@@ -39,6 +49,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
       overflow: hidden;
       transition: transform 0.2s, box-shadow 0.2s;
       border: 1px solid var(--border);
+      cursor: pointer;
     }
     .card:hover {
       transform: translateY(-4px);
@@ -60,10 +71,38 @@ import type { MovieSummary } from '../../core/models/movie.model';
       width: 100%;
       height: 100%;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 6px;
+      padding: var(--space-md);
+      text-align: center;
+      background: linear-gradient(160deg, #1a1a1a 0%, #252525 50%, #1e1e1e 100%);
+    }
+    .card__film-icon {
+      font-size: 2.5rem;
+      opacity: 0.6;
+      margin-bottom: var(--space-sm);
+    }
+    .card__placeholder-title {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      color: var(--accent-cream);
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card__placeholder-year {
+      font-size: 1.1rem;
+      color: var(--accent-gold);
+      font-weight: 600;
+    }
+    .card__placeholder-director {
+      font-size: 0.8rem;
       color: var(--text-tertiary);
-      font-size: 0.9rem;
+      font-style: italic;
     }
     .card__badge {
       position: absolute;
@@ -73,11 +112,11 @@ import type { MovieSummary } from '../../core/models/movie.model';
       color: var(--bg-deep);
       font-size: 0.75rem;
       font-weight: 600;
-      padding: 2px 8px;
+      padding: 3px 10px;
       border-radius: var(--radius-sm);
     }
     .card__info {
-      padding: var(--space-sm) var(--space-md);
+      padding: var(--space-sm) var(--space-md) var(--space-md);
     }
     .card__title {
       font-family: var(--font-heading);
@@ -87,10 +126,21 @@ import type { MovieSummary } from '../../core/models/movie.model';
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .card__meta {
+      display: flex;
+      gap: var(--space-xs);
+      align-items: center;
+    }
     .card__year {
       color: var(--text-secondary);
       font-size: 0.85rem;
-      margin: 0;
+    }
+    .card__genre {
+      color: var(--text-tertiary);
+      font-size: 0.8rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .card__rating {
       color: var(--accent-gold);
