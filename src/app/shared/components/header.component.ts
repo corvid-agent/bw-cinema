@@ -1,12 +1,13 @@
 import { Component, ChangeDetectionStrategy, signal, inject, OnInit } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../../core/services/theme.service';
 import { AccessibilityService } from '../../core/services/accessibility.service';
 
 @Component({
   selector: 'app-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, FormsModule],
   template: `
     <header class="header">
       <div class="header__inner container">
@@ -32,6 +33,18 @@ import { AccessibilityService } from '../../core/services/accessibility.service'
           <a routerLink="/explore" routerLinkActive="active" (click)="menuOpen.set(false)">Explore</a>
           <a routerLink="/stats" routerLinkActive="active" (click)="menuOpen.set(false)">Stats</a>
           <a routerLink="/about" routerLinkActive="active" (click)="menuOpen.set(false)">About</a>
+          <form class="header__search" (ngSubmit)="onSearch()" role="search">
+            <svg class="header__search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+              class="header__search-input"
+              type="search"
+              placeholder="Search films..."
+              [(ngModel)]="searchQuery"
+              name="q"
+              aria-label="Search films"
+              (keydown.escape)="searchQuery.set('')"
+            />
+          </form>
           <button
             class="header__theme-toggle"
             (click)="theme.toggle()"
@@ -180,6 +193,38 @@ import { AccessibilityService } from '../../core/services/accessibility.service'
       transition: background-color 0.2s, border-color 0.2s;
       margin-left: 4px;
     }
+    .header__search {
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin-left: var(--space-sm);
+    }
+    .header__search-icon {
+      position: absolute;
+      left: 10px;
+      color: var(--text-tertiary);
+      pointer-events: none;
+    }
+    .header__search-input {
+      width: 180px;
+      height: 34px;
+      padding: 0 10px 0 32px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      transition: width 0.3s ease, border-color 0.2s;
+      min-height: auto;
+    }
+    .header__search-input:focus {
+      width: 240px;
+      border-color: var(--accent-gold);
+      outline: none;
+    }
+    .header__search-input::placeholder {
+      color: var(--text-tertiary);
+    }
     @media (max-width: 768px) {
       .header__hamburger { display: flex; }
       .header__nav {
@@ -208,6 +253,16 @@ import { AccessibilityService } from '../../core/services/accessibility.service'
         padding: var(--space-md);
         border-radius: var(--radius);
       }
+      .header__search {
+        margin: var(--space-xs) var(--space-md);
+        order: -1;
+      }
+      .header__search-input {
+        width: 100%;
+      }
+      .header__search-input:focus {
+        width: 100%;
+      }
       .header__theme-toggle,
       .header__a11y-toggle {
         align-self: flex-start;
@@ -221,6 +276,7 @@ export class HeaderComponent implements OnInit {
   readonly theme = inject(ThemeService);
   readonly a11y = inject(AccessibilityService);
   readonly menuOpen = signal(false);
+  readonly searchQuery = signal('');
 
   ngOnInit(): void {
     this.router.events.subscribe((event) => {
@@ -228,5 +284,13 @@ export class HeaderComponent implements OnInit {
         this.menuOpen.set(false);
       }
     });
+  }
+
+  onSearch(): void {
+    const q = this.searchQuery().trim();
+    if (!q) return;
+    this.router.navigate(['/browse'], { queryParams: { q } });
+    this.searchQuery.set('');
+    this.menuOpen.set(false);
   }
 }

@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, input, signal, inject } from '@angu
 import { RouterLink } from '@angular/router';
 import { LazyImageDirective } from '../directives/lazy-image.directive';
 import { CollectionService } from '../../core/services/collection.service';
+import { NotificationService } from '../../core/services/notification.service';
 import type { MovieSummary } from '../../core/models/movie.model';
 
 @Component({
@@ -47,6 +48,21 @@ import type { MovieSummary } from '../../core/models/movie.model';
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </span>
         }
+        <div class="card__actions">
+          @if (collection.isWatched(movie().id)) {
+            <button class="card__action card__action--watched" aria-label="Watched" (click)="onAction($event)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+          } @else if (collection.isInWatchlist(movie().id)) {
+            <button class="card__action card__action--inlist" aria-label="In watchlist" (click)="removeFromWatchlist($event)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+          } @else {
+            <button class="card__action" [attr.aria-label]="'Add ' + movie().title + ' to watchlist'" (click)="addToWatchlist($event)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          }
+        </div>
       </div>
       <div class="card__info">
         <h3 class="card__title">{{ movie().title }}</h3>
@@ -213,6 +229,56 @@ import type { MovieSummary } from '../../core/models/movie.model';
       right: var(--space-sm);
       color: #e53e3e;
       filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+      pointer-events: none;
+    }
+    .card__actions {
+      position: absolute;
+      bottom: var(--space-sm);
+      left: var(--space-sm);
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: auto;
+      z-index: 2;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .card:hover .card__actions { opacity: 1; }
+    }
+    @media (hover: none) {
+      .card__actions { opacity: 1; }
+    }
+    .card__action {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      min-height: 28px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: background-color 0.2s, border-color 0.2s, transform 0.15s;
+    }
+    .card__action:hover {
+      background: var(--accent-gold);
+      border-color: var(--accent-gold);
+      color: var(--bg-deep);
+      transform: scale(1.15);
+    }
+    .card__action--watched {
+      background: rgba(25, 135, 84, 0.8);
+      border-color: rgba(25, 135, 84, 0.9);
+      cursor: default;
+    }
+    .card__action--inlist {
+      background: rgba(200, 170, 60, 0.7);
+      border-color: var(--accent-gold);
     }
     .card__info {
       padding: 10px 4px 4px;
@@ -255,8 +321,28 @@ export class MovieCardComponent {
   readonly imgFailed = signal(false);
   readonly imgLoaded = signal(false);
   protected readonly collection = inject(CollectionService);
+  private readonly notifications = inject(NotificationService);
 
   onImageLoad(): void {
     this.imgLoaded.set(true);
+  }
+
+  addToWatchlist(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.collection.addToWatchlist(this.movie().id);
+    this.notifications.show(`Added "${this.movie().title}" to watchlist`, 'success');
+  }
+
+  removeFromWatchlist(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.collection.removeFromWatchlist(this.movie().id);
+    this.notifications.show(`Removed from watchlist`, 'info');
+  }
+
+  onAction(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
   }
 }

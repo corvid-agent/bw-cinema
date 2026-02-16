@@ -220,9 +220,26 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                       <span class="detail__detail-label">Genres</span>
                       <div class="detail__tags">
                         @for (genre of m.genres; track genre) {
-                          <span class="detail__tag">{{ genre }}</span>
+                          <a class="detail__tag" [routerLink]="['/genre', genre]">{{ genre }}</a>
                         }
                       </div>
+                    </div>
+                  }
+                </div>
+              }
+
+              @if (m.originalLanguage || m.productionCountries.length > 0) {
+                <div class="detail__details">
+                  @if (m.originalLanguage) {
+                    <div class="detail__detail-row">
+                      <span class="detail__detail-label">Language</span>
+                      <a [routerLink]="['/browse']" [queryParams]="{ languages: languageName(m.originalLanguage), streamable: '0' }">{{ languageName(m.originalLanguage) }}</a>
+                    </div>
+                  }
+                  @if (m.productionCountries.length > 0) {
+                    <div class="detail__detail-row">
+                      <span class="detail__detail-label">{{ m.productionCountries.length > 1 ? 'Countries' : 'Country' }}</span>
+                      <span>{{ m.productionCountries.join(', ') }}</span>
                     </div>
                   }
                 </div>
@@ -483,6 +500,13 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       padding: 2px 12px;
       font-size: 0.85rem;
       color: var(--text-secondary);
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+    }
+    .detail__tag:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      background-color: var(--accent-gold-dim);
     }
     .detail__links {
       display: flex;
@@ -990,5 +1014,22 @@ export class MovieComponent implements OnInit {
 
   encodeTitle(title: string): string {
     return encodeURIComponent(title);
+  }
+
+  private static readonly LANG_NAMES: Record<string, string> = {
+    en: 'English', fr: 'French', de: 'German', ja: 'Japanese', it: 'Italian',
+    es: 'Spanish', ru: 'Russian', sv: 'Swedish', da: 'Danish', no: 'Norwegian',
+    pt: 'Portuguese', nl: 'Dutch', zh: 'Chinese', ko: 'Korean', pl: 'Polish',
+    cs: 'Czech', hu: 'Hungarian', fi: 'Finnish', el: 'Greek', ro: 'Romanian',
+    tr: 'Turkish', ar: 'Arabic', hi: 'Hindi', bn: 'Bengali', th: 'Thai',
+    he: 'Hebrew', uk: 'Ukrainian', fa: 'Persian', id: 'Indonesian', nb: 'Norwegian',
+    sh: 'Serbo-Croatian', sr: 'Serbian', hr: 'Croatian', sk: 'Slovak', bg: 'Bulgarian',
+    ka: 'Georgian', vi: 'Vietnamese', ta: 'Tamil', te: 'Telugu', mr: 'Marathi',
+    ml: 'Malayalam', kn: 'Kannada', is: 'Icelandic', ca: 'Catalan', eu: 'Basque',
+    cn: 'Chinese', af: 'Afrikaans', cy: 'Welsh', ga: 'Irish', gl: 'Galician',
+  };
+
+  languageName(code: string): string {
+    return MovieComponent.LANG_NAMES[code] ?? code.toUpperCase();
   }
 }
