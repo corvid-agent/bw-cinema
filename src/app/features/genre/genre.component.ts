@@ -140,6 +140,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (avgTitleLength(); as atl) {
             <p class="genre__fact">Avg title length: {{ atl }} chars</p>
           }
+          @if (longestTitle(); as lt) {
+            <p class="genre__fact">Longest title: "{{ lt }}"</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -883,6 +886,13 @@ export class GenreComponent implements OnInit {
     const mid = Math.floor(sorted.length / 2);
     const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
     return median.toFixed(1);
+  });
+
+  readonly longestTitle = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const longest = f.reduce((a, b) => a.title.length >= b.title.length ? a : b);
+    return longest.title.length >= 20 ? longest.title : null;
   });
 
   readonly avgTitleLength = computed(() => {

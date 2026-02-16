@@ -449,6 +449,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">multilingual directors</span>
               </div>
             }
+            @if (avgDirectorsPerFilm(); as adpf) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ adpf }}</span>
+                <span class="stats__fact-text">avg directors per film</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1173,6 +1179,14 @@ export class StatsComponent implements OnInit {
     const count = movies.filter((m) => m.directors.length > 1).length;
     const pct = Math.round((count / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly avgDirectorsPerFilm = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    const total = movies.reduce((s, m) => s + m.directors.length, 0);
+    const avg = total / movies.length;
+    return avg > 1.01 ? avg.toFixed(2) : null;
   });
 
   readonly multiLanguageDirectorCount = computed(() => {

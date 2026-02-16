@@ -105,6 +105,9 @@ interface QuizStep {
           @if (resultCoDirectedPct(); as rcdp) {
             <p class="quiz__decade-range">{{ rcdp }}% co-directed</p>
           }
+          @if (resultAvgTitleLength(); as ratl) {
+            <p class="quiz__decade-range">Avg title: {{ ratl }} characters</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -560,6 +563,12 @@ export class QuizComponent implements OnInit {
     const years = films.map((m) => m.year).sort((a, b) => a - b);
     const mid = Math.floor(years.length / 2);
     return years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
+  });
+
+  readonly resultAvgTitleLength = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    return Math.round(films.reduce((s, m) => s + m.title.length, 0) / films.length);
   });
 
   readonly resultCoDirectedPct = computed(() => {
