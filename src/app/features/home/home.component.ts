@@ -56,6 +56,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             <span class="hero__stat-label">Genres</span>
           </div>
         </div>
+        @if (catalogAvgRating(); as avg) {
+          <p class="hero__avg-rating">Average catalog rating: {{ avg }}/10</p>
+        }
       </div>
     </section>
 
@@ -526,6 +529,11 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       text-transform: uppercase;
       letter-spacing: 0.08em;
       margin-top: 2px;
+    }
+    .hero__avg-rating {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      margin: var(--space-md) 0 0;
     }
     .section {
       padding: var(--space-2xl) 0;
@@ -1191,6 +1199,12 @@ export class HomeComponent implements OnInit {
       for (const g of m.genres) genres.add(g);
     }
     return genres.size;
+  });
+
+  readonly catalogAvgRating = computed(() => {
+    const rated = this.catalog.movies().filter((m) => m.voteAverage > 0);
+    if (rated.length < 10) return null;
+    return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
   });
 
   readonly decadeSpan = computed(() => {

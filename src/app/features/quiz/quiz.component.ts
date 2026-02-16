@@ -65,7 +65,9 @@ interface QuizStep {
           <div class="quiz__result-grid">
             @for (m of results(); track m.id) {
               <a class="quiz__result-card" [routerLink]="['/movie', m.id]">
-                @if (matchScores().get(m.id); as score) {
+                @if (m.id === bestMatchId()) {
+                  <span class="quiz__best-match">Best Match</span>
+                } @else if (matchScores().get(m.id); as score) {
                   <span class="quiz__match-score">{{ score }}% match</span>
                 }
                 @if (m.posterUrl) {
@@ -209,6 +211,16 @@ interface QuizStep {
       font-weight: 700;
       color: var(--accent-gold);
       background: var(--accent-gold-dim);
+      padding: 2px 8px;
+      border-radius: 8px;
+      margin-bottom: var(--space-xs);
+    }
+    .quiz__best-match {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(25, 135, 84, 0.9);
       padding: 2px 8px;
       border-radius: 8px;
       margin-bottom: var(--space-xs);
@@ -380,6 +392,20 @@ export class QuizComponent implements OnInit {
   readonly showResults = signal(false);
   readonly results = signal<MovieSummary[]>([]);
   readonly poolSize = signal(0);
+
+  readonly bestMatchId = computed(() => {
+    const scores = this.matchScores();
+    if (scores.size < 2) return null;
+    let bestId: string | null = null;
+    let bestScore = 0;
+    for (const [id, score] of scores) {
+      if (score > bestScore) {
+        bestScore = score;
+        bestId = id;
+      }
+    }
+    return bestScore > 50 ? bestId : null;
+  });
 
   readonly avgMatchScore = computed(() => {
     const scores = this.matchScores();

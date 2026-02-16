@@ -112,6 +112,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Genres</span>
               </div>
             }
+            @if (decadeSpan(); as ds) {
+              <div class="wrapped__hero-stat wrapped__hero-stat--text">
+                <span class="wrapped__hero-value">{{ ds }}</span>
+                <span class="wrapped__hero-label">Decade Span</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -729,6 +735,15 @@ export class WrappedComponent implements OnInit {
       for (const g of f.genres) genres.add(g);
     }
     return genres.size;
+  });
+
+  readonly decadeSpan = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 2) return null;
+    const decades = new Set(films.map((m) => Math.floor(m.year / 10) * 10));
+    if (decades.size < 2) return null;
+    const sorted = [...decades].sort((a, b) => a - b);
+    return `${sorted[0]}s–${sorted[sorted.length - 1]}s`;
   });
 
   private maxBarValue = computed(() => {
