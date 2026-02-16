@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, input, computed, HostListener } from '@angular/core';
+import { Location } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
@@ -21,6 +22,10 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       <app-skeleton-detail />
     } @else if (movie(); as m) {
       <div class="detail">
+        <button class="detail__back" (click)="goBack()" aria-label="Go back">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Back
+        </button>
         <div class="detail__hero">
           @if (m.backdropUrl) {
             <div class="detail__backdrop" [style.background-image]="'url(' + m.backdropUrl + ')'"></div>
@@ -334,6 +339,33 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
     }
   `,
   styles: [`
+    .detail__back {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      position: absolute;
+      top: var(--space-md);
+      left: var(--space-lg);
+      z-index: 10;
+      padding: 6px 14px 6px 8px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .detail__back:hover {
+      background: rgba(0, 0, 0, 0.7);
+      color: var(--text-primary);
+      border-color: var(--accent-gold);
+    }
+    .detail {
+      position: relative;
+    }
     .detail__hero {
       position: relative;
       height: 350px;
@@ -842,6 +874,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
 export class MovieComponent implements OnInit {
   readonly id = input.required<string>();
 
+  private readonly location = inject(Location);
   private readonly router = inject(Router);
   private readonly catalogService = inject(CatalogService);
   private readonly movieService = inject(MovieService);
@@ -1010,6 +1043,10 @@ export class MovieComponent implements OnInit {
     await navigator.clipboard.writeText(window.location.href);
     this.notifications.show('Link copied to clipboard', 'info');
     this.shareMenuOpen.set(false);
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
   encodeTitle(title: string): string {
