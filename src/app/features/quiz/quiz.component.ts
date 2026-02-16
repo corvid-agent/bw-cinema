@@ -72,6 +72,9 @@ interface QuizStep {
           @if (resultAvgYear(); as ray) {
             <p class="quiz__decade-range">Average release year: {{ ray }}</p>
           }
+          @if (resultLanguageCount(); as rlc) {
+            <p class="quiz__decade-range">{{ rlc }} languages represented</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -453,6 +456,13 @@ export class QuizComponent implements OnInit {
       for (const d of m.directors) dirs.add(d);
     }
     return dirs.size;
+  });
+
+  readonly resultLanguageCount = computed(() => {
+    const films = this.results();
+    if (films.length < 2) return null;
+    const langs = new Set(films.map((m) => m.language).filter(Boolean));
+    return langs.size > 1 ? langs.size : null;
   });
 
   readonly resultAvgYear = computed(() => {

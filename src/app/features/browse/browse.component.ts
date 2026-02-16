@@ -57,6 +57,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultStreamablePct(); as rsp) {
           <p class="browse__watched-note">{{ rsp }}% streamable</p>
         }
+        @if (resultYearRange(); as ryr) {
+          <p class="browse__watched-note">Years: {{ ryr }}</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -649,6 +652,16 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     if (films.length < 10) return null;
     const langs = new Set(films.map((m) => m.language).filter(Boolean));
     return langs.size > 1 ? langs.size : null;
+  });
+
+  readonly resultYearRange = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 5) return null;
+    const years = films.map((m) => m.year);
+    const min = Math.min(...years);
+    const max = Math.max(...years);
+    if (max - min < 5) return null;
+    return `${min}–${max}`;
   });
 
   readonly resultStreamablePct = computed(() => {
