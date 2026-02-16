@@ -59,6 +59,9 @@ const MOODS: Mood[] = [
           <button class="explore__random-btn explore__random-btn--secondary" (click)="pickFilmFestival()">
             Film Festival
           </button>
+          <button class="explore__random-btn explore__random-btn--secondary" (click)="pickSerendipity()">
+            Serendipity
+          </button>
         </div>
 
         @if (doubleFeature().length === 2) {
@@ -746,6 +749,14 @@ export class ExploreComponent implements OnInit {
     const [decade, decMovies] = eligible[Math.floor(Math.random() * eligible.length)];
     const shuffled = [...decMovies].sort(() => Math.random() - 0.5).slice(0, 3);
     return { theme: `Best of the ${decade}s`, films: shuffled };
+  }
+
+  pickSerendipity(): void {
+    // Truly random: pick a streamable film the user hasn't watched, ignoring ratings/popularity
+    const watchedIds = this.collection.watchedIds();
+    const films = this.catalog.movies().filter((m) => m.isStreamable && !watchedIds.has(m.id));
+    if (films.length === 0) return;
+    this.router.navigate(['/movie', films[Math.floor(Math.random() * films.length)].id]);
   }
 
   pickUnwatched(): void {

@@ -157,6 +157,28 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         </section>
       }
 
+      @if (worldCinema().length > 0) {
+        <section class="section container" aria-label="World cinema">
+          <div class="section__header">
+            <h2>World Cinema</h2>
+            <a class="section__link" routerLink="/browse" [queryParams]="{ streamable: '1' }">Browse all &rarr;</a>
+          </div>
+          <div class="gems__scroll">
+            @for (film of worldCinema(); track film.id) {
+              <a class="gems__card" [routerLink]="['/movie', film.id]">
+                @if (film.posterUrl) {
+                  <img [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+                } @else {
+                  <div class="gems__placeholder">{{ film.title }}</div>
+                }
+                <p class="gems__title">{{ film.title }}</p>
+                <p class="gems__meta">{{ film.year }} &middot; {{ film.language }}</p>
+              </a>
+            }
+          </div>
+        </section>
+      }
+
       @if (decades().length > 0) {
         <section class="section container" aria-label="Browse by decade">
           <h2>Browse by Decade</h2>
@@ -942,6 +964,13 @@ export class HomeComponent implements OnInit {
   readonly topRated = computed(() =>
     this.catalog.movies()
       .filter((m) => m.voteAverage >= 8.0 && m.isStreamable && m.posterUrl)
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 12)
+  );
+
+  readonly worldCinema = computed(() =>
+    this.catalog.movies()
+      .filter((m) => m.isStreamable && m.posterUrl && m.language && m.language !== 'English' && m.voteAverage >= 6.5)
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(0, 12)
   );

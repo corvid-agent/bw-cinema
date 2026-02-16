@@ -263,6 +263,23 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
             </div>
           </div>
         </section>
+
+        @if (genrePairs().length > 0) {
+          <section class="stats__section">
+            <h2>Most Common Genre Pairs</h2>
+            <div class="stats__bars">
+              @for (pair of genrePairs(); track pair.name) {
+                <div class="stats__bar-row">
+                  <span class="stats__bar-label stats__bar-label--wide">{{ pair.name }}</span>
+                  <div class="stats__bar-track">
+                    <div class="stats__bar-fill" [style.width.%]="pair.pct"></div>
+                  </div>
+                  <span class="stats__bar-count">{{ pair.count }}</span>
+                </div>
+              }
+            </div>
+          </section>
+        }
       }
     </div>
   `,
@@ -337,6 +354,9 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
       color: var(--text-secondary);
       text-align: right;
       transition: color 0.15s;
+    }
+    .stats__bar-label--wide {
+      min-width: 140px;
     }
     .stats__bar-track {
       flex: 1;
@@ -718,6 +738,22 @@ export class StatsComponent implements OnInit {
   readonly multiGenreCount = computed(() =>
     this.catalog.movies().filter((m) => m.genres.length >= 3).length
   );
+
+  readonly genrePairs = computed(() => {
+    const pairCounts = new Map<string, number>();
+    for (const m of this.catalog.movies()) {
+      const sorted = [...m.genres].sort();
+      for (let i = 0; i < sorted.length; i++) {
+        for (let j = i + 1; j < sorted.length; j++) {
+          const key = `${sorted[i]} + ${sorted[j]}`;
+          pairCounts.set(key, (pairCounts.get(key) ?? 0) + 1);
+        }
+      }
+    }
+    const sorted = [...pairCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const max = sorted[0]?.[1] ?? 1;
+    return sorted.map(([name, count]) => ({ name, count, pct: (count / max) * 100 }));
+  });
 
   ngOnInit(): void {
     this.catalog.load();

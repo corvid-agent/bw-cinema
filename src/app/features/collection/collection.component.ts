@@ -388,13 +388,13 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                   <h3>Top Genres</h3>
                   <div class="stats__bars">
                     @for (g of genreStats(); track g.name) {
-                      <div class="stats__bar-row">
-                        <span class="stats__bar-label">{{ g.name }}</span>
+                      <a class="stats__bar-row" [routerLink]="['/genre', g.name]">
+                        <span class="stats__bar-label stats__bar-label--link">{{ g.name }}</span>
                         <div class="stats__bar-track">
                           <div class="stats__bar-fill" [style.width.%]="g.pct"></div>
                         </div>
                         <span class="stats__bar-count">{{ g.count }}</span>
-                      </div>
+                      </a>
                     }
                   </div>
                 </section>
@@ -403,13 +403,13 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                   <h3>By Decade</h3>
                   <div class="stats__bars">
                     @for (d of decadeStats(); track d.name) {
-                      <div class="stats__bar-row">
-                        <span class="stats__bar-label">{{ d.name }}</span>
+                      <a class="stats__bar-row" [routerLink]="['/decade', d.name.replace('s', '')]">
+                        <span class="stats__bar-label stats__bar-label--link">{{ d.name }}</span>
                         <div class="stats__bar-track">
                           <div class="stats__bar-fill" [style.width.%]="d.pct"></div>
                         </div>
                         <span class="stats__bar-count">{{ d.count }}</span>
-                      </div>
+                      </a>
                     }
                   </div>
                 </section>
