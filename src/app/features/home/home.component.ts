@@ -226,6 +226,31 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         </section>
       }
 
+      @if (genreSpotlight(); as gSpot) {
+        <section class="section container" aria-label="Genre spotlight">
+          <div class="section__header">
+            <div>
+              <h2>Genre Spotlight: {{ gSpot.name }}</h2>
+              <p class="section__desc">{{ gSpot.count }} films in catalog</p>
+            </div>
+            <a class="section__link" [routerLink]="['/genre', gSpot.name]">See all &rarr;</a>
+          </div>
+          <div class="gems__scroll">
+            @for (film of gSpot.films; track film.id) {
+              <a class="gems__card" [routerLink]="['/movie', film.id]">
+                @if (film.posterUrl) {
+                  <img [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+                } @else {
+                  <div class="gems__placeholder">{{ film.title }}</div>
+                }
+                <p class="gems__title">{{ film.title }}</p>
+                <p class="gems__meta">{{ film.year }} &middot; &#9733; {{ film.voteAverage.toFixed(1) }}</p>
+              </a>
+            }
+          </div>
+        </section>
+      }
+
       @if (directorSpotlight(); as spotlight) {
         <section class="section container" aria-label="Director spotlight">
           <div class="section__header">
@@ -1046,6 +1071,28 @@ export class HomeComponent implements OnInit {
       .slice(0, 10)
       .map(([name, count]) => ({ name, count }));
   });
+  readonly genreSpotlight = computed(() => {
+    const seed = this.gemSeed();
+    const genreMap = new Map<string, import('../../core/models/movie.model').MovieSummary[]>();
+    for (const m of this.catalog.movies()) {
+      for (const g of m.genres) {
+        const list = genreMap.get(g) ?? [];
+        list.push(m);
+        genreMap.set(g, list);
+      }
+    }
+    const eligible = [...genreMap.entries()]
+      .filter(([, films]) => films.length >= 20 && films.some((f) => f.isStreamable && f.posterUrl));
+    if (eligible.length === 0) return null;
+    const idx = Math.abs(seed + 7) % eligible.length;
+    const [name, films] = eligible[idx];
+    const sorted = films
+      .filter((f) => f.posterUrl && f.isStreamable)
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 10);
+    return { name, count: films.length, films: sorted };
+  });
+
   readonly directorSpotlight = computed(() => {
     const seed = this.gemSeed();
     const dirMap = new Map<string, import('../../core/models/movie.model').MovieSummary[]>();

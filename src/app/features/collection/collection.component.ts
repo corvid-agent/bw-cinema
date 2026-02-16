@@ -332,6 +332,20 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                 </div>
               </div>
 
+              @if (nextMilestone(); as milestone) {
+                <div class="stats__milestone">
+                  <span class="stats__milestone-icon">{{ milestone.icon }}</span>
+                  <div class="stats__milestone-info">
+                    <span class="stats__milestone-name">{{ milestone.name }}</span>
+                    <span class="stats__milestone-desc">{{ milestone.remaining }} more to go</span>
+                  </div>
+                  <div class="stats__milestone-bar-track">
+                    <div class="stats__milestone-bar-fill" [style.width.%]="milestone.pct"></div>
+                  </div>
+                  <span class="stats__milestone-progress">{{ milestone.current }}/{{ milestone.target }}</span>
+                </div>
+              }
+
               @if (achievements().length > 0) {
                 <section class="achievements">
                   <h3>Achievements</h3>
@@ -795,6 +809,54 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
     .stats__rating-dist {
       margin-top: var(--space-xl);
       max-width: 500px;
+    }
+    .stats__milestone {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      background: var(--accent-gold-dim);
+      border: 1px solid var(--accent-gold);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-xl);
+    }
+    .stats__milestone-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .stats__milestone-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .stats__milestone-name {
+      display: block;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+    .stats__milestone-desc {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .stats__milestone-bar-track {
+      width: 80px;
+      height: 6px;
+      background: var(--bg-raised);
+      border-radius: 3px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .stats__milestone-bar-fill {
+      height: 100%;
+      background: var(--accent-gold);
+      border-radius: 3px;
+    }
+    .stats__milestone-progress {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      font-weight: 600;
+      white-space: nowrap;
     }
     /* Achievements */
     .achievements {
@@ -1454,6 +1516,51 @@ export class CollectionComponent implements OnInit {
       { id: 'rate10', icon: '⭐', name: 'Critic', description: 'Rate 10 films', earned: ratedCount >= 10 },
       { id: 'streak7', icon: '🔥', name: 'On Fire', description: '7-day watch streak', earned: longest >= 7 },
     ];
+  });
+
+  readonly nextMilestone = computed(() => {
+    const badges = this.achievements();
+    const unearned = badges.filter((b) => !b.earned);
+    if (unearned.length === 0) return null;
+
+    const watched = this.watchedMovies();
+    const watchedCount = watched.length;
+    const decades = new Set(watched.map((m) => Math.floor(m.year / 10) * 10));
+    const genres = new Set(watched.flatMap((m) => m.genres));
+    const silentCount = watched.filter((m) => m.year < 1930).length;
+    const streamedCount = watched.filter((m) => m.isStreamable).length;
+    const favCount = this.collectionService.favorites().length;
+    const ratedCount = this.collectionService.watched().filter((w) => w.userRating != null).length;
+    const { longest } = this.computeStreaks();
+
+    const targets: Record<string, { current: number; target: number }> = {
+      first: { current: watchedCount, target: 1 },
+      ten: { current: watchedCount, target: 10 },
+      twentyfive: { current: watchedCount, target: 25 },
+      fifty: { current: watchedCount, target: 50 },
+      hundred: { current: watchedCount, target: 100 },
+      decades3: { current: decades.size, target: 3 },
+      decades5: { current: decades.size, target: 5 },
+      genres5: { current: genres.size, target: 5 },
+      silent: { current: silentCount, target: 3 },
+      stream5: { current: streamedCount, target: 5 },
+      fav5: { current: favCount, target: 5 },
+      rate10: { current: ratedCount, target: 10 },
+      streak7: { current: longest, target: 7 },
+    };
+
+    // Find closest unearned badge
+    let closest: { icon: string; name: string; current: number; target: number; remaining: number; pct: number } | null = null;
+    for (const badge of unearned) {
+      const t = targets[badge.id];
+      if (!t) continue;
+      const remaining = t.target - t.current;
+      const pct = Math.round((t.current / t.target) * 100);
+      if (!closest || remaining < closest.remaining) {
+        closest = { icon: badge.icon, name: badge.name, current: t.current, target: t.target, remaining, pct };
+      }
+    }
+    return closest;
   });
 
   readonly currentStreak = computed(() => this.computeStreaks().current);

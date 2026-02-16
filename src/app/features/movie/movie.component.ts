@@ -49,6 +49,10 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
             <div class="detail__info">
               <h1 class="detail__title">{{ m.title }}</h1>
 
+              @if (catalogRank() > 0) {
+                <span class="detail__rank">#{{ catalogRank() }} in catalog</span>
+              }
+
               <div class="detail__meta">
                 <span class="detail__meta-item">{{ m.year }}</span>
                 @if (m.runtime) {
@@ -460,6 +464,18 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       font-size: 1.6rem;
       font-weight: 700;
       opacity: 0.5;
+    }
+    .detail__rank {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-gold);
+      background: var(--accent-gold-dim);
+      padding: 2px 10px;
+      border-radius: 10px;
+      margin-bottom: var(--space-sm);
     }
     .detail__title {
       font-size: 2.2rem;
@@ -1077,6 +1093,16 @@ export class MovieComponent implements OnInit {
       }
       return { movie: m, reason };
     });
+  });
+
+  readonly catalogRank = computed(() => {
+    const s = this.summary();
+    if (!s || s.voteAverage === 0) return 0;
+    const ranked = this.catalogService.movies()
+      .filter((m) => m.voteAverage > 0)
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+    const idx = ranked.findIndex((m) => m.id === s.id);
+    return idx >= 0 ? idx + 1 : 0;
   });
 
   readonly directorFilms = computed(() => {
