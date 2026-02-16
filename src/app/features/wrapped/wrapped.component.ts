@@ -741,7 +741,7 @@ export class WrappedComponent implements OnInit {
     return best.userRating;
   });
 
-  readonly busiestMonth = computed(() => {
+  readonly busiestMonth = computed((): { name: string; count: number } | null => {
     const months = this.stats().monthlyBreakdown;
     const fullNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     let best: { name: string; count: number } | null = null;

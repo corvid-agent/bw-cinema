@@ -201,7 +201,7 @@ const MOODS: Mood[] = [
               <app-movie-grid [movies]="recommendations().slice(0, recLimit())" />
               @if (recommendations().length > recLimit()) {
                 <div class="explore__load-more">
-                  <button class="btn-secondary" (click)="recLimit.update(l => l + 12)">Show More Recommendations</button>
+                  <button class="btn-secondary" (click)="showMoreRecs()">Show More Recommendations</button>
                 </div>
               }
             </section>
@@ -1012,6 +1012,10 @@ export class ExploreComponent implements OnInit {
 
   loadMore(): void {
     this.moodPage.update((p) => p + 1);
+  }
+
+  showMoreRecs(): void {
+    this.recLimit.update((l) => l + 12);
   }
 
   pickDoubleFeature(): void {
