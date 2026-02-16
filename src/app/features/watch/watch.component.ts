@@ -35,6 +35,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (filmAge()) {
               <span class="watch__header-rating">&middot; {{ filmAge() }}</span>
             }
+            @if (movieLanguage()) {
+              <span class="watch__header-rating">&middot; {{ movieLanguage() }}</span>
+            }
           </p>
         </div>
 
@@ -568,6 +571,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly movieYear = signal('');
   readonly filmAge = signal('');
   readonly directorTotalFilms = signal(0);
+  readonly movieLanguage = signal('');
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -590,6 +594,7 @@ export class WatchComponent implements OnInit, OnDestroy {
       if (movie.genres.length > 0) this.movieGenres.set(movie.genres.slice(0, 3).join(' / '));
       if (movie.voteAverage > 0) this.movieRating.set(movie.voteAverage.toFixed(1));
       this.movieYear.set(String(movie.year));
+      if (movie.language && movie.language !== 'English') this.movieLanguage.set(movie.language);
       const age = new Date().getFullYear() - movie.year;
       if (age >= 50) this.filmAge.set(`${age} years old`);
       this.titleService.setTitle(`Watch ${movie.title} — BW Cinema`);

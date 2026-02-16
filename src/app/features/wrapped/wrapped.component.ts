@@ -166,6 +166,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Oldest Film (yrs)</span>
               </div>
             }
+            @if (avgUserRating(); as aur) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ aur }}</span>
+                <span class="wrapped__hero-label">Avg Your Rating</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -846,6 +852,13 @@ export class WrappedComponent implements OnInit {
     const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     if (!best || best[1] < 2) return null;
     return best[0];
+  });
+
+  readonly avgUserRating = computed(() => {
+    const watched = this.yearWatched();
+    const rated = watched.filter((w) => w.userRating != null && w.userRating > 0);
+    if (rated.length < 3) return null;
+    return (rated.reduce((s, w) => s + (w.userRating ?? 0), 0) / rated.length).toFixed(1);
   });
 
   readonly silentEraWatched = computed(() => {

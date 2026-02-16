@@ -383,6 +383,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">co-directed films</span>
               </div>
             }
+            @if (topStreamableDecade(); as tsd) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ tsd.decade }}s</span>
+                <span class="stats__fact-text">most free films ({{ tsd.count }})</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -993,6 +999,18 @@ export class StatsComponent implements OnInit {
     const pct = Math.round((multi / movies.length) * 100);
     if (pct === 0) return null;
     return pct;
+  });
+
+  readonly topStreamableDecade = computed(() => {
+    const counts = new Map<number, number>();
+    for (const m of this.catalog.movies()) {
+      if (m.isStreamable) {
+        const d = Math.floor(m.year / 10) * 10;
+        counts.set(d, (counts.get(d) ?? 0) + 1);
+      }
+    }
+    const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return best ? { decade: best[0], count: best[1] } : null;
   });
 
   readonly avgGenresPerFilm = computed(() => {
