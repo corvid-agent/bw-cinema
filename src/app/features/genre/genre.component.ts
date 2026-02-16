@@ -912,11 +912,6 @@ export class GenreComponent implements OnInit {
     return avg > 0 ? avg : null;
   });
 
-  readonly silentEraCount = computed(() => {
-    const count = this.films().filter((m) => m.year < 1930).length;
-    return count > 0 ? count : 0;
-  });
-
   readonly decadeBreakdown = computed(() => {
     const decades = new Map<number, number>();
     for (const m of this.films()) {

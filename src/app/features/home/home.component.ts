@@ -1307,7 +1307,7 @@ export class HomeComponent implements OnInit {
 
   readonly coDirectedCount = computed(() => {
     const count = this.catalog.movies().filter((m) => m.directors.length > 1).length;
-    return count > 0 ? count : null;
+    return count > 0 ? count : 0;
   });
 
   readonly avgFilmAge = computed(() => {
@@ -1327,11 +1327,6 @@ export class HomeComponent implements OnInit {
     if (silent.length < 5) return null;
     const pct = Math.round((silent.filter((m) => m.isStreamable).length / silent.length) * 100);
     return pct > 0 ? pct : null;
-  });
-
-  readonly coDirectedCount = computed(() => {
-    const count = this.catalog.movies().filter((m) => m.directors.length > 1).length;
-    return count > 0 ? count : 0;
   });
 
   readonly medianYear = computed(() => {

@@ -908,28 +908,12 @@ export class DecadeComponent implements OnInit {
     return hasFilms ? next : null;
   });
 
-  readonly medianRating = computed(() => {
-    const rated = this.films().filter((m) => m.voteAverage > 0);
-    if (rated.length < 5) return null;
-    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-    return median.toFixed(1);
-  });
-
   readonly nonEnglishPct = computed(() => {
     const f = this.films();
     if (f.length < 10) return null;
     const count = f.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
     const pct = Math.round((count / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
-  });
-
-  readonly longestTitle = computed(() => {
-    const f = this.films();
-    if (f.length < 5) return null;
-    const longest = f.reduce((a, b) => a.title.length >= b.title.length ? a : b);
-    return longest.title.length >= 20 ? longest.title : null;
   });
 
   readonly avgTitleLength = computed(() => {
