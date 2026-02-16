@@ -100,6 +100,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="decade__stat-label">Films/Director</span>
               </div>
             }
+            @if (languageCount(); as lc) {
+              <div class="decade__stat">
+                <span class="decade__stat-value">{{ lc }}</span>
+                <span class="decade__stat-label">Languages</span>
+              </div>
+            }
           </div>
 
           @if (decadeFact(); as fact) {
@@ -718,6 +724,14 @@ export class DecadeComponent implements OnInit {
     const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     if (!best || best[1] < 3) return null;
     return { name: best[0], count: best[1] };
+  });
+
+  readonly languageCount = computed(() => {
+    const langs = new Set<string>();
+    for (const m of this.films()) {
+      if (m.language) langs.add(m.language);
+    }
+    return langs.size > 1 ? langs.size : null;
   });
 
   readonly avgFilmsPerDirector = computed(() => {
