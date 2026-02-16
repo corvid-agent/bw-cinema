@@ -138,6 +138,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Non-English</span>
               </div>
             }
+            @if (medianRating(); as mr) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ mr }}</span>
+                <span class="director__stat-label">Median Rating</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -916,6 +922,15 @@ export class DirectorComponent implements OnInit {
     const f = this.films();
     if (f.length < 2) return 0;
     return f.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
+  });
+
+  readonly medianRating = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length < 3) return null;
+    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    return median.toFixed(1);
   });
 
   readonly soloDirectedPct = computed(() => {

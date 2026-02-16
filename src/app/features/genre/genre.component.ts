@@ -125,6 +125,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (unwatchedStreamableCount() > 0) {
             <p class="genre__fact">{{ unwatchedStreamableCount() }} free {{ name() }} films you haven't watched</p>
           }
+          @if (nonEnglishPct() > 0) {
+            <p class="genre__fact">{{ nonEnglishPct() }}% non-English films</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -851,6 +854,14 @@ export class GenreComponent implements OnInit {
     if (f.length < 5) return 0;
     const watchedIds = this.collection.watchedIds();
     return f.filter((m) => m.isStreamable && !watchedIds.has(m.id)).length;
+  });
+
+  readonly nonEnglishPct = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return 0;
+    const count = f.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
+    const pct = Math.round((count / f.length) * 100);
+    return pct > 0 && pct < 100 ? pct : 0;
   });
 
   readonly decadeBreakdown = computed(() => {

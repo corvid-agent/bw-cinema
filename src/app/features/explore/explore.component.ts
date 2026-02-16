@@ -40,7 +40,7 @@ const MOODS: Mood[] = [
       <div class="explore container">
         <div class="explore__header">
           <h1>Explore</h1>
-          <p class="explore__subtitle">Discover films by mood, or let fate decide@if (totalUnwatchedStreamable(); as tus) { &middot; {{ tus }} free films to discover}@if (unwatchedAvgRating(); as uar) { &middot; avg &#9733; {{ uar }}}@if (unwatchedLanguageCount(); as ulc) { &middot; {{ ulc }} languages}@if (unwatchedGenreCount(); as ugc) { &middot; {{ ugc }} genres}@if (unwatchedDirectorCount(); as udc) { &middot; {{ udc }} directors}@if (unwatchedAvgAge(); as uaa) { &middot; avg {{ uaa }}yr old}@if (unwatchedNonEnglishCount(); as unec) { &middot; {{ unec }} non-English}</p>
+          <p class="explore__subtitle">Discover films by mood, or let fate decide@if (totalUnwatchedStreamable(); as tus) { &middot; {{ tus }} free films to discover}@if (unwatchedAvgRating(); as uar) { &middot; avg &#9733; {{ uar }}}@if (unwatchedLanguageCount(); as ulc) { &middot; {{ ulc }} languages}@if (unwatchedGenreCount(); as ugc) { &middot; {{ ugc }} genres}@if (unwatchedDirectorCount(); as udc) { &middot; {{ udc }} directors}@if (unwatchedAvgAge(); as uaa) { &middot; avg {{ uaa }}yr old}@if (unwatchedNonEnglishCount(); as unec) { &middot; {{ unec }} non-English}@if (unwatchedSilentEraCount(); as usec) { &middot; {{ usec }} silent-era}</p>
         </div>
 
         <div class="explore__random">
@@ -984,6 +984,16 @@ export class ExploreComponent implements OnInit {
       if (m.isStreamable && !watchedIds.has(m.id) && m.language && m.language !== 'English' && m.language !== 'en') {
         count++;
       }
+    }
+    return count > 0 ? count : null;
+  });
+
+  readonly unwatchedSilentEraCount = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return null;
+    let count = 0;
+    for (const m of this.catalog.movies()) {
+      if (m.isStreamable && !watchedIds.has(m.id) && m.year < 1930) count++;
     }
     return count > 0 ? count : null;
   });
