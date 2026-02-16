@@ -25,6 +25,17 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
             <span class="browse__streamable-count">({{ streamableResultCount() }} free to watch)</span>
           }
         </p>
+        @if (resultsSummary(); as rs) {
+          <p class="browse__results-summary">
+            {{ rs.minYear }}–{{ rs.maxYear }}
+            @if (rs.avgRating) {
+              <span class="browse__results-sep">&middot;</span> Avg &#9733; {{ rs.avgRating }}
+            }
+            @if (rs.topGenre) {
+              <span class="browse__results-sep">&middot;</span> Mostly {{ rs.topGenre }}
+            }
+          </p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -184,6 +195,15 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
     .browse__streamable-count {
       color: var(--accent-gold);
       font-weight: 600;
+    }
+    .browse__results-summary {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      margin: var(--space-xs) 0 0;
+    }
+    .browse__results-sep {
+      color: var(--border-bright);
+      margin: 0 2px;
     }
     .browse__layout {
       display: grid;
@@ -564,6 +584,22 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   });
 
   readonly filteredMovies = computed(() => this.catalog.search(this.filter()));
+
+  readonly resultsSummary = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const rated = films.filter((m) => m.voteAverage > 0);
+    const avgRating = rated.length > 0
+      ? (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1)
+      : null;
+    const years = films.map((m) => m.year);
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
+    const genreCounts = new Map<string, number>();
+    for (const m of films) for (const g of m.genres) genreCounts.set(g, (genreCounts.get(g) ?? 0) + 1);
+    const topGenre = [...genreCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+    return { avgRating, minYear, maxYear, topGenre };
+  });
   readonly streamableResultCount = computed(() =>
     this.filteredMovies().filter((m) => m.isStreamable).length
   );

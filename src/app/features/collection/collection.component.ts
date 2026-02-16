@@ -429,6 +429,23 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                 </section>
               </div>
 
+              @if (languageStats().length > 1) {
+                <section class="stats__section stats__lang-section">
+                  <h3>Languages</h3>
+                  <div class="stats__bars">
+                    @for (l of languageStats(); track l.name) {
+                      <div class="stats__bar-row">
+                        <span class="stats__bar-label">{{ l.name }}</span>
+                        <div class="stats__bar-track">
+                          <div class="stats__bar-fill" [style.width.%]="l.pct"></div>
+                        </div>
+                        <span class="stats__bar-count">{{ l.count }}</span>
+                      </div>
+                    }
+                  </div>
+                </section>
+              }
+
               @if (ratingDistribution().length > 0) {
                 <section class="stats__section stats__rating-dist">
                   <h3>Your Rating Distribution</h3>
@@ -805,6 +822,10 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       cursor: pointer;
       display: inline-flex;
       align-items: center;
+    }
+    .stats__lang-section {
+      margin-top: var(--space-xl);
+      max-width: 500px;
     }
     .stats__rating-dist {
       margin-top: var(--space-xl);
@@ -1615,6 +1636,26 @@ export class CollectionComponent implements OnInit {
   readonly decadeStats = computed(() => this.computeStats(
     this.watchedMovies().map((m) => `${Math.floor(m.year / 10) * 10}s`)
   ));
+
+  readonly languageStats = computed(() => {
+    const movies = this.watchedMovies().filter((m) => m.language);
+    if (movies.length < 3) return [];
+    const LANG_NAMES: Record<string, string> = {
+      en: 'English', fr: 'French', de: 'German', ja: 'Japanese', it: 'Italian',
+      es: 'Spanish', ru: 'Russian', sv: 'Swedish', da: 'Danish', pt: 'Portuguese',
+      nl: 'Dutch', zh: 'Chinese', ko: 'Korean', pl: 'Polish', cs: 'Czech',
+      hu: 'Hungarian', fi: 'Finnish', el: 'Greek', ro: 'Romanian', tr: 'Turkish',
+      ar: 'Arabic', hi: 'Hindi', no: 'Norwegian', nb: 'Norwegian',
+    };
+    const counts = new Map<string, number>();
+    for (const m of movies) {
+      const name = LANG_NAMES[m.language] ?? m.language.toUpperCase();
+      counts.set(name, (counts.get(name) ?? 0) + 1);
+    }
+    const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const max = sorted[0]?.[1] ?? 1;
+    return sorted.map(([name, count]) => ({ name, count, pct: (count / max) * 100 }));
+  });
 
   readonly directorStats = computed(() => {
     const dirCounts = new Map<string, number>();

@@ -52,6 +52,14 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
               @if (catalogRank() > 0) {
                 <span class="detail__rank">#{{ catalogRank() }} in catalog</span>
               }
+              <div class="detail__sub-ranks">
+                @if (genreRank(); as gr) {
+                  <a class="detail__sub-rank" [routerLink]="['/genre', gr.genre]">#{{ gr.rank }} in {{ gr.genre }}</a>
+                }
+                @if (decadeRank(); as dr) {
+                  <a class="detail__sub-rank" [routerLink]="['/decade', dr.decade]">#{{ dr.rank }} in {{ dr.decade }}s</a>
+                }
+              </div>
 
               <div class="detail__meta">
                 <span class="detail__meta-item">{{ m.year }}</span>
@@ -476,6 +484,28 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       padding: 2px 10px;
       border-radius: 10px;
       margin-bottom: var(--space-sm);
+    }
+    .detail__sub-ranks {
+      display: flex;
+      gap: var(--space-xs);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-sm);
+    }
+    .detail__sub-ranks:empty { display: none; }
+    .detail__sub-rank {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      padding: 1px 8px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .detail__sub-rank:hover {
+      color: var(--accent-gold);
+      border-color: var(--accent-gold);
     }
     .detail__title {
       font-size: 2.2rem;
@@ -1103,6 +1133,30 @@ export class MovieComponent implements OnInit {
       .sort((a, b) => b.voteAverage - a.voteAverage);
     const idx = ranked.findIndex((m) => m.id === s.id);
     return idx >= 0 ? idx + 1 : 0;
+  });
+
+  readonly genreRank = computed(() => {
+    const s = this.summary();
+    if (!s || s.voteAverage === 0 || s.genres.length === 0) return null;
+    const genre = s.genres[0];
+    const ranked = this.catalogService.movies()
+      .filter((m) => m.voteAverage > 0 && m.genres.includes(genre))
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+    const idx = ranked.findIndex((m) => m.id === s.id);
+    if (idx < 0 || idx >= 20) return null;
+    return { rank: idx + 1, genre, total: ranked.length };
+  });
+
+  readonly decadeRank = computed(() => {
+    const s = this.summary();
+    if (!s || s.voteAverage === 0) return null;
+    const decade = Math.floor(s.year / 10) * 10;
+    const ranked = this.catalogService.movies()
+      .filter((m) => m.voteAverage > 0 && Math.floor(m.year / 10) * 10 === decade)
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+    const idx = ranked.findIndex((m) => m.id === s.id);
+    if (idx < 0 || idx >= 20) return null;
+    return { rank: idx + 1, decade, total: ranked.length };
   });
 
   readonly directorFilms = computed(() => {
