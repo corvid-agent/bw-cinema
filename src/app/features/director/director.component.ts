@@ -72,6 +72,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">vs Catalog Avg</span>
               </div>
             }
+            @if (avgYear()) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ avgYear() }}</span>
+                <span class="director__stat-label">Avg Year</span>
+              </div>
+            }
           </div>
 
           @if (bestFilm(); as best) {
@@ -617,6 +623,12 @@ export class DirectorComponent implements OnInit {
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     if (!top || top[1] < 2) return null;
     return top[0];
+  });
+
+  readonly avgYear = computed(() => {
+    const f = this.films();
+    if (f.length < 2) return null;
+    return Math.round(f.reduce((s, m) => s + m.year, 0) / f.length);
   });
 
   readonly ratingVsCatalog = computed(() => {

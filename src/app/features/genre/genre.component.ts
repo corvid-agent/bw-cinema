@@ -64,6 +64,10 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="genre__stat-label">Silent Era</span>
               </div>
             }
+            <div class="genre__stat">
+              <span class="genre__stat-value">{{ streamablePct() }}%</span>
+              <span class="genre__stat-label">Streamable</span>
+            </div>
           </div>
 
           @if (notableFact()) {
@@ -599,6 +603,12 @@ export class GenreComponent implements OnInit {
   readonly silentEraCount = computed(() =>
     this.films().filter((m) => m.year < 1930).length
   );
+
+  readonly streamablePct = computed(() => {
+    const f = this.films();
+    if (f.length === 0) return 0;
+    return Math.round((f.filter((m) => m.isStreamable).length / f.length) * 100);
+  });
 
   readonly topFilm = computed(() => {
     const rated = this.films().filter((m) => m.voteAverage > 0);

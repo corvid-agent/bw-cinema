@@ -62,6 +62,9 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                 @if (decadeRank(); as dr) {
                   <a class="detail__sub-rank" [routerLink]="['/decade', dr.decade]">#{{ dr.rank }} in {{ dr.decade }}s</a>
                 }
+                @if (directorRank(); as dRank) {
+                  <a class="detail__sub-rank" [routerLink]="['/director', dRank.director]">#{{ dRank.rank }} of {{ dRank.total }} by {{ dRank.director }}</a>
+                }
               </div>
 
               <div class="detail__meta">
@@ -1173,6 +1176,19 @@ export class MovieComponent implements OnInit {
     const idx = ranked.findIndex((m) => m.id === s.id);
     if (idx < 0 || idx >= 20) return null;
     return { rank: idx + 1, decade, total: ranked.length };
+  });
+
+  readonly directorRank = computed(() => {
+    const s = this.summary();
+    if (!s || s.voteAverage === 0 || s.directors.length === 0) return null;
+    const dir = s.directors[0];
+    const dirFilms = this.catalogService.movies()
+      .filter((m) => m.voteAverage > 0 && m.directors.includes(dir))
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+    if (dirFilms.length < 3) return null;
+    const idx = dirFilms.findIndex((m) => m.id === s.id);
+    if (idx < 0 || idx >= 10) return null;
+    return { rank: idx + 1, director: dir, total: dirFilms.length };
   });
 
   readonly yearPeers = computed(() => {
