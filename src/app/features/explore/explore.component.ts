@@ -136,6 +136,9 @@ const MOODS: Mood[] = [
         }
 
         @if (!activeMood()) {
+          @if (topMood(); as tm) {
+            <p class="explore__top-mood">Your most-explored mood: <strong>{{ tm.mood.name }}</strong> ({{ tm.count }} films)</p>
+          }
           <div class="explore__moods">
             @for (mood of moods; track mood.id) {
               <button class="explore__mood-card" (click)="selectMood(mood)">
@@ -277,6 +280,14 @@ const MOODS: Mood[] = [
       border-color: var(--accent-gold);
       color: var(--accent-gold);
       box-shadow: none;
+    }
+    .explore__top-mood {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      margin: 0 0 var(--space-md);
+    }
+    .explore__top-mood strong {
+      color: var(--accent-gold);
     }
     .explore__moods {
       display: grid;
@@ -685,6 +696,19 @@ export class ExploreComponent implements OnInit {
   readonly unwatchedCount = computed(() => {
     const watchedIds = this.collection.watchedIds();
     return this.catalog.movies().filter((m) => !watchedIds.has(m.id) && m.isStreamable).length;
+  });
+
+  readonly topMood = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return null;
+    let best: { mood: Mood; count: number } | null = null;
+    for (const mood of MOODS) {
+      const count = this.moodWatchedCount(mood);
+      if (count > 0 && (!best || count > best.count)) {
+        best = { mood, count };
+      }
+    }
+    return best;
   });
 
   moodWatchedCount(mood: Mood): number {

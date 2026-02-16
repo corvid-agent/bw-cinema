@@ -51,6 +51,10 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             <span class="hero__stat-value">{{ directorCount() }}</span>
             <span class="hero__stat-label">Directors</span>
           </div>
+          <div class="hero__stat">
+            <span class="hero__stat-value">{{ genreCount() }}</span>
+            <span class="hero__stat-label">Genres</span>
+          </div>
         </div>
       </div>
     </section>
@@ -1181,6 +1185,14 @@ export class HomeComponent implements OnInit {
     }
     return dirs.size > 1000 ? `${(dirs.size / 1000).toFixed(1)}k` : `${dirs.size}`;
   });
+  readonly genreCount = computed(() => {
+    const genres = new Set<string>();
+    for (const m of this.catalog.movies()) {
+      for (const g of m.genres) genres.add(g);
+    }
+    return genres.size;
+  });
+
   readonly decadeSpan = computed(() => {
     const d = this.decades();
     if (d.length < 2) return `${d.length}`;

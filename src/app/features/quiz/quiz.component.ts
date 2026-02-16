@@ -50,7 +50,12 @@ interface QuizStep {
           <h2>Your Recommendations</h2>
           <p class="quiz__results-subtitle">Based on your preferences, here are {{ results().length }} films we think you'll enjoy:</p>
           @if (poolSize() > results().length) {
-            <p class="quiz__pool-note">Shuffled from {{ poolSize() }} matching films</p>
+            <p class="quiz__pool-note">
+              Shuffled from {{ poolSize() }} matching films
+              @if (avgMatchScore() > 0) {
+                &middot; Avg {{ avgMatchScore() }}% match
+              }
+            </p>
           }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
@@ -375,6 +380,13 @@ export class QuizComponent implements OnInit {
   readonly showResults = signal(false);
   readonly results = signal<MovieSummary[]>([]);
   readonly poolSize = signal(0);
+
+  readonly avgMatchScore = computed(() => {
+    const scores = this.matchScores();
+    if (scores.size === 0) return 0;
+    const total = [...scores.values()].reduce((s, v) => s + v, 0);
+    return Math.round(total / scores.size);
+  });
 
   readonly currentStep = computed(() => this.steps[this.step()]);
   readonly progressPct = computed(() => ((this.step() + 1) / this.steps.length) * 100);
