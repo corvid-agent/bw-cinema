@@ -218,13 +218,20 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit(): void {
     this.catalog.load();
-    const params = this.route.snapshot.queryParams;
-    if (params['q'] || params['decade'] || params['genre']) {
+    const p = this.route.snapshot.queryParams;
+    if (Object.keys(p).length > 0) {
       this.filter.update((f) => ({
         ...f,
-        query: params['q'] ?? '',
-        decades: params['decade'] ? [parseInt(params['decade'], 10)] : [],
-        genres: params['genre'] ? [params['genre']] : [],
+        query: p['q'] ?? f.query,
+        decades: p['decades'] ? p['decades'].split(',').map(Number) : (p['decade'] ? [parseInt(p['decade'], 10)] : f.decades),
+        genres: p['genres'] ? p['genres'].split(',') : (p['genre'] ? [p['genre']] : f.genres),
+        directors: p['directors'] ? p['directors'].split(',') : f.directors,
+        languages: p['languages'] ? p['languages'].split(',') : f.languages,
+        streamableOnly: p['streamable'] === '1' ? true : f.streamableOnly,
+        minRating: p['minRating'] ? parseFloat(p['minRating']) : f.minRating,
+        yearRange: p['yearMin'] && p['yearMax'] ? [parseInt(p['yearMin'], 10), parseInt(p['yearMax'], 10)] : f.yearRange,
+        sortBy: (p['sortBy'] as CatalogFilter['sortBy']) ?? f.sortBy,
+        sortDirection: (p['sortDir'] as CatalogFilter['sortDirection']) ?? f.sortDirection,
       }));
     }
   }
@@ -232,11 +239,13 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   onSearch(query: string): void {
     this.filter.update((f) => ({ ...f, query }));
     this.page.set(1);
+    this.syncUrl();
   }
 
   onFilterChange(filters: { decades: number[]; genres: string[]; directors: string[]; languages: string[]; streamableOnly: boolean; minRating: number; yearRange: [number, number] | null }): void {
     this.filter.update((f) => ({ ...f, ...filters }));
     this.page.set(1);
+    this.syncUrl();
   }
 
   onSortChange(event: Event): void {
@@ -244,6 +253,28 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     const [sortBy, sortDirection] = value.split('-') as [CatalogFilter['sortBy'], CatalogFilter['sortDirection']];
     this.filter.update((f) => ({ ...f, sortBy, sortDirection }));
     this.page.set(1);
+    this.syncUrl();
+  }
+
+  private syncUrl(): void {
+    const f = this.filter();
+    const queryParams: Record<string, string | null> = {
+      q: f.query || null,
+      decades: f.decades.length > 0 ? f.decades.join(',') : null,
+      genres: f.genres.length > 0 ? f.genres.join(',') : null,
+      directors: f.directors.length > 0 ? f.directors.join(',') : null,
+      languages: f.languages.length > 0 ? f.languages.join(',') : null,
+      streamable: f.streamableOnly ? '1' : null,
+      minRating: f.minRating > 0 ? String(f.minRating) : null,
+      yearMin: f.yearRange ? String(f.yearRange[0]) : null,
+      yearMax: f.yearRange ? String(f.yearRange[1]) : null,
+      sortBy: f.sortBy !== 'rating' ? f.sortBy : null,
+      sortDir: f.sortDirection !== 'desc' ? f.sortDirection : null,
+      // Remove legacy single-value params
+      decade: null,
+      genre: null,
+    };
+    this.router.navigate([], { queryParams, queryParamsHandling: 'merge', replaceUrl: true });
   }
 
   surpriseMe(): void {

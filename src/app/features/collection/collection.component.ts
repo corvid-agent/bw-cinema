@@ -262,7 +262,30 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                   <span class="stats__card-value">{{ totalDecades() }}</span>
                   <span class="stats__card-label">Decades Spanned</span>
                 </div>
+                <div class="stats__card">
+                  <span class="stats__card-value">{{ currentStreak() }}</span>
+                  <span class="stats__card-label">Current Streak (days)</span>
+                </div>
+                <div class="stats__card">
+                  <span class="stats__card-value">{{ longestStreak() }}</span>
+                  <span class="stats__card-label">Best Streak (days)</span>
+                </div>
               </div>
+
+              @if (achievements().length > 0) {
+                <section class="achievements">
+                  <h3>Achievements</h3>
+                  <div class="achievements__grid">
+                    @for (badge of achievements(); track badge.id) {
+                      <div class="achievements__badge" [class.achievements__badge--earned]="badge.earned">
+                        <span class="achievements__icon">{{ badge.icon }}</span>
+                        <span class="achievements__name">{{ badge.name }}</span>
+                        <span class="achievements__desc">{{ badge.description }}</span>
+                      </div>
+                    }
+                  </div>
+                </section>
+              }
 
               <div class="stats__sections">
                 <section class="stats__section">
@@ -324,6 +347,23 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                         <span class="stats__trend-label">{{ m.label }}</span>
                       </div>
                     }
+                  </div>
+                </section>
+              }
+
+              @if (filmTimeline().length > 1) {
+                <section class="film-tl">
+                  <h3>Your Films Through Time</h3>
+                  <div class="film-tl__scroll">
+                    <div class="film-tl__track">
+                      <div class="film-tl__line"></div>
+                      @for (pt of filmTimeline(); track pt.year) {
+                        <div class="film-tl__point" [style.left.%]="pt.pct">
+                          <div class="film-tl__marker" [style.height.px]="8 + pt.count * 6" [title]="pt.year + ': ' + pt.count + ' film(s)'"></div>
+                          <span class="film-tl__year">{{ pt.year }}</span>
+                        </div>
+                      }
+                    </div>
                   </div>
                 </section>
               }
@@ -525,6 +565,49 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       margin-top: var(--space-xl);
       max-width: 500px;
     }
+    /* Achievements */
+    .achievements {
+      margin-bottom: var(--space-xl);
+    }
+    .achievements h3 {
+      margin-bottom: var(--space-md);
+    }
+    .achievements__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: var(--space-sm);
+    }
+    .achievements__badge {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+      text-align: center;
+      opacity: 0.35;
+      transition: opacity 0.3s;
+    }
+    .achievements__badge--earned {
+      opacity: 1;
+      border-color: var(--accent-gold);
+      background-color: var(--accent-gold-dim);
+    }
+    .achievements__icon {
+      display: block;
+      font-size: 1.8rem;
+      margin-bottom: var(--space-xs);
+    }
+    .achievements__name {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    .achievements__desc {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+    }
     /* Monthly Trends */
     .stats__trends {
       margin-top: var(--space-xl);
@@ -656,7 +739,52 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       color: var(--text-tertiary);
       font-size: 1.2rem;
     }
-    /* Timeline */
+    /* Film Release Timeline */
+    .film-tl {
+      margin-top: var(--space-2xl);
+    }
+    .film-tl h3 {
+      margin-bottom: var(--space-lg);
+    }
+    .film-tl__scroll {
+      overflow-x: auto;
+      padding-bottom: var(--space-md);
+    }
+    .film-tl__track {
+      position: relative;
+      min-width: 600px;
+      height: 80px;
+      margin: 0 var(--space-md);
+    }
+    .film-tl__line {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--border);
+    }
+    .film-tl__point {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .film-tl__marker {
+      width: 8px;
+      background-color: var(--accent-gold);
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+    .film-tl__year {
+      font-size: 0.65rem;
+      color: var(--text-tertiary);
+      white-space: nowrap;
+      margin-top: 4px;
+    }
+    /* Watch Timeline */
     .timeline {
       margin-top: var(--space-2xl);
     }
@@ -793,6 +921,79 @@ export class CollectionComponent implements OnInit {
     return decades.size;
   });
 
+  readonly achievements = computed(() => {
+    const watched = this.watchedMovies();
+    const watchedCount = watched.length;
+    const decades = new Set(watched.map((m) => Math.floor(m.year / 10) * 10));
+    const genres = new Set(watched.flatMap((m) => m.genres));
+    const silentCount = watched.filter((m) => m.year < 1930).length;
+    const streamedCount = watched.filter((m) => m.isStreamable).length;
+    const favCount = this.collectionService.favorites().length;
+    const ratedCount = this.collectionService.watched().filter((w) => w.userRating != null).length;
+    const { longest } = this.computeStreaks();
+
+    return [
+      { id: 'first', icon: '🎬', name: 'First Film', description: 'Watch your first film', earned: watchedCount >= 1 },
+      { id: 'ten', icon: '🎞️', name: 'Film Buff', description: 'Watch 10 films', earned: watchedCount >= 10 },
+      { id: 'twentyfive', icon: '📽️', name: 'Cinephile', description: 'Watch 25 films', earned: watchedCount >= 25 },
+      { id: 'fifty', icon: '🏆', name: 'Film Scholar', description: 'Watch 50 films', earned: watchedCount >= 50 },
+      { id: 'hundred', icon: '👑', name: 'Film Historian', description: 'Watch 100 films', earned: watchedCount >= 100 },
+      { id: 'decades3', icon: '📅', name: 'Time Traveler', description: 'Watch films from 3+ decades', earned: decades.size >= 3 },
+      { id: 'decades5', icon: '⏳', name: 'Era Explorer', description: 'Watch films from 5+ decades', earned: decades.size >= 5 },
+      { id: 'genres5', icon: '🎭', name: 'Genre Hopper', description: 'Watch films in 5+ genres', earned: genres.size >= 5 },
+      { id: 'silent', icon: '🤫', name: 'Silent Era Fan', description: 'Watch 3 films from before 1930', earned: silentCount >= 3 },
+      { id: 'stream5', icon: '📺', name: 'Free Spirit', description: 'Watch 5 free films', earned: streamedCount >= 5 },
+      { id: 'fav5', icon: '❤️', name: 'Curator', description: 'Favorite 5 films', earned: favCount >= 5 },
+      { id: 'rate10', icon: '⭐', name: 'Critic', description: 'Rate 10 films', earned: ratedCount >= 10 },
+      { id: 'streak7', icon: '🔥', name: 'On Fire', description: '7-day watch streak', earned: longest >= 7 },
+    ];
+  });
+
+  readonly currentStreak = computed(() => this.computeStreaks().current);
+  readonly longestStreak = computed(() => this.computeStreaks().longest);
+
+  private computeStreaks(): { current: number; longest: number } {
+    const watched = this.collectionService.watched();
+    if (watched.length === 0) return { current: 0, longest: 0 };
+
+    const daySet = new Set<string>();
+    for (const w of watched) {
+      const d = new Date(w.watchedAt);
+      daySet.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+    }
+
+    const days = [...daySet].sort();
+    if (days.length === 0) return { current: 0, longest: 0 };
+
+    const toDate = (key: string) => {
+      const [y, m, d] = key.split('-').map(Number);
+      return new Date(y, m, d);
+    };
+
+    let longest = 1;
+    let streak = 1;
+    for (let i = 1; i < days.length; i++) {
+      const prev = toDate(days[i - 1]);
+      const curr = toDate(days[i]);
+      const diff = (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24);
+      if (Math.round(diff) === 1) {
+        streak++;
+        if (streak > longest) longest = streak;
+      } else {
+        streak = 1;
+      }
+    }
+
+    // Check if current streak is still active (includes today or yesterday)
+    const lastDay = toDate(days[days.length - 1]);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffFromToday = (today.getTime() - lastDay.getTime()) / (1000 * 60 * 60 * 24);
+    const current = diffFromToday <= 1 ? streak : 0;
+
+    return { current, longest };
+  }
+
   readonly genreStats = computed(() => this.computeStats(
     this.watchedMovies().flatMap((m) => m.genres)
   ));
@@ -832,6 +1033,23 @@ export class CollectionComponent implements OnInit {
       const label = new Date(parseInt(y), parseInt(m) - 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
       return { label, count, pct: (count / max) * 100 };
     });
+  });
+
+  // Film timeline by release year
+  readonly filmTimeline = computed(() => {
+    const movies = this.watchedMovies();
+    if (movies.length < 2) return [];
+    const yearCounts = new Map<number, number>();
+    for (const m of movies) yearCounts.set(m.year, (yearCounts.get(m.year) ?? 0) + 1);
+    const years = [...yearCounts.keys()].sort((a, b) => a - b);
+    const min = years[0];
+    const max = years[years.length - 1];
+    const range = max - min || 1;
+    return years.map((year) => ({
+      year,
+      count: yearCounts.get(year)!,
+      pct: ((year - min) / range) * 100,
+    }));
   });
 
   // Playlists

@@ -25,8 +25,17 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
             <p>Our master film database, providing the comprehensive list of black &amp; white films with cross-referenced identifiers.</p>
           </div>
           <div class="about__source">
-            <h3>TMDb</h3>
-            <p>Provides poster images, cast information, synopses, and community ratings for movie detail pages. This product uses the TMDb API but is not endorsed or certified by TMDb.</p>
+            <h3>
+              <img
+                src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg"
+                alt="TMDB"
+                width="100"
+                height="12"
+                loading="lazy"
+                class="about__tmdb-logo"
+              />
+            </h3>
+            <p>Provides poster images, cast information, synopses, and community ratings for movie detail pages. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
           </div>
           <div class="about__source">
             <h3>Internet Archive</h3>
@@ -77,6 +86,9 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
     .about__source h3 {
       color: var(--accent-gold);
       margin-bottom: var(--space-sm);
+    }
+    .about__tmdb-logo {
+      vertical-align: middle;
     }
     .about__source p {
       margin: 0;

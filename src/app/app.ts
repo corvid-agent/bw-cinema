@@ -128,6 +128,10 @@ const ONBOARDING_KEY = 'bw-cinema-onboarded';
               <kbd>Home / End</kbd>
               <span>First / last in grid</span>
             </div>
+            <div class="shortcut-row">
+              <kbd>j / k</kbd>
+              <span>Next / previous film (detail page)</span>
+            </div>
           </div>
         </div>
       </div>

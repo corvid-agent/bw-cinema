@@ -19,9 +19,19 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
           Streaming via
           <a href="https://archive.org" target="_blank" rel="noopener">Internet Archive (opens in new tab)</a>.
         </p>
-        <p class="footer__disclaimer">
-          This product uses the TMDb API but is not endorsed or certified by TMDb.
-        </p>
+        <div class="footer__tmdb">
+          <img
+            src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg"
+            alt="TMDB logo"
+            class="footer__tmdb-logo"
+            width="120"
+            height="14"
+            loading="lazy"
+          />
+          <p class="footer__disclaimer">
+            This product uses the TMDB API but is not endorsed or certified by TMDB.
+          </p>
+        </div>
       </div>
     </footer>
   `,
@@ -62,6 +72,16 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
     }
     .footer__credits a:hover {
       color: var(--accent-gold);
+    }
+    .footer__tmdb {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-xs);
+      margin-top: var(--space-sm);
+    }
+    .footer__tmdb-logo {
+      opacity: 0.7;
     }
     .footer__disclaimer {
       color: var(--text-tertiary);
