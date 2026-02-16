@@ -8,6 +8,8 @@ import { ThemeService } from './core/services/theme.service';
 import { KeyboardShortcutsService } from './core/services/keyboard-shortcuts.service';
 import { AccessibilityService } from './core/services/accessibility.service';
 
+const ONBOARDING_KEY = 'bw-cinema-onboarded';
+
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,6 +23,23 @@ import { AccessibilityService } from './core/services/accessibility.service';
     <app-footer />
     <app-toast-container />
     <app-back-to-top />
+
+    @if (showOnboarding) {
+      <div class="onboarding-overlay" role="dialog" aria-label="Welcome">
+        <div class="onboarding-panel">
+          <h2 class="onboarding-title">Welcome to BW Cinema</h2>
+          <p class="onboarding-text">Your home for classic black &amp; white films. Here's what you can do:</p>
+          <ul class="onboarding-list">
+            <li><strong>Browse</strong> &mdash; Search and filter thousands of classic films</li>
+            <li><strong>Watch</strong> &mdash; Stream public domain films for free</li>
+            <li><strong>Collect</strong> &mdash; Build your watchlist and track what you've seen</li>
+            <li><strong>Customize</strong> &mdash; Adjust text size, contrast, and theme using the icons in the top menu</li>
+          </ul>
+          <p class="onboarding-tip">Tip: Press <kbd>/</kbd> anytime to search, or <kbd>?</kbd> for keyboard shortcuts.</p>
+          <button class="btn-primary onboarding-btn" (click)="dismissOnboarding()">Get Started</button>
+        </div>
+      </div>
+    }
 
     @if (a11y.panelOpen()) {
       <div class="a11y-overlay" (click)="a11y.panelOpen.set(false)">
@@ -188,6 +207,70 @@ import { AccessibilityService } from './core/services/accessibility.service';
       color: var(--text-secondary);
       font-size: 0.9rem;
     }
+    /* Onboarding */
+    .onboarding-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-lg);
+    }
+    .onboarding-panel {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-bright);
+      border-radius: var(--radius-xl);
+      padding: var(--space-2xl);
+      max-width: 480px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+    }
+    .onboarding-title {
+      font-size: 1.6rem;
+      margin: 0 0 var(--space-md);
+      color: var(--accent-gold);
+    }
+    .onboarding-text {
+      color: var(--text-secondary);
+      margin: 0 0 var(--space-lg);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    .onboarding-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 var(--space-lg);
+    }
+    .onboarding-list li {
+      padding: var(--space-sm) 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .onboarding-list li:last-child { border-bottom: none; }
+    .onboarding-list strong { color: var(--accent-gold); }
+    .onboarding-tip {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      margin: 0 0 var(--space-xl);
+    }
+    .onboarding-tip kbd {
+      background: var(--bg-raised);
+      border: 1px solid var(--border-bright);
+      border-radius: var(--radius-sm);
+      padding: 1px 6px;
+      font-size: 0.85rem;
+      color: var(--accent-gold);
+    }
+    .onboarding-btn {
+      width: 100%;
+      font-size: 1.1rem;
+      padding: var(--space-md);
+      border-radius: var(--radius-lg);
+    }
     /* Accessibility panel */
     .a11y-overlay {
       position: fixed;
@@ -341,9 +424,23 @@ export class App implements OnInit {
   protected readonly shortcuts = inject(KeyboardShortcutsService);
   protected readonly a11y = inject(AccessibilityService);
 
+  showOnboarding = false;
+
   ngOnInit(): void {
     this.theme.init();
     this.shortcuts.init();
     this.a11y.init();
+    try {
+      if (!localStorage.getItem(ONBOARDING_KEY)) {
+        this.showOnboarding = true;
+      }
+    } catch { /* noop */ }
+  }
+
+  dismissOnboarding(): void {
+    this.showOnboarding = false;
+    try {
+      localStorage.setItem(ONBOARDING_KEY, '1');
+    } catch { /* noop */ }
   }
 }

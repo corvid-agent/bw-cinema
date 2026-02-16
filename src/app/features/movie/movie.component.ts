@@ -6,6 +6,7 @@ import { MovieService } from '../../core/services/movie.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { StreamingService } from '../../core/services/streaming.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { RecentlyViewedService } from '../../core/services/recently-viewed.service';
 import { RatingStarsComponent } from '../../shared/components/rating-stars.component';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
@@ -122,7 +123,11 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                   @if (m.directors.length > 0) {
                     <div class="detail__detail-row">
                       <span class="detail__detail-label">Director{{ m.directors.length > 1 ? 's' : '' }}</span>
-                      <span>{{ m.directors.join(', ') }}</span>
+                      <span>
+                        @for (dir of m.directors; track dir; let last = $last) {
+                          <a [routerLink]="['/director', dir]">{{ dir }}</a>@if (!last) {, }
+                        }
+                      </span>
                     </div>
                   }
                   @if (m.genres.length > 0) {
@@ -457,6 +462,7 @@ export class MovieComponent implements OnInit {
   protected readonly collection = inject(CollectionService);
   private readonly streaming = inject(StreamingService);
   private readonly notifications = inject(NotificationService);
+  private readonly recentlyViewed = inject(RecentlyViewedService);
   private readonly titleService = inject(Title);
 
   readonly movie = signal<MovieDetail | null>(null);
@@ -477,6 +483,7 @@ export class MovieComponent implements OnInit {
       return;
     }
     this.titleService.setTitle(`${summary.title} (${summary.year}) — BW Cinema`);
+    this.recentlyViewed.add(summary.id);
     this.summary.set(summary);
     const source = this.streaming.getSource(summary.internetArchiveId, summary.youtubeId);
     this.streamingUrl.set(source?.embedUrl ?? null);

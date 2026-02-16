@@ -29,6 +29,12 @@ export const routes: Routes = [
       import('./features/collection/collection.component').then((m) => m.CollectionComponent),
   },
   {
+    path: 'director/:name',
+    title: 'Director — BW Cinema',
+    loadComponent: () =>
+      import('./features/director/director.component').then((m) => m.DirectorComponent),
+  },
+  {
     path: 'about',
     title: 'About — BW Cinema',
     loadComponent: () => import('./features/about/about.component').then((m) => m.AboutComponent),

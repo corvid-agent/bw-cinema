@@ -1,6 +1,8 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
+import { CollectionService } from '../../core/services/collection.service';
+import { RecentlyViewedService } from '../../core/services/recently-viewed.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { SearchBarComponent } from '../../shared/components/search-bar.component';
 import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.component';
@@ -111,6 +113,29 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             @for (genre of genres(); track genre) {
               <button class="genre-tag" (click)="browseGenre(genre)">{{ genre }}</button>
             }
+          </div>
+        </section>
+      }
+
+      @if (recentMovies().length > 0) {
+        <section class="section container" aria-label="Recently viewed">
+          <div class="section__header">
+            <h2>Recently Viewed</h2>
+          </div>
+          <div appKeyboardNav>
+            <app-movie-grid [movies]="recentMovies()" />
+          </div>
+        </section>
+      }
+
+      @if (recommendations().length > 0) {
+        <section class="section container" aria-label="Recommended for you">
+          <div class="section__header">
+            <h2>Recommended for You</h2>
+            <a class="section__link" routerLink="/browse">Browse all &rarr;</a>
+          </div>
+          <div appKeyboardNav>
+            <app-movie-grid [movies]="recommendations()" />
           </div>
         </section>
       }
@@ -359,9 +384,19 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
 export class HomeComponent implements OnInit {
   protected readonly catalog = inject(CatalogService);
   private readonly router = inject(Router);
+  private readonly collectionService = inject(CollectionService);
+  private readonly recentlyViewedService = inject(RecentlyViewedService);
 
   readonly decades = computed(() => this.catalog.meta()?.decades ?? []);
   readonly genres = computed(() => this.catalog.meta()?.genres.slice(0, 12) ?? []);
+  readonly recentMovies = computed(() => {
+    const ids = this.recentlyViewedService.ids();
+    const movies = this.catalog.movies();
+    return ids.map((id) => movies.find((m) => m.id === id)).filter((m): m is NonNullable<typeof m> => !!m);
+  });
+  readonly recommendations = computed(() =>
+    this.catalog.getRecommendations(this.collectionService.watchedIds())
+  );
   readonly filmCount = computed(() => {
     const total = this.catalog.meta()?.totalMovies ?? 0;
     return total > 1000 ? `${(total / 1000).toFixed(1)}k` : `${total}`;

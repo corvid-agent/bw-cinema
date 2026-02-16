@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal, input, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal, input, computed, ElementRef, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
@@ -21,13 +21,25 @@ import type { MovieSummary } from '../../core/models/movie.model';
           <p class="text-secondary">Streaming via {{ src.label }}</p>
         </div>
 
-        <div class="watch__player">
+        <div class="watch__player" #playerContainer>
           <iframe
             [src]="safeUrl()"
             [title]="'Watch ' + movieTitle()"
             allowfullscreen
             sandbox="allow-same-origin allow-scripts allow-popups"
           ></iframe>
+          <button
+            class="watch__fullscreen-btn"
+            (click)="toggleFullscreen()"
+            [attr.aria-label]="isFullscreen() ? 'Exit fullscreen' : 'Enter fullscreen'"
+            [attr.title]="isFullscreen() ? 'Exit fullscreen' : 'Fullscreen'"
+          >
+            @if (isFullscreen()) {
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            } @else {
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            }
+          </button>
         </div>
 
         <div class="watch__fallback">
@@ -72,6 +84,36 @@ import type { MovieSummary } from '../../core/models/movie.model';
       height: 100%;
       border: none;
     }
+    .watch__fullscreen-btn {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      min-height: 48px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius);
+      color: #fff;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: background-color 0.2s, border-color 0.2s;
+      z-index: 10;
+    }
+    .watch__fullscreen-btn:hover {
+      background: rgba(0, 0, 0, 0.9);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    :host-context(:fullscreen) .watch__player {
+      max-width: 100%;
+      border-radius: 0;
+    }
     .watch__fallback {
       text-align: center;
       margin-top: var(--space-lg);
@@ -79,7 +121,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
     }
   `],
 })
-export class WatchComponent implements OnInit {
+export class WatchComponent implements OnInit, OnDestroy {
   readonly id = input.required<string>();
 
   private readonly catalogService = inject(CatalogService);
@@ -87,10 +129,17 @@ export class WatchComponent implements OnInit {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly titleService = inject(Title);
 
+  @ViewChild('playerContainer') playerContainer!: ElementRef<HTMLElement>;
+
   readonly loading = signal(true);
   readonly movieTitle = signal('');
   readonly source = signal<StreamingSource | null>(null);
   readonly safeUrl = signal<SafeResourceUrl>('');
+  readonly isFullscreen = signal(false);
+
+  private fullscreenHandler = () => {
+    this.isFullscreen.set(!!document.fullscreenElement);
+  };
 
   async ngOnInit(): Promise<void> {
     await this.catalogService.load();
@@ -105,5 +154,23 @@ export class WatchComponent implements OnInit {
       }
     }
     this.loading.set(false);
+    document.addEventListener('fullscreenchange', this.fullscreenHandler);
+  }
+
+  ngOnDestroy(): void {
+    document.removeEventListener('fullscreenchange', this.fullscreenHandler);
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  toggleFullscreen(): void {
+    if (!this.playerContainer) return;
+    const el = this.playerContainer.nativeElement;
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      el.requestFullscreen().catch(() => {});
+    }
   }
 }

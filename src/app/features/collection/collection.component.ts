@@ -2,7 +2,10 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } 
 import { RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
+import { MovieListComponent } from '../../shared/components/movie-list.component';
+import { ViewToggleComponent, type ViewMode } from '../../shared/components/view-toggle.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
 import type { MovieSummary } from '../../core/models/movie.model';
 
@@ -11,7 +14,7 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
 @Component({
   selector: 'app-collection',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, MovieGridComponent, LoadingSpinnerComponent],
+  imports: [RouterLink, MovieGridComponent, MovieListComponent, ViewToggleComponent, LoadingSpinnerComponent],
   template: `
     <div class="collection container">
       <h1>My Collection</h1>
@@ -73,6 +76,16 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                   Export CSV
                 </button>
               }
+              <app-view-toggle [(mode)]="viewMode" />
+            </div>
+          }
+          @if (activeTab() !== 'stats') {
+            <div class="collection__backup">
+              <button class="btn-ghost collection__backup-btn" (click)="exportBackup()">Backup</button>
+              <label class="btn-ghost collection__backup-btn collection__restore-label">
+                Restore
+                <input type="file" accept=".json" class="sr-only" (change)="importBackup($event)" />
+              </label>
             </div>
           }
         </div>
@@ -80,7 +93,11 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
         @if (activeTab() === 'watchlist') {
           <div role="tabpanel">
             @if (sortedWatchlist().length > 0) {
-              <app-movie-grid [movies]="sortedWatchlist()" />
+              @if (viewMode() === 'grid') {
+                <app-movie-grid [movies]="sortedWatchlist()" />
+              } @else {
+                <app-movie-list [movies]="sortedWatchlist()" />
+              }
             } @else {
               <div class="collection__empty">
                 <p class="collection__empty-title">No films in your watchlist</p>
@@ -94,7 +111,11 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
         @if (activeTab() === 'watched') {
           <div role="tabpanel">
             @if (sortedWatched().length > 0) {
-              <app-movie-grid [movies]="sortedWatched()" />
+              @if (viewMode() === 'grid') {
+                <app-movie-grid [movies]="sortedWatched()" />
+              } @else {
+                <app-movie-list [movies]="sortedWatched()" />
+              }
             } @else {
               <div class="collection__empty">
                 <p class="collection__empty-title">No films watched yet</p>
@@ -320,6 +341,21 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       color: var(--text-tertiary);
     }
 
+    .collection__backup {
+      display: flex;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+    }
+    .collection__backup-btn {
+      font-size: 0.8rem;
+      padding: var(--space-xs) var(--space-md);
+      min-height: 36px;
+    }
+    .collection__restore-label {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+    }
     @media (max-width: 768px) {
       .collection__controls {
         flex-direction: column;
@@ -337,9 +373,11 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
 export class CollectionComponent implements OnInit {
   protected readonly catalog = inject(CatalogService);
   private readonly collectionService = inject(CollectionService);
+  private readonly notifications = inject(NotificationService);
 
   readonly activeTab = signal<'watchlist' | 'watched' | 'stats'>('watchlist');
   readonly sortBy = signal<SortOption>('added-desc');
+  readonly viewMode = signal<ViewMode>('grid');
 
   readonly watchlistMovies = computed(() => {
     const ids = this.collectionService.watchlistIds();
@@ -424,6 +462,54 @@ export class CollectionComponent implements OnInit {
     a.download = `bw-cinema-${tab}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  exportBackup(): void {
+    const data = {
+      watchlist: this.collectionService.watchlist(),
+      watched: this.collectionService.watched(),
+      exportedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bw-cinema-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.notifications.show('Backup downloaded', 'success');
+  }
+
+  importBackup(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result as string);
+        if (data.watchlist && Array.isArray(data.watchlist)) {
+          for (const item of data.watchlist) {
+            if (item.movieId && !this.collectionService.isInWatchlist(item.movieId) && !this.collectionService.isWatched(item.movieId)) {
+              this.collectionService.addToWatchlist(item.movieId);
+            }
+          }
+        }
+        if (data.watched && Array.isArray(data.watched)) {
+          for (const item of data.watched) {
+            if (item.movieId && !this.collectionService.isWatched(item.movieId)) {
+              this.collectionService.markWatched(item.movieId, item.userRating ?? null);
+            }
+          }
+        }
+        this.notifications.show('Collection restored successfully', 'success');
+      } catch {
+        this.notifications.show('Invalid backup file', 'error');
+      }
+      input.value = '';
+    };
+    reader.readAsText(file);
   }
 
   private sortMovies(movies: MovieSummary[], list: 'watchlist' | 'watched'): MovieSummary[] {

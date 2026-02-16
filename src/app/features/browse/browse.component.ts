@@ -5,13 +5,15 @@ import { MovieGridComponent } from '../../shared/components/movie-grid.component
 import { SearchBarComponent } from '../../shared/components/search-bar.component';
 import { FilterPanelComponent } from '../../shared/components/filter-panel.component';
 import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.component';
+import { MovieListComponent } from '../../shared/components/movie-list.component';
+import { ViewToggleComponent, type ViewMode } from '../../shared/components/view-toggle.component';
 import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.directive';
 import type { CatalogFilter } from '../../core/models/catalog.model';
 
 @Component({
   selector: 'app-browse',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MovieGridComponent, SearchBarComponent, FilterPanelComponent, SkeletonGridComponent, KeyboardNavDirective],
+  imports: [MovieGridComponent, MovieListComponent, ViewToggleComponent, SearchBarComponent, FilterPanelComponent, SkeletonGridComponent, KeyboardNavDirective],
   template: `
     <div class="browse container">
       <div class="browse__top">
@@ -47,10 +49,15 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
                   <option value="title-desc">Title Z-A</option>
                 </select>
               </div>
+              <app-view-toggle [(mode)]="viewMode" />
             </div>
 
             <div appKeyboardNav>
-              <app-movie-grid [movies]="paginatedMovies()" />
+              @if (viewMode() === 'grid') {
+                <app-movie-grid [movies]="paginatedMovies()" />
+              } @else {
+                <app-movie-list [movies]="paginatedMovies()" />
+              }
             </div>
 
             @if (paginatedMovies().length < filteredMovies().length) {
@@ -142,6 +149,7 @@ export class BrowseComponent implements OnInit {
 
   private readonly pageSize = 24;
   readonly page = signal(1);
+  readonly viewMode = signal<ViewMode>('grid');
 
   readonly filter = signal<CatalogFilter>({
     query: '',

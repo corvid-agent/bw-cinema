@@ -125,4 +125,37 @@ export class CatalogService {
       .slice(0, limit)
       .map((r) => r.movie);
   }
+
+  getRecommendations(watchedIds: Set<string>, limit = 12): MovieSummary[] {
+    const watched = this.movies().filter((m) => watchedIds.has(m.id));
+    if (watched.length < 3) return [];
+
+    const genreCounts = new Map<string, number>();
+    const directorCounts = new Map<string, number>();
+    const decadeCounts = new Map<number, number>();
+
+    for (const m of watched) {
+      for (const g of m.genres) genreCounts.set(g, (genreCounts.get(g) ?? 0) + 1);
+      for (const d of m.directors) directorCounts.set(d, (directorCounts.get(d) ?? 0) + 1);
+      const decade = Math.floor(m.year / 10) * 10;
+      decadeCounts.set(decade, (decadeCounts.get(decade) ?? 0) + 1);
+    }
+
+    return this.movies()
+      .filter((m) => !watchedIds.has(m.id))
+      .map((m) => {
+        let score = 0;
+        for (const g of m.genres) score += (genreCounts.get(g) ?? 0) * 2;
+        for (const d of m.directors) score += (directorCounts.get(d) ?? 0) * 3;
+        const decade = Math.floor(m.year / 10) * 10;
+        score += (decadeCounts.get(decade) ?? 0);
+        if (m.voteAverage >= 7) score += 2;
+        if (m.isStreamable) score += 1;
+        return { movie: m, score };
+      })
+      .filter((r) => r.score > 0)
+      .sort((a, b) => b.score - a.score || b.movie.voteAverage - a.movie.voteAverage)
+      .slice(0, limit)
+      .map((r) => r.movie);
+  }
 }
