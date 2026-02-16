@@ -60,6 +60,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Peak Year ({{ py.count }})</span>
               </div>
             }
+            @if (primaryGenre(); as pg) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ pg }}</span>
+                <span class="director__stat-label">Primary Genre</span>
+              </div>
+            }
           </div>
 
           @if (bestFilm(); as best) {
@@ -592,6 +598,16 @@ export class DirectorComponent implements OnInit {
       if (m.language) langs.add(m.language);
     }
     return langs.size;
+  });
+
+  readonly primaryGenre = computed(() => {
+    const counts = new Map<string, number>();
+    for (const m of this.films()) {
+      for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
+    }
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (!top || top[1] < 2) return null;
+    return top[0];
   });
 
   readonly prolificYear = computed(() => {

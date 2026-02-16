@@ -52,6 +52,9 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
               @if (catalogRank() > 0) {
                 <span class="detail__rank">#{{ catalogRank() }} in catalog</span>
               }
+              @if (ratingPercentile(); as pct) {
+                <span class="detail__percentile">{{ pct }}</span>
+              }
               <div class="detail__sub-ranks">
                 @if (genreRank(); as gr) {
                   <a class="detail__sub-rank" [routerLink]="['/genre', gr.genre]">#{{ gr.rank }} in {{ gr.genre }}</a>
@@ -484,6 +487,19 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       padding: 2px 10px;
       border-radius: 10px;
       margin-bottom: var(--space-sm);
+    }
+    .detail__percentile {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      background: var(--bg-raised);
+      border: 1px solid var(--border-bright);
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-left: var(--space-xs);
+      margin-bottom: var(--space-sm);
+      vertical-align: middle;
     }
     .detail__sub-ranks {
       display: flex;
@@ -1163,6 +1179,19 @@ export class MovieComponent implements OnInit {
     const s = this.summary();
     if (!s) return 0;
     return this.catalogService.movies().filter((m) => m.year === s.year).length;
+  });
+
+  readonly ratingPercentile = computed(() => {
+    const s = this.summary();
+    if (!s || s.voteAverage === 0) return null;
+    const rated = this.catalogService.movies().filter((m) => m.voteAverage > 0);
+    if (rated.length < 10) return null;
+    const rank = rated.filter((m) => m.voteAverage > s.voteAverage).length;
+    const pct = Math.round((rank / rated.length) * 100);
+    if (pct <= 5) return 'Top 5%';
+    if (pct <= 10) return 'Top 10%';
+    if (pct <= 25) return 'Top 25%';
+    return null;
   });
 
   readonly directorFilms = computed(() => {

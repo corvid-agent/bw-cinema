@@ -293,6 +293,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
               <span class="stats__fact-number">{{ coDirectedCount() }}</span>
               <span class="stats__fact-text">co-directed films</span>
             </div>
+            @if (uniqueLanguageCount() > 1) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ uniqueLanguageCount() }}</span>
+                <span class="stats__fact-text">languages represented</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -826,6 +832,11 @@ export class StatsComponent implements OnInit {
   readonly coDirectedCount = computed(() =>
     this.catalog.movies().filter((m) => m.directors.length > 1).length
   );
+
+  readonly uniqueLanguageCount = computed(() => {
+    const langs = new Set(this.catalog.movies().filter((m) => m.language).map((m) => m.language));
+    return langs.size;
+  });
 
   readonly genrePairs = computed(() => {
     const pairCounts = new Map<string, number>();
