@@ -258,6 +258,9 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                         @for (genre of m.genres; track genre) {
                           <a class="detail__tag" [routerLink]="['/genre', genre]">{{ genre }}</a>
                         }
+                        @if (genreSiblingCount(); as gsc) {
+                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films)</span>
+                        }
                       </div>
                     </div>
                   }
@@ -1244,6 +1247,14 @@ export class MovieComponent implements OnInit {
     if (!s || s.directors.length === 0) return null;
     const count = this.catalogService.movies().filter((m) => m.directors.includes(s.directors[0])).length;
     return count > 1 ? count : null;
+  });
+
+  readonly genreSiblingCount = computed(() => {
+    const s = this.summary();
+    if (!s || s.genres.length === 0) return null;
+    const primaryGenre = s.genres[0];
+    const count = this.catalogService.movies().filter((m) => m.id !== s.id && m.genres.includes(primaryGenre)).length;
+    return count >= 10 ? { genre: primaryGenre, count } : null;
   });
 
   readonly yearDecade = computed(() => {

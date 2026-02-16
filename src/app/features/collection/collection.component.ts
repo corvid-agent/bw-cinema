@@ -1997,6 +1997,16 @@ export class CollectionComponent implements OnInit {
       insights.push({ label: 'Languages', value: `${uniqueLangs.size}` });
     }
 
+    // Unique genres explored
+    const uniqueGenres = new Set<string>();
+    for (const w of watched) {
+      const m = movieMap.get(w.movieId);
+      if (m) for (const g of m.genres) uniqueGenres.add(g);
+    }
+    if (uniqueGenres.size >= 3) {
+      insights.push({ label: 'Genres Explored', value: `${uniqueGenres.size}` });
+    }
+
     // Rating bias vs TMDb
     if (ratedItems.length >= 3) {
       let userTotal = 0;
