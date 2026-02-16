@@ -20,7 +20,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
       <div class="watch container">
         <div class="watch__header">
           <a [routerLink]="['/movie', id()]" class="watch__back">&larr; Back to details</a>
-          <h1>{{ movieTitle() }}</h1>
+          <h1>{{ movieTitle() }}@if (movieYear()) { <span class="watch__header-year">({{ movieYear() }})</span>}</h1>
           @if (movieGenres()) {
             <p class="watch__genres">{{ movieGenres() }}</p>
           }
@@ -175,6 +175,11 @@ import type { MovieSummary } from '../../core/models/movie.model';
       font-size: 0.85rem;
       color: var(--accent-gold);
       margin: 0 0 var(--space-xs);
+    }
+    .watch__header-year {
+      font-weight: 400;
+      color: var(--text-secondary);
+      font-size: 0.85em;
     }
     .watch__header-rating {
       color: var(--accent-gold);
@@ -547,6 +552,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly watchedAgo = signal('');
   readonly movieGenres = signal('');
   readonly movieRating = signal('');
+  readonly movieYear = signal('');
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -568,6 +574,7 @@ export class WatchComponent implements OnInit, OnDestroy {
       this.encodedTitle.set(encodeURIComponent(movie.title));
       if (movie.genres.length > 0) this.movieGenres.set(movie.genres.slice(0, 3).join(' / '));
       if (movie.voteAverage > 0) this.movieRating.set(movie.voteAverage.toFixed(1));
+      this.movieYear.set(String(movie.year));
       this.titleService.setTitle(`Watch ${movie.title} — BW Cinema`);
       const src = this.streamingService.getSource(movie.internetArchiveId, movie.youtubeId);
       this.source.set(src);

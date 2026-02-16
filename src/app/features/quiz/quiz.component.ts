@@ -60,6 +60,9 @@ interface QuizStep {
           @if (resultDecadeRange(); as dr) {
             <p class="quiz__decade-range">Spanning {{ dr }}</p>
           }
+          @if (resultAvgRating(); as avgR) {
+            <p class="quiz__decade-range">Avg rating: &#9733; {{ avgR }}</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -422,6 +425,13 @@ export class QuizComponent implements OnInit {
     if (decades.size < 2) return null;
     const sorted = [...decades].sort((a, b) => a - b);
     return `${sorted[0]}s–${sorted[sorted.length - 1]}s`;
+  });
+
+  readonly resultAvgRating = computed(() => {
+    const films = this.results();
+    const rated = films.filter((m) => m.voteAverage > 0);
+    if (rated.length === 0) return null;
+    return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
   });
 
   readonly avgMatchScore = computed(() => {

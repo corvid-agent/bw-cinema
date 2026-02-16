@@ -68,6 +68,9 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                 @if (languageRank(); as lr) {
                   <span class="detail__sub-rank">#{{ lr.rank }} in {{ lr.language }}</span>
                 }
+                @if (streamableRank(); as sr) {
+                  <span class="detail__sub-rank">#{{ sr.rank }} free to watch</span>
+                }
               </div>
 
               <div class="detail__meta">
@@ -1204,6 +1207,17 @@ export class MovieComponent implements OnInit {
     const idx = langFilms.findIndex((m) => m.id === s.id);
     if (idx < 0 || idx >= 10) return null;
     return { rank: idx + 1, language: s.language };
+  });
+
+  readonly streamableRank = computed(() => {
+    const s = this.summary();
+    if (!s || s.voteAverage === 0 || !s.isStreamable) return null;
+    const ranked = this.catalogService.movies()
+      .filter((m) => m.isStreamable && m.voteAverage > 0)
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+    const idx = ranked.findIndex((m) => m.id === s.id);
+    if (idx < 0 || idx >= 20) return null;
+    return { rank: idx + 1, total: ranked.length };
   });
 
   readonly yearPeers = computed(() => {
