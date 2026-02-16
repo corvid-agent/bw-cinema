@@ -317,6 +317,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">median film rating</span>
               </div>
             }
+            @if (avgFilmsPerDirector()) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ avgFilmsPerDirector() }}</span>
+                <span class="stats__fact-text">avg films per director</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -838,6 +844,13 @@ export class StatsComponent implements OnInit {
       ? (rated[mid - 1] + rated[mid]) / 2
       : rated[mid];
     return median.toFixed(1);
+  });
+
+  readonly avgFilmsPerDirector = computed(() => {
+    const dirs = this.uniqueDirectors();
+    const total = this.totalFilms();
+    if (dirs === 0) return null;
+    return (total / dirs).toFixed(1);
   });
 
   readonly mostVersatileDirector = computed(() => {

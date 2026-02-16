@@ -184,7 +184,12 @@ import type { MovieSummary } from '../../core/models/movie.model';
             </div>
           }
           @if (combinedAvgRating(); as avg) {
-            <div class="compare__combined-avg">Combined Avg: {{ avg }}/10</div>
+            <div class="compare__combined-avg">
+              Combined Avg: {{ avg }}/10
+              @if (genreOverlapPct() > 0) {
+                <span class="compare__overlap"> &middot; {{ genreOverlapPct() }}% genre overlap</span>
+              }
+            </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
             <div class="compare__shared">
@@ -673,6 +678,16 @@ export class CompareComponent implements OnInit {
       return `${older.title} predates ${newer.title} by ${newer.year - older.year} years.`;
     }
     return `${a.title} and ${b.title} — two films from ${a.year}.`;
+  });
+
+  readonly genreOverlapPct = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b || a.genres.length === 0 || b.genres.length === 0) return 0;
+    const setA = new Set(a.genres);
+    const shared = b.genres.filter((g) => setA.has(g)).length;
+    const total = new Set([...a.genres, ...b.genres]).size;
+    return total > 0 ? Math.round((shared / total) * 100) : 0;
   });
 
   readonly combinedAvgRating = computed(() => {
