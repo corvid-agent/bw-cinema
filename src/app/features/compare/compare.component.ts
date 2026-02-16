@@ -233,6 +233,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (combinedTitleLength(); as ctl) {
                 <span class="compare__overlap"> &middot; {{ ctl }} chars combined</span>
               }
+              @if (sameLanguage(); as sl) {
+                <span class="compare__overlap"> &middot; both in {{ sl }}</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -840,6 +843,14 @@ export class CompareComponent implements OnInit {
     const a = this.filmA();
     const b = this.filmB();
     return !!(a && b && a.language && a.language !== 'English' && a.language !== 'en' && b.language && b.language !== 'English' && b.language !== 'en');
+  });
+
+  readonly sameLanguage = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b || !a.language || !b.language) return null;
+    if (a.language === b.language && a.language !== 'English' && a.language !== 'en') return a.language;
+    return null;
   });
 
   readonly combinedTitleLength = computed(() => {

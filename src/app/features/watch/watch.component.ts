@@ -47,6 +47,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (isNonEnglish()) {
               <span class="watch__header-rating">&middot; Non-English</span>
             }
+            @if (isHighlyRated()) {
+              <span class="watch__header-rating">&middot; Highly Rated</span>
+            }
             @if (decadeFilmCount()) {
               <span class="watch__header-rating">&middot; {{ decadeFilmCount() }} films from this decade</span>
             }
@@ -594,6 +597,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly isSilentEra = signal(false);
   readonly isNonEnglish = signal(false);
   readonly decadeFilmCount = signal(0);
+  readonly isHighlyRated = signal(false);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -620,6 +624,7 @@ export class WatchComponent implements OnInit, OnDestroy {
       if (movie.directors.length > 1) this.isCoDirected.set(true);
       if (movie.year < 1930) this.isSilentEra.set(true);
       if (movie.language && movie.language !== 'English' && movie.language !== 'en') this.isNonEnglish.set(true);
+      if (movie.voteAverage >= 8.0) this.isHighlyRated.set(true);
       const decade = Math.floor(movie.year / 10) * 10;
       this.decadeLabel.set(`${decade}s`);
       this.decadeValue.set(String(decade));

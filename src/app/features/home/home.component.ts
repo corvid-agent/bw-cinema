@@ -95,6 +95,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (avgTitleLength() > 0) {
           <p class="hero__avg-rating">Avg title length: {{ avgTitleLength() }} characters</p>
         }
+        @if (longestTitle(); as lt) {
+          <p class="hero__avg-rating">Longest title: "{{ lt }}"</p>
+        }
       </div>
     </section>
 
@@ -1343,6 +1346,13 @@ export class HomeComponent implements OnInit {
     const movies = this.catalog.movies();
     if (movies.length === 0) return 0;
     return Math.round(movies.reduce((s, m) => s + m.title.length, 0) / movies.length);
+  });
+
+  readonly longestTitle = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    const longest = movies.reduce((a, b) => a.title.length >= b.title.length ? a : b);
+    return longest.title.length >= 20 ? longest.title : null;
   });
 
   readonly decadeSpan = computed(() => {
