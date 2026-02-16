@@ -2025,6 +2025,13 @@ export class CollectionComponent implements OnInit {
       insights.push({ label: 'Decade Span', value: `${sorted[0]}s–${sorted[sorted.length - 1]}s` });
     }
 
+    // Avg catalog rating of watched films
+    const catalogRated = watched.map((w) => movieMap.get(w.movieId)).filter((m): m is MovieSummary => !!m && m.voteAverage > 0);
+    if (catalogRated.length >= 3) {
+      const avgCat = catalogRated.reduce((s, m) => s + m.voteAverage, 0) / catalogRated.length;
+      insights.push({ label: 'Avg TMDb Rating', value: avgCat.toFixed(1) });
+    }
+
     // Average film age
     const currentYear = new Date().getFullYear();
     const ages = watched.map((w) => movieMap.get(w.movieId)).filter((m): m is MovieSummary => !!m).map((m) => currentYear - m.year);

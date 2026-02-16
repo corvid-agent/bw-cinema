@@ -319,7 +319,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
 
           @if (m.cast.length > 0) {
             <section class="detail__cast-section">
-              <h2>Cast</h2>
+              <h2>Cast <span class="detail__section-note">({{ m.cast.length }})</span></h2>
               <div class="detail__cast">
                 @for (actor of m.cast; track actor.name) {
                   <a class="cast-card" [routerLink]="['/actor', actor.name]">

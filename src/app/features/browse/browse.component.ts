@@ -63,6 +63,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultAvgFilmAge(); as rafa) {
           <p class="browse__watched-note">Avg age: {{ rafa }} years</p>
         }
+        @if (resultHighRatedCount(); as rhrc) {
+          <p class="browse__watched-note">{{ rhrc }} rated 7.0+</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -681,6 +684,13 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     const pct = Math.round((films.filter((m) => m.isStreamable).length / films.length) * 100);
     if (pct === 0 || pct === 100) return null;
     return pct;
+  });
+
+  readonly resultHighRatedCount = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const count = films.filter((m) => m.voteAverage >= 7.0).length;
+    return count > 0 && count < films.length ? count : null;
   });
 
   readonly topResultDirector = computed(() => {
