@@ -86,6 +86,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="genre__stat-label">vs Catalog Avg</span>
               </div>
             }
+            @if (mostProlificDirector(); as mpd) {
+              <a class="genre__stat genre__stat--link" [routerLink]="['/director', mpd.name]">
+                <span class="genre__stat-value">{{ mpd.count }}</span>
+                <span class="genre__stat-label">{{ mpd.name }}</span>
+              </a>
+            }
           </div>
 
           @if (notableFact()) {
@@ -263,6 +269,14 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
     }
     .genre__stat-value--positive {
       color: #198754;
+    }
+    .genre__stat--link {
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s;
+    }
+    .genre__stat--link:hover {
+      border-color: var(--accent-gold);
     }
     .genre__top-film {
       margin-bottom: var(--space-xl);
@@ -744,6 +758,16 @@ export class GenreComponent implements OnInit {
     const count = f.filter((m) => m.genres.length === 1).length;
     if (count < 1) return null;
     return count;
+  });
+
+  readonly mostProlificDirector = computed(() => {
+    const counts = new Map<string, number>();
+    for (const m of this.films()) {
+      for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (!top || top[1] < 3) return null;
+    return { name: top[0], count: top[1] };
   });
 
   readonly decadeBreakdown = computed(() => {
