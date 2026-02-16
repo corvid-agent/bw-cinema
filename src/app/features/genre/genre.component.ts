@@ -134,6 +134,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (nonEnglishPct() > 0) {
             <p class="genre__fact">{{ nonEnglishPct() }}% non-English films</p>
           }
+          @if (medianRating(); as mr) {
+            <p class="genre__fact">Median rating: &#9733; {{ mr }}</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -868,6 +871,15 @@ export class GenreComponent implements OnInit {
     const count = f.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
     const pct = Math.round((count / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : 0;
+  });
+
+  readonly medianRating = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length < 5) return null;
+    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    return median.toFixed(1);
   });
 
   readonly silentEraCount = computed(() => {
