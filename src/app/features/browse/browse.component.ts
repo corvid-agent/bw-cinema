@@ -16,7 +16,7 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
     <div class="browse container">
       <div class="browse__top">
         <h1>Browse Films</h1>
-        <p class="browse__subtitle">{{ filteredMovies().length }} films found</p>
+        <p class="browse__subtitle" aria-live="polite" aria-atomic="true">{{ filteredMovies().length }} films found</p>
       </div>
 
       @if (catalog.loading()) {

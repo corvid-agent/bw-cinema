@@ -1,16 +1,17 @@
 import { Component, ChangeDetectionStrategy, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { LazyImageDirective } from '../directives/lazy-image.directive';
 import type { MovieSummary } from '../../core/models/movie.model';
 
 @Component({
   selector: 'app-movie-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [RouterLink, LazyImageDirective],
   template: `
     <a class="card" [routerLink]="['/movie', movie().id]" [attr.aria-label]="movie().title + ' (' + movie().year + ')'">
       <div class="card__poster">
         @if (movie().posterUrl && !imgFailed()) {
-          <img [src]="movie().posterUrl" [alt]="movie().title + ' poster'" loading="lazy" (error)="imgFailed.set(true)" />
+          <img appLazyImage [src]="movie().posterUrl" [alt]="movie().title + ' poster'" (error)="imgFailed.set(true)" />
         } @else {
           <div class="card__poster-placeholder">
             <span class="card__placeholder-title">{{ movie().title }}</span>

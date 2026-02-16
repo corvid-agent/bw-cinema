@@ -245,6 +245,26 @@ input::placeholder {
   border: 0;
 }
 
+/* Skip link — visible only on focus */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--space-md);
+  background-color: var(--accent-gold);
+  color: var(--bg-deep);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: 0 0 var(--radius) var(--radius);
+  font-weight: 600;
+  font-size: 0.95rem;
+  z-index: 200;
+  transition: top 0.2s;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 0;
+  outline: none;
+}
+
 .text-gold { color: var(--accent-gold); }
 .text-secondary { color: var(--text-secondary); }
 .text-center { text-align: center; }

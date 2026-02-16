@@ -4,11 +4,12 @@ import { CatalogService } from '../../core/services/catalog.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { SearchBarComponent } from '../../shared/components/search-bar.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
+import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.directive';
 
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MovieGridComponent, SearchBarComponent, LoadingSpinnerComponent],
+  imports: [MovieGridComponent, SearchBarComponent, LoadingSpinnerComponent, KeyboardNavDirective],
   template: `
     <section class="hero">
       <div class="hero__bg"></div>
@@ -42,16 +43,18 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
     @if (catalog.loading()) {
       <app-loading-spinner />
     } @else {
-      <section class="section container">
+      <section class="section container" aria-label="Featured films">
         <div class="section__header">
           <h2>Featured Films</h2>
           <a class="section__link" routerLink="/browse">View all &rarr;</a>
         </div>
-        <app-movie-grid [movies]="catalog.featured()" />
+        <div appKeyboardNav>
+          <app-movie-grid [movies]="catalog.featured()" />
+        </div>
       </section>
 
       @if (decades().length > 0) {
-        <section class="section container">
+        <section class="section container" aria-label="Browse by decade">
           <h2>Browse by Decade</h2>
           <div class="decades">
             @for (decade of decades(); track decade) {
@@ -65,7 +68,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
       }
 
       @if (genres().length > 0) {
-        <section class="section container">
+        <section class="section container" aria-label="Popular genres">
           <h2>Popular Genres</h2>
           <div class="genres">
             @for (genre of genres(); track genre) {

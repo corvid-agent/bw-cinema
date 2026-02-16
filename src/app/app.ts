@@ -1,9 +1,10 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './shared/components/header.component';
 import { FooterComponent } from './shared/components/footer.component';
 import { ToastContainerComponent } from './shared/components/toast-container.component';
 import { BackToTopComponent } from './shared/components/back-to-top.component';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -25,4 +26,10 @@ import { BackToTopComponent } from './shared/components/back-to-top.component';
     }
   `],
 })
-export class App {}
+export class App implements OnInit {
+  private readonly theme = inject(ThemeService);
+
+  ngOnInit(): void {
+    this.theme.init();
+  }
+}
