@@ -320,21 +320,24 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
             </section>
           }
 
-          @if (similarFilms().length > 0) {
+          @if (similarWithReasons().length > 0) {
             <section class="detail__similar" aria-label="Similar films">
               <h2>You Might Also Like</h2>
               <div class="detail__carousel">
-                @for (s of similarFilms(); track s.id) {
-                  <a class="detail__carousel-card" [routerLink]="['/movie', s.id]">
-                    @if (s.posterUrl) {
-                      <img [src]="s.posterUrl" [alt]="s.title" loading="lazy" />
+                @for (s of similarWithReasons(); track s.movie.id) {
+                  <a class="detail__carousel-card" [routerLink]="['/movie', s.movie.id]">
+                    @if (s.movie.posterUrl) {
+                      <img [src]="s.movie.posterUrl" [alt]="s.movie.title" loading="lazy" />
                     } @else {
                       <div class="detail__carousel-placeholder">
-                        <span>{{ s.title }}</span>
+                        <span>{{ s.movie.title }}</span>
                       </div>
                     }
-                    <p class="detail__carousel-title">{{ s.title }}</p>
-                    <p class="detail__carousel-meta">{{ s.year }}</p>
+                    <p class="detail__carousel-title">{{ s.movie.title }}</p>
+                    <p class="detail__carousel-meta">{{ s.movie.year }}</p>
+                    @if (s.reason) {
+                      <p class="detail__carousel-reason">{{ s.reason }}</p>
+                    }
                   </a>
                 }
               </div>
@@ -842,6 +845,15 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       color: var(--text-tertiary);
       margin: 0;
     }
+    .detail__carousel-reason {
+      font-size: 0.65rem;
+      color: var(--accent-gold);
+      margin: 2px 0 0;
+      opacity: 0.85;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .detail__not-found {
       padding: var(--space-3xl) 0;
       text-align: center;
@@ -953,6 +965,31 @@ export class MovieComponent implements OnInit {
   readonly similarFilms = computed(() => {
     const s = this.summary();
     return s ? this.catalogService.getSimilar(s) : [];
+  });
+
+  readonly similarWithReasons = computed(() => {
+    const s = this.summary();
+    if (!s) return [];
+    const films = this.similarFilms();
+    const genreSet = new Set(s.genres.map((g) => g.toLowerCase()));
+    const dirSet = new Set(s.directors.map((d) => d.toLowerCase()));
+    const decade = Math.floor(s.year / 10) * 10;
+    return films.map((m) => {
+      const sharedDir = m.directors.find((d) => dirSet.has(d.toLowerCase()));
+      const sharedGenres = m.genres.filter((g) => genreSet.has(g.toLowerCase()));
+      const sameDec = Math.floor(m.year / 10) * 10 === decade;
+      let reason = '';
+      if (sharedDir) {
+        reason = `Also by ${sharedDir}`;
+      } else if (sharedGenres.length > 0 && sameDec) {
+        reason = `${sharedGenres[0]}, ${decade}s`;
+      } else if (sharedGenres.length > 0) {
+        reason = sharedGenres.length > 1 ? sharedGenres.slice(0, 2).join(' & ') : sharedGenres[0];
+      } else if (sameDec) {
+        reason = `Also from the ${decade}s`;
+      }
+      return { movie: m, reason };
+    });
   });
 
   readonly directorFilms = computed(() => {

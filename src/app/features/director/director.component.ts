@@ -94,6 +94,24 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             <app-movie-list [movies]="sortedFilms()" />
           }
 
+          @if (careerTimeline().length > 1) {
+            <div class="director__timeline">
+              <h2 class="director__section-title">Career Arc</h2>
+              <div class="director__timeline-chart">
+                @for (decade of careerTimeline(); track decade.decade) {
+                  <div class="director__timeline-bar" [title]="decade.decade + 's: ' + decade.count + ' film' + (decade.count !== 1 ? 's' : '') + ', avg ' + decade.avgRating.toFixed(1)">
+                    <div class="director__timeline-fill" [style.height.%]="decade.heightPct"></div>
+                    <span class="director__timeline-count">{{ decade.count }}</span>
+                    <span class="director__timeline-label">{{ decade.decade }}s</span>
+                  </div>
+                }
+              </div>
+              @if (peakDecade()) {
+                <p class="director__timeline-note">Peak decade: <strong>{{ peakDecade() }}s</strong> — highest average rating</p>
+              }
+            </div>
+          }
+
           @if (collaborators().length > 0) {
             <div class="director__collaborators">
               <h2 class="director__section-title">Frequent Collaborators</h2>
@@ -305,6 +323,52 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       color: var(--text-tertiary);
       margin-top: 2px;
     }
+    .director__timeline {
+      margin-bottom: var(--space-xl);
+      border-top: 1px solid var(--border);
+      padding-top: var(--space-lg);
+    }
+    .director__timeline-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: var(--space-md);
+      height: 120px;
+      padding: var(--space-md) 0;
+    }
+    .director__timeline-bar {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 100%;
+      position: relative;
+      cursor: default;
+    }
+    .director__timeline-fill {
+      width: 100%;
+      max-width: 48px;
+      background: linear-gradient(to top, var(--accent-gold), var(--accent-gold-dim));
+      border-radius: 4px 4px 0 0;
+      min-height: 4px;
+      transition: height 0.4s ease;
+    }
+    .director__timeline-count {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      margin-bottom: 2px;
+    }
+    .director__timeline-label {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      margin-top: var(--space-xs);
+    }
+    .director__timeline-note {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: var(--space-sm);
+    }
     .director__empty {
       text-align: center;
       padding: var(--space-3xl);
@@ -398,6 +462,39 @@ export class DirectorComponent implements OnInit {
       for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
     }
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([g]) => g);
+  });
+
+  readonly careerTimeline = computed(() => {
+    const f = this.films();
+    if (f.length === 0) return [];
+    const decades = new Map<number, { count: number; totalRating: number }>();
+    for (const m of f) {
+      const d = Math.floor(m.year / 10) * 10;
+      const entry = decades.get(d) ?? { count: 0, totalRating: 0 };
+      entry.count++;
+      entry.totalRating += m.voteAverage;
+      decades.set(d, entry);
+    }
+    const entries = [...decades.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([decade, { count, totalRating }]) => ({
+        decade,
+        count,
+        avgRating: totalRating / count,
+        heightPct: 0,
+      }));
+    const maxCount = Math.max(...entries.map((e) => e.count));
+    for (const e of entries) {
+      e.heightPct = maxCount > 0 ? Math.round((e.count / maxCount) * 100) : 0;
+    }
+    return entries;
+  });
+
+  readonly peakDecade = computed(() => {
+    const timeline = this.careerTimeline();
+    if (timeline.length < 2) return null;
+    const best = timeline.reduce((a, b) => (b.avgRating > a.avgRating ? b : a));
+    return best.decade;
   });
 
   readonly watchedCount = computed(() => {

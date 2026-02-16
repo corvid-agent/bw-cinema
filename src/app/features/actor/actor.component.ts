@@ -52,6 +52,12 @@ import type { MovieSummary } from '../../core/models/movie.model';
               <span class="actor__stat-value">{{ streamableCount() }}</span>
               <span class="actor__stat-label">Free to Watch</span>
             </div>
+            @if (bestDecade()) {
+              <div class="actor__stat">
+                <span class="actor__stat-value">{{ bestDecade() }}s</span>
+                <span class="actor__stat-label">Best Decade</span>
+              </div>
+            }
           </div>
 
           @if (topGenres().length > 0) {
@@ -407,6 +413,25 @@ export class ActorComponent implements OnInit {
       for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
     }
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([g]) => g);
+  });
+
+  readonly bestDecade = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const decades = new Map<number, { count: number; totalRating: number }>();
+    for (const m of f) {
+      const d = Math.floor(m.year / 10) * 10;
+      const entry = decades.get(d) ?? { count: 0, totalRating: 0 };
+      entry.count++;
+      entry.totalRating += m.voteAverage;
+      decades.set(d, entry);
+    }
+    const eligible = [...decades.entries()].filter(([, v]) => v.count >= 2);
+    if (eligible.length === 0) return null;
+    const best = eligible.reduce((a, b) =>
+      (b[1].totalRating / b[1].count) > (a[1].totalRating / a[1].count) ? b : a
+    );
+    return best[0];
   });
 
   readonly topDirectors = computed(() => {

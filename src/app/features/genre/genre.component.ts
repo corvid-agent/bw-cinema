@@ -72,6 +72,35 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           } @else {
             <app-movie-list [movies]="sortedFilms()" />
           }
+
+          @if (topDirectors().length > 0) {
+            <div class="genre__directors">
+              <h2 class="genre__section-title">Top Directors in {{ name() }}</h2>
+              <div class="genre__directors-grid">
+                @for (d of topDirectors(); track d.name) {
+                  <a class="genre__director-card" [routerLink]="['/director', d.name]">
+                    <span class="genre__director-name">{{ d.name }}</span>
+                    <span class="genre__director-count">{{ d.count }} film{{ d.count !== 1 ? 's' : '' }}</span>
+                    <span class="genre__director-rating">{{ d.avgRating }}</span>
+                  </a>
+                }
+              </div>
+            </div>
+          }
+
+          @if (decadeBreakdown().length > 0) {
+            <div class="genre__decades">
+              <h2 class="genre__section-title">By Decade</h2>
+              <div class="genre__decades-row">
+                @for (d of decadeBreakdown(); track d.decade) {
+                  <a class="genre__decade-chip" [routerLink]="['/decade', d.decade]">
+                    {{ d.decade }}s
+                    <span class="genre__decade-count">{{ d.count }}</span>
+                  </a>
+                }
+              </div>
+            </div>
+          }
         } @else {
           <div class="genre__empty">
             <p>No films found for this genre.</p>
@@ -217,6 +246,85 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       border-color: var(--accent-gold);
       color: var(--accent-gold);
     }
+    .genre__section-title {
+      font-size: 1.2rem;
+      margin-bottom: var(--space-md);
+    }
+    .genre__directors {
+      margin-top: var(--space-2xl);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--border);
+    }
+    .genre__directors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-md);
+    }
+    .genre__director-card {
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .genre__director-card:hover {
+      border-color: var(--accent-gold);
+      color: inherit;
+    }
+    .genre__director-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    .genre__director-count {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+    }
+    .genre__director-rating {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      margin-top: var(--space-xs);
+    }
+    .genre__decades {
+      margin-top: var(--space-xl);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--border);
+    }
+    .genre__decades-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+    .genre__decade-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: 6px 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .genre__decade-chip:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .genre__decade-count {
+      font-size: 0.7rem;
+      background: var(--bg-raised);
+      padding: 1px 6px;
+      border-radius: 8px;
+      color: var(--text-tertiary);
+    }
     .genre__empty {
       text-align: center;
       padding: var(--space-3xl);
@@ -278,6 +386,38 @@ export class GenreComponent implements OnInit {
   readonly streamableCount = computed(() =>
     this.films().filter((m) => m.isStreamable).length
   );
+
+  readonly topDirectors = computed(() => {
+    const dirMap = new Map<string, { count: number; totalRating: number }>();
+    for (const m of this.films()) {
+      for (const d of m.directors) {
+        const entry = dirMap.get(d) ?? { count: 0, totalRating: 0 };
+        entry.count++;
+        entry.totalRating += m.voteAverage;
+        dirMap.set(d, entry);
+      }
+    }
+    return [...dirMap.entries()]
+      .filter(([, v]) => v.count >= 2)
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 8)
+      .map(([name, v]) => ({
+        name,
+        count: v.count,
+        avgRating: (v.totalRating / v.count).toFixed(1),
+      }));
+  });
+
+  readonly decadeBreakdown = computed(() => {
+    const decades = new Map<number, number>();
+    for (const m of this.films()) {
+      const d = Math.floor(m.year / 10) * 10;
+      decades.set(d, (decades.get(d) ?? 0) + 1);
+    }
+    return [...decades.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([decade, count]) => ({ decade, count }));
+  });
 
   ngOnInit(): void {
     this.catalog.load();
