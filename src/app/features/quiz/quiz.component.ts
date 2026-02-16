@@ -57,6 +57,9 @@ interface QuizStep {
           <div class="quiz__result-grid">
             @for (m of results(); track m.id) {
               <a class="quiz__result-card" [routerLink]="['/movie', m.id]">
+                @if (matchScores().get(m.id); as score) {
+                  <span class="quiz__match-score">{{ score }}% match</span>
+                }
                 @if (m.posterUrl) {
                   <img [src]="m.posterUrl" [alt]="m.title" loading="lazy" />
                 } @else {
@@ -191,6 +194,16 @@ interface QuizStep {
     .quiz__result-card:hover { color: inherit; }
     @media (hover: hover) and (pointer: fine) {
       .quiz__result-card:hover { transform: translateY(-4px); }
+    }
+    .quiz__match-score {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      background: var(--accent-gold-dim);
+      padding: 2px 8px;
+      border-radius: 8px;
+      margin-bottom: var(--space-xs);
     }
     .quiz__result-card img {
       width: 100%;
@@ -368,6 +381,39 @@ export class QuizComponent implements OnInit {
       }
     }
     return labels;
+  });
+
+  readonly matchScores = computed(() => {
+    const a = this.answers();
+    const films = this.results();
+    const map = new Map<string, number>();
+    const totalCriteria = Object.values(a).filter((v) => v !== 'any').length;
+    if (totalCriteria === 0) return map;
+    for (const m of films) {
+      let matched = 0;
+      const era = a[0];
+      if (era === 'silent' && m.year < 1930) matched++;
+      else if (era === 'golden' && m.year >= 1930 && m.year < 1950) matched++;
+      else if (era === 'postwar' && m.year >= 1950) matched++;
+      else if (era === 'any') { /* no criteria */ }
+      const genre = a[1];
+      if (genre && genre !== 'any' && m.genres.some((g) => g.toLowerCase().includes(genre.toLowerCase()))) matched++;
+      const mood = a[2];
+      if (mood === 'light' && m.genres.some((g) => ['Comedy', 'Musical', 'Romance', 'Animation'].includes(g))) matched++;
+      else if (mood === 'dark' && m.genres.some((g) => ['Horror', 'Thriller', 'Crime', 'War', 'Mystery'].includes(g))) matched++;
+      else if (mood === 'deep' && m.genres.some((g) => ['Drama', 'History', 'Documentary'].includes(g))) matched++;
+      const rating = a[3];
+      if (rating === 'high' && m.voteAverage >= 8) matched++;
+      else if (rating === 'medium' && m.voteAverage >= 6) matched++;
+      const lang = a[4];
+      if (lang === 'english' && (!m.language || m.language === 'English')) matched++;
+      else if (lang === 'foreign' && m.language && m.language !== 'English') matched++;
+      const streamable = a[5];
+      if (streamable === 'free' && m.isStreamable) matched++;
+      const pct = Math.round((matched / totalCriteria) * 100);
+      map.set(m.id, Math.min(pct, 100));
+    }
+    return map;
   });
 
   readonly matchReasons = computed(() => {

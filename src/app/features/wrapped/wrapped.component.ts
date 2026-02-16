@@ -88,6 +88,18 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Languages</span>
               </div>
             }
+            @if (busiestMonth(); as bm) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ bm.name }}</span>
+                <span class="wrapped__hero-label">Busiest Month ({{ bm.count }})</span>
+              </div>
+            }
+            @if (longestStreak() > 1) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ longestStreak() }}</span>
+                <span class="wrapped__hero-label">Month Streak</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -515,6 +527,9 @@ interface WrappedStats {
     .wrapped__films h2 {
       margin-bottom: var(--space-lg);
     }
+    .wrapped__hero-stat--text .wrapped__hero-value {
+      font-size: 1.5rem;
+    }
     @media (max-width: 768px) {
       .wrapped__title { font-size: 2rem; }
       .wrapped__hero-stats { grid-template-columns: repeat(2, 1fr); }
@@ -658,6 +673,33 @@ export class WrappedComponent implements OnInit {
     if (rated.length === 0) return null;
     const best = rated.reduce((a, b) => ((b.userRating ?? 0) > (a.userRating ?? 0) ? b : a));
     return best.userRating;
+  });
+
+  readonly busiestMonth = computed(() => {
+    const months = this.stats().monthlyBreakdown;
+    const fullNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    let best: { name: string; count: number } | null = null;
+    months.forEach((m, i) => {
+      if (m.count > 0 && (!best || m.count > best.count)) {
+        best = { name: fullNames[i], count: m.count };
+      }
+    });
+    return best;
+  });
+
+  readonly longestStreak = computed(() => {
+    const months = this.stats().monthlyBreakdown;
+    let max = 0;
+    let current = 0;
+    for (const m of months) {
+      if (m.count > 0) {
+        current++;
+        if (current > max) max = current;
+      } else {
+        current = 0;
+      }
+    }
+    return max;
   });
 
   private maxBarValue = computed(() => {

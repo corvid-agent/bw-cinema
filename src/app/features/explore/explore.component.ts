@@ -119,6 +119,19 @@ const MOODS: Mood[] = [
           </div>
         }
 
+        @if (catalogProgress(); as prog) {
+          <div class="explore__catalog-progress">
+            <div class="explore__catalog-header">
+              <span class="explore__catalog-label">Catalog Progress</span>
+              <span class="explore__catalog-pct">{{ prog.pct }}%</span>
+            </div>
+            <div class="explore__catalog-track">
+              <div class="explore__catalog-fill" [style.width.%]="prog.pct"></div>
+            </div>
+            <span class="explore__catalog-detail">{{ prog.watched }} of {{ prog.total }} streamable films watched</span>
+          </div>
+        }
+
         @if (!activeMood()) {
           <div class="explore__moods">
             @for (mood of moods; track mood.id) {
@@ -517,6 +530,48 @@ const MOODS: Mood[] = [
     .explore__start-watching h3 {
       margin-bottom: var(--space-xs);
     }
+    .explore__catalog-progress {
+      margin-bottom: var(--space-2xl);
+      padding: var(--space-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .explore__catalog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-sm);
+    }
+    .explore__catalog-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .explore__catalog-pct {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+    }
+    .explore__catalog-track {
+      height: 8px;
+      background: var(--bg-raised);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: var(--space-xs);
+    }
+    .explore__catalog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-gold), #c49b2c);
+      border-radius: 4px;
+      min-width: 2px;
+      transition: width 0.4s ease;
+    }
+    .explore__catalog-detail {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+    }
     @media (max-width: 480px) {
       .explore__double-pair { grid-template-columns: 1fr; gap: var(--space-lg); }
       .explore__festival-trio { grid-template-columns: 1fr; gap: var(--space-lg); }
@@ -611,6 +666,17 @@ export class ExploreComponent implements OnInit {
         pct: total > 0 ? Math.round((w / total) * 100) : 0,
       };
     }).filter((p) => p.total > 0);
+  });
+
+  readonly catalogProgress = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return null;
+    const streamable = this.catalog.movies().filter((m) => m.isStreamable);
+    const total = streamable.length;
+    if (total === 0) return null;
+    const watched = streamable.filter((m) => watchedIds.has(m.id)).length;
+    const pct = Math.round((watched / total) * 100);
+    return { watched, total, pct };
   });
 
   readonly unwatchedCount = computed(() => {
