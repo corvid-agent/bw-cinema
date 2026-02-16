@@ -97,6 +97,17 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
               </div>
             }
 
+            @if (quickDecades().length > 0 && filterChips().length === 0) {
+              <div class="browse__quick-decades">
+                @for (d of quickDecades(); track d.decade) {
+                  <button class="browse__quick-decade" (click)="quickFilterDecade(d.decade)">
+                    {{ d.decade }}s
+                    <span class="browse__quick-count">{{ d.count }}</span>
+                  </button>
+                }
+              </div>
+            }
+
             @if (browseSuggestion(); as suggestion) {
               <a class="browse__suggestion" [routerLink]="['/movie', suggestion.film.id]">
                 <span class="browse__suggestion-text">Because you watched <strong>{{ suggestion.source }}</strong></span>
@@ -239,6 +250,40 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       background: var(--bg-raised);
       border-color: var(--text-tertiary);
       color: var(--text-secondary);
+    }
+    .browse__quick-decades {
+      display: flex;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-md);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
+    }
+    .browse__quick-decade {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      min-height: auto;
+      min-width: auto;
+    }
+    .browse__quick-decade:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      background: var(--accent-gold-dim);
+    }
+    .browse__quick-count {
+      font-size: 0.65rem;
+      color: var(--text-tertiary);
     }
     .browse__suggestion {
       display: flex;
@@ -478,6 +523,18 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     return chips;
   });
 
+  readonly quickDecades = computed(() => {
+    const meta = this.catalog.meta();
+    if (!meta) return [];
+    const movies = this.catalog.movies();
+    const counts = new Map<number, number>();
+    for (const m of movies) {
+      const d = Math.floor(m.year / 10) * 10;
+      counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    return meta.decades.map((d) => ({ decade: d, count: counts.get(d) ?? 0 }));
+  });
+
   readonly filteredMovies = computed(() => this.catalog.search(this.filter()));
   readonly paginatedMovies = computed(() =>
     this.filteredMovies().slice(0, this.page() * this.pageSize)
@@ -576,6 +633,12 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     const newLangs = val ? [val] : [];
     this.filter.update((f) => ({ ...f, languages: newLangs }));
     try { localStorage.setItem('bw-cinema-lang-pref', JSON.stringify(newLangs)); } catch { /* noop */ }
+    this.page.set(1);
+    this.syncUrl();
+  }
+
+  quickFilterDecade(decade: number): void {
+    this.filter.update((f) => ({ ...f, decades: [decade] }));
     this.page.set(1);
     this.syncUrl();
   }

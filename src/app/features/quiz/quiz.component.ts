@@ -49,6 +49,11 @@ interface QuizStep {
         <div class="quiz__results">
           <h2>Your Recommendations</h2>
           <p class="quiz__results-subtitle">Based on your preferences, here are {{ results().length }} films we think you'll enjoy:</p>
+          <div class="quiz__prefs">
+            @for (pref of selectedPrefs(); track pref) {
+              <span class="quiz__pref-chip">{{ pref }}</span>
+            }
+          </div>
           <div class="quiz__result-grid">
             @for (m of results(); track m.id) {
               <a class="quiz__result-card" [routerLink]="['/movie', m.id]">
@@ -151,6 +156,21 @@ interface QuizStep {
     .quiz__results-subtitle {
       color: var(--text-secondary);
       margin: 0 0 var(--space-xl);
+    }
+    .quiz__prefs {
+      display: flex;
+      gap: var(--space-xs);
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: var(--space-lg);
+    }
+    .quiz__pref-chip {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 10px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
     }
     .quiz__result-grid {
       display: grid;
@@ -306,6 +326,19 @@ export class QuizComponent implements OnInit {
 
   readonly currentStep = computed(() => this.steps[this.step()]);
   readonly progressPct = computed(() => ((this.step() + 1) / this.steps.length) * 100);
+
+  readonly selectedPrefs = computed(() => {
+    const a = this.answers();
+    const labels: string[] = [];
+    for (let i = 0; i < this.steps.length; i++) {
+      const val = a[i];
+      if (val && val !== 'any') {
+        const opt = this.steps[i].options.find((o) => o.value === val);
+        if (opt) labels.push(opt.label);
+      }
+    }
+    return labels;
+  });
 
   readonly matchReasons = computed(() => {
     const a = this.answers();
