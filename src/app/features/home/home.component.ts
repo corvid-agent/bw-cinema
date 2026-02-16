@@ -226,6 +226,31 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         </section>
       }
 
+      @if (directorSpotlight(); as spotlight) {
+        <section class="section container" aria-label="Director spotlight">
+          <div class="section__header">
+            <div>
+              <h2>Director Spotlight</h2>
+              <p class="section__desc">{{ spotlight.name }} &middot; {{ spotlight.films.length }} films in catalog</p>
+            </div>
+            <a class="section__link" [routerLink]="['/director', spotlight.name]">See all &rarr;</a>
+          </div>
+          <div class="gems__scroll">
+            @for (film of spotlight.films.slice(0, 8); track film.id) {
+              <a class="gems__card" [routerLink]="['/movie', film.id]">
+                @if (film.posterUrl) {
+                  <img [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+                } @else {
+                  <div class="gems__placeholder">{{ film.title }}</div>
+                }
+                <p class="gems__title">{{ film.title }}</p>
+                <p class="gems__meta">{{ film.year }}</p>
+              </a>
+            }
+          </div>
+        </section>
+      }
+
       @if (recentMovies().length > 0) {
         <section class="section container" aria-label="Recently viewed">
           <div class="section__header">
@@ -1021,6 +1046,28 @@ export class HomeComponent implements OnInit {
       .slice(0, 10)
       .map(([name, count]) => ({ name, count }));
   });
+  readonly directorSpotlight = computed(() => {
+    const seed = this.gemSeed();
+    const dirMap = new Map<string, import('../../core/models/movie.model').MovieSummary[]>();
+    for (const m of this.catalog.movies()) {
+      for (const d of m.directors) {
+        const list = dirMap.get(d) ?? [];
+        list.push(m);
+        dirMap.set(d, list);
+      }
+    }
+    const eligible = [...dirMap.entries()]
+      .filter(([, films]) => films.length >= 8 && films.some((f) => f.isStreamable && f.posterUrl));
+    if (eligible.length === 0) return null;
+    // Use seed for deterministic daily rotation
+    const idx = Math.abs(seed) % eligible.length;
+    const [name, films] = eligible[idx];
+    const sorted = films
+      .filter((f) => f.posterUrl)
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+    return { name, films: sorted };
+  });
+
   readonly filmCount = computed(() => {
     const total = this.catalog.meta()?.totalMovies ?? 0;
     return total > 1000 ? `${(total / 1000).toFixed(1)}k` : `${total}`;

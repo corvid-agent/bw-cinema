@@ -130,6 +130,9 @@ const MOODS: Mood[] = [
                 @if (moodWatchedCount(mood) > 0) {
                   <span class="explore__mood-watched">{{ moodWatchedCount(mood) }} watched</span>
                 }
+                @if (moodWatchedCount(mood) > 0 && moodWatchedCount(mood) >= moodCount(mood)) {
+                  <span class="explore__mood-complete">Complete!</span>
+                }
               </button>
             }
           </div>
@@ -312,6 +315,16 @@ const MOODS: Mood[] = [
       background: var(--bg-raised);
       padding: 2px 8px;
       border-radius: 8px;
+    }
+    .explore__mood-complete {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      background: var(--accent-gold-dim);
+      padding: 2px 8px;
+      border-radius: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
     .explore__double {
       margin-bottom: var(--space-2xl);

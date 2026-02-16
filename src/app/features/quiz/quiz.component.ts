@@ -333,6 +333,14 @@ export class QuizComponent implements OnInit {
       ],
     },
     {
+      question: 'Any language preference?',
+      options: [
+        { label: 'English only', value: 'english' },
+        { label: 'World cinema (non-English)', value: 'foreign' },
+        { label: 'No preference', value: 'any' },
+      ],
+    },
+    {
       question: 'Must it be free to watch?',
       options: [
         { label: 'Yes, free streaming only', value: 'free' },
@@ -379,6 +387,7 @@ export class QuizComponent implements OnInit {
       }
       if (m.voteAverage >= 8) tags.push('Highly rated');
       else if (m.voteAverage >= 7) tags.push('Well rated');
+      if (m.language && m.language !== 'English') tags.push(m.language);
       if (m.isStreamable) tags.push('Free');
       map.set(m.id, tags.slice(0, 3));
     }
@@ -468,8 +477,13 @@ export class QuizComponent implements OnInit {
     if (rating === 'high') films = films.filter((m) => m.voteAverage >= 8);
     else if (rating === 'medium') films = films.filter((m) => m.voteAverage >= 6);
 
+    // Language filter
+    const lang = a[4];
+    if (lang === 'english') films = films.filter((m) => !m.language || m.language === 'English');
+    else if (lang === 'foreign') films = films.filter((m) => m.language && m.language !== 'English');
+
     // Streamable filter
-    const streamable = a[4];
+    const streamable = a[5];
     if (streamable === 'free') films = films.filter((m) => m.isStreamable);
 
     // Shuffle and pick 5

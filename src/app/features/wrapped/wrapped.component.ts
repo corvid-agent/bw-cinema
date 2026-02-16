@@ -82,6 +82,12 @@ interface WrappedStats {
               <span class="wrapped__hero-value">{{ stats().reviewCount }}</span>
               <span class="wrapped__hero-label">Reviews</span>
             </div>
+            @if (languagesWatched() > 1) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ languagesWatched() }}</span>
+                <span class="wrapped__hero-label">Languages</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -305,7 +311,7 @@ interface WrappedStats {
     }
     .wrapped__hero-stats {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: var(--space-md);
       margin-bottom: var(--space-2xl);
     }
@@ -638,6 +644,12 @@ export class WrappedComponent implements OnInit {
       favoriteCount,
       reviewCount,
     };
+  });
+
+  readonly languagesWatched = computed(() => {
+    const films = this.yearFilms();
+    const langs = new Set(films.map((m) => m.language).filter(Boolean));
+    return langs.size;
   });
 
   readonly highestRating = computed(() => {
