@@ -161,6 +161,21 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         </section>
       }
 
+      @if (watchlistNext().length > 0) {
+        <section class="section container" aria-label="Your watchlist">
+          <div class="section__header">
+            <div>
+              <h2>Continue Your Journey</h2>
+              <p class="section__desc">{{ watchlistTotal() }} films on your watchlist</p>
+            </div>
+            <a class="section__link" routerLink="/collection">View all &rarr;</a>
+          </div>
+          <div appKeyboardNav>
+            <app-movie-grid [movies]="watchlistNext()" />
+          </div>
+        </section>
+      }
+
       @if (recommendations().length > 0) {
         <section class="section container" aria-label="Recommended for you">
           <div class="section__header">
@@ -615,6 +630,17 @@ export class HomeComponent implements OnInit {
       .sort(() => Math.random() - 0.5)
       .slice(0, 12)
   );
+
+  readonly watchlistNext = computed(() => {
+    const watchlistIds = this.collectionService.watchlistIds();
+    const movies = this.catalog.movies();
+    return [...watchlistIds]
+      .map((id) => movies.find((m) => m.id === id))
+      .filter((m): m is NonNullable<typeof m> => !!m && m.isStreamable)
+      .slice(0, 6);
+  });
+
+  readonly watchlistTotal = computed(() => this.collectionService.watchlistIds().size);
 
   readonly recommendations = computed(() =>
     this.catalog.getRecommendations(this.collectionService.watchedIds())

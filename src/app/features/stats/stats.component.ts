@@ -118,15 +118,15 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
           </section>
 
           <section class="stats__section">
-            <h2>Languages</h2>
+            <h2>Rating Distribution</h2>
             <div class="stats__bars">
-              @for (l of languageStats(); track l.name) {
+              @for (r of ratingDistribution(); track r.name) {
                 <div class="stats__bar-row">
-                  <span class="stats__bar-label">{{ l.name }}</span>
+                  <span class="stats__bar-label">{{ r.name }}</span>
                   <div class="stats__bar-track">
-                    <div class="stats__bar-fill" [style.width.%]="l.pct"></div>
+                    <div class="stats__bar-fill" [style.width.%]="r.pct"></div>
                   </div>
-                  <span class="stats__bar-count">{{ l.count }}</span>
+                  <span class="stats__bar-count">{{ r.count }}</span>
                 </div>
               }
             </div>
@@ -431,14 +431,27 @@ export class StatsComponent implements OnInit {
     return sorted.map(([name, count]) => ({ name, count, pct: (count / max) * 100 }));
   });
 
-  readonly languageStats = computed(() => {
-    const counts = new Map<string, number>();
+  readonly ratingDistribution = computed(() => {
+    const buckets = new Map<string, number>();
+    const labels = ['9-10', '8-9', '7-8', '6-7', '5-6', '4-5', '0-4', 'Unrated'];
+    for (const l of labels) buckets.set(l, 0);
     for (const m of this.catalog.movies()) {
-      if (m.language) counts.set(m.language, (counts.get(m.language) ?? 0) + 1);
+      const r = m.voteAverage;
+      if (r === 0) buckets.set('Unrated', (buckets.get('Unrated') ?? 0) + 1);
+      else if (r >= 9) buckets.set('9-10', (buckets.get('9-10') ?? 0) + 1);
+      else if (r >= 8) buckets.set('8-9', (buckets.get('8-9') ?? 0) + 1);
+      else if (r >= 7) buckets.set('7-8', (buckets.get('7-8') ?? 0) + 1);
+      else if (r >= 6) buckets.set('6-7', (buckets.get('6-7') ?? 0) + 1);
+      else if (r >= 5) buckets.set('5-6', (buckets.get('5-6') ?? 0) + 1);
+      else if (r >= 4) buckets.set('4-5', (buckets.get('4-5') ?? 0) + 1);
+      else buckets.set('0-4', (buckets.get('0-4') ?? 0) + 1);
     }
-    const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
-    const max = sorted[0]?.[1] ?? 1;
-    return sorted.map(([name, count]) => ({ name, count, pct: (count / max) * 100 }));
+    const max = Math.max(...buckets.values(), 1);
+    return labels.map((name) => ({
+      name,
+      count: buckets.get(name) ?? 0,
+      pct: ((buckets.get(name) ?? 0) / max) * 100,
+    })).filter((r) => r.count > 0);
   });
 
   ngOnInit(): void {

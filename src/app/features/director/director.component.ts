@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed, i
 import { RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
+import { CollectionService } from '../../core/services/collection.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { MovieListComponent } from '../../shared/components/movie-list.component';
 import { ViewToggleComponent, type ViewMode } from '../../shared/components/view-toggle.component';
@@ -50,6 +51,23 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             <div class="director__genres">
               @for (g of topGenres(); track g) {
                 <a class="director__genre-tag" [routerLink]="['/browse']" [queryParams]="{ genre: g }">{{ g }}</a>
+              }
+            </div>
+          }
+
+          @if (watchedCount() > 0 || unwatchedFilms().length > 0) {
+            <div class="director__completion">
+              <div class="director__completion-header">
+                <span class="director__completion-text">{{ watchedCount() }} of {{ films().length }} watched</span>
+                <span class="director__completion-pct">{{ completionPct() }}%</span>
+              </div>
+              <div class="director__completion-track">
+                <div class="director__completion-fill" [style.width.%]="completionPct()"></div>
+              </div>
+              @if (unwatchedFilms().length > 0) {
+                <button class="director__add-unwatched" (click)="addUnwatchedToWatchlist()">
+                  Add {{ unwatchedFilms().length }} unwatched to watchlist
+                </button>
               }
             </div>
           }
@@ -168,6 +186,56 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       color: var(--accent-gold);
       background-color: var(--accent-gold-dim);
     }
+    .director__completion {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md) var(--space-lg);
+      margin-bottom: var(--space-lg);
+    }
+    .director__completion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-sm);
+    }
+    .director__completion-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .director__completion-pct {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+    }
+    .director__completion-track {
+      height: 8px;
+      background: var(--bg-raised);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: var(--space-sm);
+    }
+    .director__completion-fill {
+      height: 100%;
+      background: var(--accent-gold);
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+    .director__add-unwatched {
+      background: none;
+      border: none;
+      color: var(--accent-gold);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0;
+      min-height: auto;
+      min-width: auto;
+      cursor: pointer;
+    }
+    .director__add-unwatched:hover {
+      text-decoration: underline;
+    }
     .director__view-bar {
       display: flex;
       align-items: center;
@@ -261,6 +329,7 @@ export class DirectorComponent implements OnInit {
   readonly name = input.required<string>();
 
   protected readonly catalog = inject(CatalogService);
+  private readonly collectionService = inject(CollectionService);
   private readonly titleService = inject(Title);
 
   readonly viewMode = signal<ViewMode>('grid');
@@ -327,8 +396,30 @@ export class DirectorComponent implements OnInit {
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([g]) => g);
   });
 
+  readonly watchedCount = computed(() => {
+    const ids = this.collectionService.watchedIds();
+    return this.films().filter((m) => ids.has(m.id)).length;
+  });
+
+  readonly unwatchedFilms = computed(() => {
+    const watchedIds = this.collectionService.watchedIds();
+    const watchlistIds = this.collectionService.watchlistIds();
+    return this.films().filter((m) => !watchedIds.has(m.id) && !watchlistIds.has(m.id));
+  });
+
+  readonly completionPct = computed(() => {
+    const total = this.films().length;
+    return total > 0 ? Math.round((this.watchedCount() / total) * 100) : 0;
+  });
+
   ngOnInit(): void {
     this.catalog.load();
     this.titleService.setTitle(`${this.name()} — BW Cinema`);
+  }
+
+  addUnwatchedToWatchlist(): void {
+    for (const m of this.unwatchedFilms()) {
+      this.collectionService.addToWatchlist(m.id);
+    }
   }
 }
