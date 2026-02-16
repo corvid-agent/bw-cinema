@@ -102,6 +102,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Solo Directed</span>
               </div>
             }
+            @if (filmAgeRange(); as far) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ far }}</span>
+                <span class="director__stat-label">Film Age (yrs)</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -835,6 +841,18 @@ export class DirectorComponent implements OnInit {
     const pct = Math.round((this.streamableCount() / f.length) * 100);
     if (pct === 0 || pct === 100) return null;
     return pct;
+  });
+
+  readonly filmAgeRange = computed(() => {
+    const f = this.films();
+    if (f.length < 2) return null;
+    const now = new Date().getFullYear();
+    const years = f.map((m) => m.year);
+    const oldest = now - Math.min(...years);
+    const newest = now - Math.max(...years);
+    if (oldest === newest) return null;
+    if (newest < 30) return null;
+    return `${newest}–${oldest}`;
   });
 
   readonly soloDirectedPct = computed(() => {

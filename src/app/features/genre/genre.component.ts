@@ -100,6 +100,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             }
           </div>
 
+          @if (highestRatedTitle(); as hrt) {
+            <p class="genre__fact">Top rated: {{ hrt.title }} (&#9733; {{ hrt.rating }})</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -756,6 +759,12 @@ export class GenreComponent implements OnInit {
     const diff = genreAvg - catAvg;
     if (Math.abs(diff) < 0.2) return null;
     return diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
+  });
+
+  readonly highestRatedTitle = computed(() => {
+    const top = this.topFilm();
+    if (!top || top.voteAverage < 7.0) return null;
+    return { title: top.title.length > 30 ? top.title.slice(0, 28) + '...' : top.title, rating: top.voteAverage.toFixed(1) };
   });
 
   readonly medianYear = computed(() => {

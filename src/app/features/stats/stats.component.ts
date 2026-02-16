@@ -276,6 +276,18 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
               </div>
             </a>
           }
+          @if (newestStreamable(); as film) {
+            <a class="stats__highlight" [routerLink]="['/movie', film.id]">
+              @if (film.posterUrl) {
+                <img class="stats__highlight-poster" [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+              }
+              <div class="stats__highlight-text">
+                <span class="stats__highlight-label">Newest Free Film</span>
+                <span class="stats__highlight-value">{{ film.title }}</span>
+                <span class="stats__highlight-meta">{{ film.year }}</span>
+              </div>
+            </a>
+          }
         </div>
 
         <section class="stats__fun-facts">
@@ -966,6 +978,12 @@ export class StatsComponent implements OnInit {
       for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
     }
     return [...counts.values()].filter((c) => c === 1).length;
+  });
+
+  readonly newestStreamable = computed(() => {
+    const movies = this.catalog.movies().filter((m) => m.isStreamable);
+    if (movies.length === 0) return null;
+    return movies.reduce((newest, m) => m.year > newest.year ? m : newest);
   });
 
   readonly multiDirectorPct = computed(() => {
