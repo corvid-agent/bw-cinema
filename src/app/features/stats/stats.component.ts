@@ -220,6 +220,18 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
               </div>
             </a>
           }
+          @if (oldestStreamable(); as film) {
+            <a class="stats__highlight" [routerLink]="['/movie', film.id]">
+              @if (film.posterUrl) {
+                <img class="stats__highlight-poster" [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+              }
+              <div class="stats__highlight-text">
+                <span class="stats__highlight-label">Oldest Free Film</span>
+                <span class="stats__highlight-value">{{ film.title }}</span>
+                <span class="stats__highlight-meta">{{ film.year }}</span>
+              </div>
+            </a>
+          }
         </div>
 
         <section class="stats__fun-facts">
@@ -570,6 +582,12 @@ export class StatsComponent implements OnInit {
       .map(([name, v]) => ({ name, count: v.count, avgRating: (v.total / v.count).toFixed(1) }))
       .sort((a, b) => parseFloat(b.avgRating) - parseFloat(a.avgRating));
     return eligible[0] ?? null;
+  });
+
+  readonly oldestStreamable = computed(() => {
+    const streamable = this.catalog.movies().filter((m) => m.isStreamable);
+    if (streamable.length === 0) return null;
+    return streamable.reduce((oldest, m) => m.year < oldest.year ? m : oldest);
   });
 
   readonly avgRating = computed(() => {

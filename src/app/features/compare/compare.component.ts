@@ -130,13 +130,33 @@ import type { MovieSummary } from '../../core/models/movie.model';
           </div>
           <div class="compare__row">
             <div class="compare__cell compare__cell--label">Directors</div>
-            <div class="compare__cell">{{ filmA()!.directors.join(', ') || '—' }}</div>
-            <div class="compare__cell">{{ filmB()!.directors.join(', ') || '—' }}</div>
+            <div class="compare__cell compare__cell--links">
+              @for (dir of filmA()!.directors; track dir; let last = $last) {
+                <a [routerLink]="['/director', dir]">{{ dir }}</a>@if (!last) {<span>, </span>}
+              }
+              @if (filmA()!.directors.length === 0) { <span>—</span> }
+            </div>
+            <div class="compare__cell compare__cell--links">
+              @for (dir of filmB()!.directors; track dir; let last = $last) {
+                <a [routerLink]="['/director', dir]">{{ dir }}</a>@if (!last) {<span>, </span>}
+              }
+              @if (filmB()!.directors.length === 0) { <span>—</span> }
+            </div>
           </div>
           <div class="compare__row">
             <div class="compare__cell compare__cell--label">Genres</div>
-            <div class="compare__cell">{{ filmA()!.genres.join(', ') || '—' }}</div>
-            <div class="compare__cell">{{ filmB()!.genres.join(', ') || '—' }}</div>
+            <div class="compare__cell compare__cell--links">
+              @for (genre of filmA()!.genres; track genre; let last = $last) {
+                <a [routerLink]="['/genre', genre]">{{ genre }}</a>@if (!last) {<span>, </span>}
+              }
+              @if (filmA()!.genres.length === 0) { <span>—</span> }
+            </div>
+            <div class="compare__cell compare__cell--links">
+              @for (genre of filmB()!.genres; track genre; let last = $last) {
+                <a [routerLink]="['/genre', genre]">{{ genre }}</a>@if (!last) {<span>, </span>}
+              }
+              @if (filmB()!.genres.length === 0) { <span>—</span> }
+            </div>
           </div>
           <div class="compare__row">
             <div class="compare__cell compare__cell--label">Language</div>
@@ -394,6 +414,14 @@ import type { MovieSummary } from '../../core/models/movie.model';
       color: var(--text-tertiary);
       font-weight: 600;
       margin-right: var(--space-sm);
+    }
+    .compare__cell--links a {
+      color: var(--text-primary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .compare__cell--links a:hover {
+      color: var(--accent-gold);
     }
     .compare__note {
       color: var(--accent-gold);

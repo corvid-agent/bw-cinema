@@ -312,6 +312,25 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         </a>
       </section>
 
+      <section class="section container cta-row cta-row--secondary" aria-label="More features">
+        <a class="cta-card cta-card--compare" routerLink="/compare">
+          <div class="cta-card__icon">&#8644;</div>
+          <div>
+            <h3 class="cta-card__title">Compare Films</h3>
+            <p class="cta-card__desc">Put two classics side by side and see how they stack up</p>
+          </div>
+          <span class="cta-card__arrow">&rarr;</span>
+        </a>
+        <a class="cta-card cta-card--stats" routerLink="/stats">
+          <div class="cta-card__icon">&#9638;</div>
+          <div>
+            <h3 class="cta-card__title">Catalog Stats</h3>
+            <p class="cta-card__desc">Explore the numbers behind {{ filmCount() }} classic films</p>
+          </div>
+          <span class="cta-card__arrow">&rarr;</span>
+        </a>
+      </section>
+
       @for (coll of catalog.curatedCollections().slice(0, 3); track coll.name) {
         <section class="section container" [attr.aria-label]="coll.name">
           <div class="section__header">
@@ -856,8 +875,13 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       font-size: 0.75rem;
       color: var(--text-tertiary);
     }
+    .cta-row--secondary {
+      grid-template-columns: repeat(2, 1fr);
+      padding-top: 0;
+    }
     @media (max-width: 768px) {
       .cta-row { grid-template-columns: 1fr; }
+      .cta-row--secondary { grid-template-columns: 1fr; }
       .hero { padding: var(--space-2xl) 0 var(--space-xl); }
       .hero__title { font-size: 2.2rem; }
       .hero__stats { gap: var(--space-xl); }
