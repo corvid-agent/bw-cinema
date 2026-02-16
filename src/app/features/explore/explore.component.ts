@@ -62,6 +62,9 @@ const MOODS: Mood[] = [
           <button class="explore__random-btn explore__random-btn--secondary" (click)="pickSerendipity()">
             Serendipity
           </button>
+          <button class="explore__random-btn explore__random-btn--secondary" (click)="blindWatch()">
+            Blind Watch
+          </button>
         </div>
 
         @if (doubleFeature().length === 2) {
@@ -843,6 +846,14 @@ export class ExploreComponent implements OnInit {
     const films = this.catalog.movies().filter((m) => !watchedIds.has(m.id) && m.isStreamable);
     if (films.length === 0) return;
     this.router.navigate(['/movie', films[Math.floor(Math.random() * films.length)].id]);
+  }
+
+  blindWatch(): void {
+    const watchedIds = this.collection.watchedIds();
+    const films = this.catalog.movies().filter((m) => m.isStreamable && !watchedIds.has(m.id));
+    if (films.length === 0) return;
+    const pick = films[Math.floor(Math.random() * films.length)];
+    this.router.navigate(['/watch', pick.id]);
   }
 
   private seededShuffle<T>(arr: T[], seed: number): T[] {

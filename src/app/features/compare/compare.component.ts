@@ -199,6 +199,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               }
             </div>
           }
+          @if (verdict()) {
+            <div class="compare__verdict">{{ verdict() }}</div>
+          }
           <div class="compare__actions">
             <button class="compare__action-btn" (click)="copyComparison()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -490,6 +493,14 @@ import type { MovieSummary } from '../../core/models/movie.model';
       border-color: var(--accent-gold);
       color: var(--accent-gold);
     }
+    .compare__verdict {
+      padding: var(--space-md) var(--space-lg);
+      font-size: 0.95rem;
+      font-style: italic;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
     @media (max-width: 768px) {
       .compare__pickers { flex-direction: column; }
       .compare__vs { padding-top: 0; text-align: center; }
@@ -605,6 +616,26 @@ export class CompareComponent implements OnInit {
     if (!a || !b) return [];
     const setB = new Set(b.directors);
     return a.directors.filter((d) => setB.has(d));
+  });
+
+  readonly verdict = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return '';
+    if (a.voteAverage > 0 && b.voteAverage > 0) {
+      const diff = a.voteAverage - b.voteAverage;
+      if (Math.abs(diff) < 0.3) return `${a.title} and ${b.title} are rated nearly identically — a true toss-up.`;
+      const winner = diff > 0 ? a : b;
+      const loser = diff > 0 ? b : a;
+      if (Math.abs(diff) >= 2) return `${winner.title} has a commanding lead over ${loser.title} with a ${Math.abs(diff).toFixed(1)}-point edge.`;
+      return `${winner.title} edges out ${loser.title} by ${Math.abs(diff).toFixed(1)} points.`;
+    }
+    if (a.year !== b.year) {
+      const older = a.year < b.year ? a : b;
+      const newer = a.year < b.year ? b : a;
+      return `${older.title} predates ${newer.title} by ${newer.year - older.year} years.`;
+    }
+    return `${a.title} and ${b.title} — two films from ${a.year}.`;
   });
 
   ngOnInit(): void {

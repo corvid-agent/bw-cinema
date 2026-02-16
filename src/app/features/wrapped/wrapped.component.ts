@@ -100,6 +100,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Month Streak</span>
               </div>
             }
+            @if (directorsExplored() > 1) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ directorsExplored() }}</span>
+                <span class="wrapped__hero-label">Directors</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -700,6 +706,15 @@ export class WrappedComponent implements OnInit {
       }
     }
     return max;
+  });
+
+  readonly directorsExplored = computed(() => {
+    const films = this.yearFilms();
+    const dirs = new Set<string>();
+    for (const f of films) {
+      for (const d of f.directors) dirs.add(d);
+    }
+    return dirs.size;
   });
 
   private maxBarValue = computed(() => {
