@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, input, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { MovieService } from '../../core/services/movie.service';
 import { CollectionService } from '../../core/services/collection.service';
@@ -535,6 +535,7 @@ export class MovieComponent implements OnInit {
   private readonly notifications = inject(NotificationService);
   private readonly recentlyViewed = inject(RecentlyViewedService);
   private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   readonly movie = signal<MovieDetail | null>(null);
   readonly loading = signal(true);
@@ -558,6 +559,8 @@ export class MovieComponent implements OnInit {
     this.summary.set(summary);
     const source = this.streaming.getSource(summary.internetArchiveId, summary.youtubeId);
     this.streamingUrl.set(source?.embedUrl ?? null);
+
+    this.updateMetaTags(summary);
 
     try {
       const detail = await this.movieService.getDetail(summary);
@@ -617,6 +620,19 @@ export class MovieComponent implements OnInit {
   onNoteChange(movieId: string, event: Event): void {
     const value = (event.target as HTMLTextAreaElement).value;
     this.collection.setNote(movieId, value);
+  }
+
+  private updateMetaTags(movie: { title: string; year: number; posterUrl: string | null; directors: string[]; genres: string[] }): void {
+    const desc = `${movie.title} (${movie.year}) — ${movie.directors.join(', ')}. ${movie.genres.join(', ')}. Watch classic B&W cinema on BW Cinema.`;
+    this.metaService.updateTag({ property: 'og:title', content: `${movie.title} (${movie.year}) — BW Cinema` });
+    this.metaService.updateTag({ property: 'og:description', content: desc });
+    this.metaService.updateTag({ name: 'twitter:title', content: `${movie.title} (${movie.year}) — BW Cinema` });
+    this.metaService.updateTag({ name: 'twitter:description', content: desc });
+    this.metaService.updateTag({ name: 'description', content: desc });
+    if (movie.posterUrl) {
+      this.metaService.updateTag({ property: 'og:image', content: movie.posterUrl });
+      this.metaService.updateTag({ name: 'twitter:image', content: movie.posterUrl });
+    }
   }
 
   async share(movie: MovieDetail): Promise<void> {

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal, computed, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
@@ -61,11 +61,11 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
             </div>
 
             @if (paginatedMovies().length < filteredMovies().length) {
-              <div class="browse__load-more">
-                <button class="btn-secondary browse__load-btn" (click)="loadMore()">
-                  Show More
-                  <span class="browse__remaining">{{ filteredMovies().length - paginatedMovies().length }} remaining</span>
-                </button>
+              <div class="browse__load-more" #loadMoreSentinel>
+                <div class="browse__loading-indicator">
+                  <span class="browse__spinner"></span>
+                  <span class="browse__remaining">{{ filteredMovies().length - paginatedMovies().length }} more films</span>
+                </div>
               </div>
             }
           </div>
@@ -117,16 +117,27 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       text-align: center;
       padding: var(--space-2xl) 0 var(--space-md);
     }
-    .browse__load-btn {
-      padding: var(--space-md) var(--space-2xl);
-      border-radius: var(--radius-lg);
+    .browse__loading-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .browse__spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent-gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
     .browse__remaining {
-      display: block;
       font-size: 0.8rem;
       color: var(--text-tertiary);
       font-weight: 400;
-      margin-top: 2px;
     }
     @media (max-width: 900px) {
       .browse__layout {
@@ -143,9 +154,12 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
     }
   `],
 })
-export class BrowseComponent implements OnInit {
+export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   protected readonly catalog = inject(CatalogService);
   private readonly route = inject(ActivatedRoute);
+
+  @ViewChild('loadMoreSentinel') loadMoreSentinel?: ElementRef<HTMLElement>;
+  private observer: IntersectionObserver | null = null;
 
   private readonly pageSize = 24;
   readonly page = signal(1);
@@ -158,6 +172,7 @@ export class BrowseComponent implements OnInit {
     directors: [],
     streamableOnly: false,
     minRating: 0,
+    yearRange: null,
     sortBy: 'rating',
     sortDirection: 'desc',
   });
@@ -185,7 +200,7 @@ export class BrowseComponent implements OnInit {
     this.page.set(1);
   }
 
-  onFilterChange(filters: { decades: number[]; genres: string[]; directors: string[]; streamableOnly: boolean; minRating: number }): void {
+  onFilterChange(filters: { decades: number[]; genres: string[]; directors: string[]; streamableOnly: boolean; minRating: number; yearRange: [number, number] | null }): void {
     this.filter.update((f) => ({ ...f, ...filters }));
     this.page.set(1);
   }
@@ -197,7 +212,33 @@ export class BrowseComponent implements OnInit {
     this.page.set(1);
   }
 
-  loadMore(): void {
-    this.page.update((p) => p + 1);
+  ngAfterViewInit(): void {
+    this.setupInfiniteScroll();
+  }
+
+  ngOnDestroy(): void {
+    this.observer?.disconnect();
+  }
+
+  private setupInfiniteScroll(): void {
+    if (typeof IntersectionObserver === 'undefined') return;
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && this.paginatedMovies().length < this.filteredMovies().length) {
+          this.page.update((p) => p + 1);
+          // Re-observe after Angular re-renders the sentinel
+          setTimeout(() => this.observeSentinel(), 100);
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    this.observeSentinel();
+  }
+
+  private observeSentinel(): void {
+    this.observer?.disconnect();
+    if (this.loadMoreSentinel) {
+      this.observer?.observe(this.loadMoreSentinel.nativeElement);
+    }
   }
 }

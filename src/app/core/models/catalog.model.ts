@@ -25,6 +25,7 @@ export interface CatalogFilter {
   directors: string[];
   streamableOnly: boolean;
   minRating: number;
+  yearRange: [number, number] | null;
   sortBy: 'title' | 'year' | 'rating';
   sortDirection: 'asc' | 'desc';
 }

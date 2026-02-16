@@ -82,6 +82,11 @@ export class CatalogService {
       );
     }
 
+    if (filter.yearRange) {
+      const [minYear, maxYear] = filter.yearRange;
+      results = results.filter((m) => m.year >= minYear && m.year <= maxYear);
+    }
+
     if (filter.streamableOnly) {
       results = results.filter((m) => m.isStreamable);
     }

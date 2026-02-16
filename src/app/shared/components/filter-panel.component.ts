@@ -86,6 +86,35 @@ import type { DirectorCount } from '../../core/models/catalog.model';
         }
       </div>
 
+      <div class="filters__group">
+        <label class="filters__range-label">
+          Year Range
+          <span class="filters__range-value">{{ yearMin() }}–{{ yearMax() }}</span>
+        </label>
+        <div class="filters__year-range">
+          <input
+            type="range"
+            [min]="yearBounds()[0]"
+            [max]="yearBounds()[1]"
+            step="1"
+            class="filters__range"
+            [value]="yearMin()"
+            (input)="onYearMinChange($event)"
+            aria-label="Minimum year"
+          />
+          <input
+            type="range"
+            [min]="yearBounds()[0]"
+            [max]="yearBounds()[1]"
+            step="1"
+            class="filters__range"
+            [value]="yearMax()"
+            (input)="onYearMaxChange($event)"
+            aria-label="Maximum year"
+          />
+        </div>
+      </div>
+
       <div class="filters__group filters__group--inline">
         <label class="filters__checkbox filters__checkbox--toggle">
           <input
@@ -255,6 +284,11 @@ import type { DirectorCount } from '../../core/models/catalog.model';
       padding: var(--space-sm) 0;
       margin: 0;
     }
+    .filters__year-range {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
   `],
 })
 export class FilterPanelComponent {
@@ -268,6 +302,14 @@ export class FilterPanelComponent {
   readonly streamableOnly = signal(false);
   readonly minRating = signal(0);
   readonly directorQuery = signal('');
+
+  readonly yearMin = signal(1890);
+  readonly yearMax = signal(1970);
+  readonly yearBounds = computed(() => {
+    const decades = this.availableDecades();
+    if (decades.length === 0) return [1890, 1970] as const;
+    return [decades[0], decades[decades.length - 1] + 9] as const;
+  });
 
   readonly decadesOpen = signal(false);
   readonly genresOpen = signal(false);
@@ -286,6 +328,7 @@ export class FilterPanelComponent {
     directors: string[];
     streamableOnly: boolean;
     minRating: number;
+    yearRange: [number, number] | null;
   }>();
 
   toggleDecade(decade: number): void {
@@ -323,6 +366,18 @@ export class FilterPanelComponent {
     this.emitFilter();
   }
 
+  onYearMinChange(event: Event): void {
+    const val = parseInt((event.target as HTMLInputElement).value, 10);
+    this.yearMin.set(Math.min(val, this.yearMax()));
+    this.emitFilter();
+  }
+
+  onYearMaxChange(event: Event): void {
+    const val = parseInt((event.target as HTMLInputElement).value, 10);
+    this.yearMax.set(Math.max(val, this.yearMin()));
+    this.emitFilter();
+  }
+
   onDirectorSearch(event: Event): void {
     this.directorQuery.set((event.target as HTMLInputElement).value);
   }
@@ -334,16 +389,25 @@ export class FilterPanelComponent {
     this.streamableOnly.set(false);
     this.minRating.set(0);
     this.directorQuery.set('');
+    const [min, max] = this.yearBounds();
+    this.yearMin.set(min);
+    this.yearMax.set(max);
     this.emitFilter();
   }
 
   emitFilter(): void {
+    const [boundsMin, boundsMax] = this.yearBounds();
+    const yearRange: [number, number] | null =
+      (this.yearMin() !== boundsMin || this.yearMax() !== boundsMax)
+        ? [this.yearMin(), this.yearMax()]
+        : null;
     this.filterChanged.emit({
       decades: [...this.selectedDecades()],
       genres: [...this.selectedGenres()],
       directors: [...this.selectedDirectors()],
       streamableOnly: this.streamableOnly(),
       minRating: this.minRating(),
+      yearRange,
     });
   }
 }
