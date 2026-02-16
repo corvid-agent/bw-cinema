@@ -83,6 +83,23 @@ import type { MovieSummary } from '../../core/models/movie.model';
             </a>
           }
 
+          @if (careerTimeline().length > 1) {
+            <div class="actor__timeline">
+              <h3>Career Timeline</h3>
+              <div class="actor__timeline-bars">
+                @for (period of careerTimeline(); track period.decade) {
+                  <a class="actor__timeline-decade" [routerLink]="['/decade', period.decade]">
+                    <div class="actor__timeline-bar" [style.height.px]="period.barHeight">
+                      <span class="actor__timeline-count">{{ period.count }}</span>
+                    </div>
+                    <span class="actor__timeline-label">{{ period.decade }}s</span>
+                    <span class="actor__timeline-rating">{{ period.avgRating }}</span>
+                  </a>
+                }
+              </div>
+            </div>
+          }
+
           @if (topDirectors().length > 0) {
             <div class="actor__collabs">
               <h3>Frequent Collaborators</h3>
@@ -229,6 +246,58 @@ import type { MovieSummary } from '../../core/models/movie.model';
       border-color: var(--accent-gold);
       color: var(--accent-gold);
       background-color: var(--accent-gold-dim);
+    }
+    .actor__timeline {
+      margin-bottom: var(--space-xl);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+    }
+    .actor__timeline h3 { margin-bottom: var(--space-md); font-size: 1rem; }
+    .actor__timeline-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: var(--space-md);
+      min-height: 120px;
+    }
+    .actor__timeline-decade {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .actor__timeline-bar {
+      width: 100%;
+      max-width: 48px;
+      background: linear-gradient(0deg, var(--accent-gold), #c49b2c);
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 4px;
+      transition: transform 0.2s;
+    }
+    .actor__timeline-decade:hover .actor__timeline-bar {
+      transform: translateY(-2px);
+    }
+    .actor__timeline-count {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--bg-deep);
+    }
+    .actor__timeline-label {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      font-weight: 600;
+    }
+    .actor__timeline-rating {
+      font-size: 0.65rem;
+      color: var(--accent-gold);
+      font-weight: 600;
     }
     .actor__collabs {
       margin-bottom: var(--space-xl);
@@ -514,6 +583,31 @@ export class ActorComponent implements OnInit {
     const rated = this.films().filter((m) => m.voteAverage > 0);
     if (rated.length === 0) return null;
     return rated.reduce((best, m) => m.voteAverage > best.voteAverage ? m : best);
+  });
+
+  readonly careerTimeline = computed(() => {
+    const f = this.films();
+    if (f.length === 0) return [];
+    const decades = new Map<number, { count: number; totalRating: number; ratedCount: number }>();
+    for (const m of f) {
+      const d = Math.floor(m.year / 10) * 10;
+      const entry = decades.get(d) ?? { count: 0, totalRating: 0, ratedCount: 0 };
+      entry.count++;
+      if (m.voteAverage > 0) {
+        entry.totalRating += m.voteAverage;
+        entry.ratedCount++;
+      }
+      decades.set(d, entry);
+    }
+    const maxCount = Math.max(1, ...[...decades.values()].map((v) => v.count));
+    return [...decades.entries()]
+      .map(([decade, data]) => ({
+        decade,
+        count: data.count,
+        avgRating: data.ratedCount > 0 ? (data.totalRating / data.ratedCount).toFixed(1) : '—',
+        barHeight: Math.max(20, (data.count / maxCount) * 80),
+      }))
+      .sort((a, b) => a.decade - b.decade);
   });
 
   readonly topDirectors = computed(() => {

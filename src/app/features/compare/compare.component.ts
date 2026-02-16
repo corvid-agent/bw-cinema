@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
+import { NotificationService } from '../../core/services/notification.service';
 import type { MovieSummary } from '../../core/models/movie.model';
 
 @Component({
@@ -192,6 +193,16 @@ import type { MovieSummary } from '../../core/models/movie.model';
               }
             </div>
           }
+          <div class="compare__actions">
+            <button class="compare__action-btn" (click)="copyComparison()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy Comparison
+            </button>
+            <button class="compare__action-btn" (click)="randomCompare()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              Random Pair
+            </button>
+          </div>
         </div>
       }
     </div>
@@ -428,6 +439,30 @@ import type { MovieSummary } from '../../core/models/movie.model';
       font-weight: 600;
       font-size: 0.9rem;
     }
+    .compare__actions {
+      display: flex;
+      gap: var(--space-sm);
+      padding: var(--space-md);
+      border-top: 1px solid var(--border);
+    }
+    .compare__action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .compare__action-btn:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
     @media (max-width: 768px) {
       .compare__pickers { flex-direction: column; }
       .compare__vs { padding-top: 0; text-align: center; }
@@ -451,6 +486,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
 })
 export class CompareComponent implements OnInit {
   private readonly catalog = inject(CatalogService);
+  private readonly notifications = inject(NotificationService);
 
   readonly queryA = signal('');
   readonly queryB = signal('');
@@ -553,6 +589,39 @@ export class CompareComponent implements OnInit {
     this.filmB.set(movie);
     this.queryB.set(movie.title);
     this.showDropB.set(false);
+  }
+
+  copyComparison(): void {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return;
+    const notes = this.comparisonNotes();
+    const shared = this.sharedGenres();
+    const text = [
+      `${a.title} (${a.year}) vs ${b.title} (${b.year})`,
+      '',
+      `Rating: ${a.voteAverage || '—'} vs ${b.voteAverage || '—'}`,
+      `Directors: ${a.directors.join(', ') || '—'} vs ${b.directors.join(', ') || '—'}`,
+      `Genres: ${a.genres.join(', ') || '—'} vs ${b.genres.join(', ') || '—'}`,
+      `Language: ${a.language || '—'} vs ${b.language || '—'}`,
+      '',
+      ...notes,
+      shared.length > 0 ? `Shared genres: ${shared.join(', ')}` : '',
+    ].filter(Boolean).join('\n');
+    navigator.clipboard.writeText(text).then(
+      () => this.notifications.show('Comparison copied to clipboard', 'success'),
+      () => this.notifications.show('Failed to copy', 'error'),
+    );
+  }
+
+  randomCompare(): void {
+    const films = this.catalog.movies().filter((m) => m.posterUrl && m.voteAverage >= 6);
+    if (films.length < 2) return;
+    const idxA = Math.floor(Math.random() * films.length);
+    let idxB = Math.floor(Math.random() * (films.length - 1));
+    if (idxB >= idxA) idxB++;
+    this.selectA(films[idxA]);
+    this.selectB(films[idxB]);
   }
 
   private searchFilms(query: string): MovieSummary[] {
