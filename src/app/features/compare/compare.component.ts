@@ -186,6 +186,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
           @if (combinedAvgRating(); as avg) {
             <div class="compare__combined-avg">
               Combined Avg: {{ avg }}/10
+              @if (ratingDifference(); as diff) {
+                <span class="compare__overlap"> &middot; {{ diff }}pt gap</span>
+              }
               @if (genreOverlapPct() > 0) {
                 <span class="compare__overlap"> &middot; {{ genreOverlapPct() }}% genre overlap</span>
               }
@@ -688,6 +691,15 @@ export class CompareComponent implements OnInit {
     const shared = b.genres.filter((g) => setA.has(g)).length;
     const total = new Set([...a.genres, ...b.genres]).size;
     return total > 0 ? Math.round((shared / total) * 100) : 0;
+  });
+
+  readonly ratingDifference = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b || a.voteAverage === 0 || b.voteAverage === 0) return null;
+    const diff = Math.abs(a.voteAverage - b.voteAverage);
+    if (diff < 0.1) return null;
+    return diff.toFixed(1);
   });
 
   readonly combinedAvgRating = computed(() => {

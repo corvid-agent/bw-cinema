@@ -42,6 +42,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
             }
           </p>
         }
+        @if (avgResultYear(); as avgYr) {
+          <p class="browse__watched-note">Average year: {{ avgYr }}</p>
+        }
         @if (watchedInResults() > 0) {
           <p class="browse__watched-note">{{ watchedInResults() }} already watched</p>
         }
@@ -627,6 +630,11 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly streamableResultCount = computed(() =>
     this.filteredMovies().filter((m) => m.isStreamable).length
   );
+  readonly avgResultYear = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 5) return null;
+    return Math.round(films.reduce((s, m) => s + m.year, 0) / films.length);
+  });
   readonly paginatedMovies = computed(() =>
     this.filteredMovies().slice(0, this.page() * this.pageSize)
   );

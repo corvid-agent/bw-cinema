@@ -124,6 +124,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Free to Stream</span>
               </div>
             }
+            @if (uniqueDecadeCount() > 1) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ uniqueDecadeCount() }}</span>
+                <span class="wrapped__hero-label">Decades Covered</span>
+              </div>
+            }
             @if (avgFilmAge() > 0) {
               <div class="wrapped__hero-stat">
                 <span class="wrapped__hero-value">{{ avgFilmAge() }}</span>
@@ -763,6 +769,12 @@ export class WrappedComponent implements OnInit {
     if (films.length === 0) return 0;
     const streamable = films.filter((m) => m.isStreamable).length;
     return Math.round((streamable / films.length) * 100);
+  });
+
+  readonly uniqueDecadeCount = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 2) return 0;
+    return new Set(films.map((m) => Math.floor(m.year / 10) * 10)).size;
   });
 
   readonly avgFilmAge = computed(() => {
