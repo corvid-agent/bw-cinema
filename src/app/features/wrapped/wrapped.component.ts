@@ -220,6 +220,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Co-directed</span>
               </div>
             }
+            @if (longestTitleWatched(); as ltw) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value" style="font-size: 0.85em">{{ ltw }}</span>
+                <span class="wrapped__hero-label">Longest Title</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -1045,6 +1051,13 @@ export class WrappedComponent implements OnInit {
     const count = films.filter((m) => m.year < 1930).length;
     const pct = Math.round((count / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly longestTitleWatched = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 3) return null;
+    const longest = films.reduce((a, b) => a.title.length >= b.title.length ? a : b);
+    return longest.title.length >= 15 ? longest.title : null;
   });
 
   readonly avgWatchedYear = computed(() => {

@@ -156,6 +156,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Median Year</span>
               </div>
             }
+            @if (avgTitleLength(); as atl) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ atl }}</span>
+                <span class="director__stat-label">Avg Title Length</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -967,6 +973,12 @@ export class DirectorComponent implements OnInit {
   readonly silentEraCount = computed(() => {
     const count = this.films().filter((m) => m.year < 1930).length;
     return count > 0 ? count : null;
+  });
+
+  readonly avgTitleLength = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    return Math.round(f.reduce((s, m) => s + m.title.length, 0) / f.length);
   });
 
   readonly medianYear = computed(() => {
