@@ -170,7 +170,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
 
         @if (similarFilms().length > 0) {
           <div class="watch__similar">
-            <h3>Similar Films You Can Watch</h3>
+            <h3>Similar Films You Can Watch ({{ similarFilms().length }})</h3>
             <app-movie-grid [movies]="similarFilms()" />
           </div>
         }

@@ -40,7 +40,7 @@ const MOODS: Mood[] = [
       <div class="explore container">
         <div class="explore__header">
           <h1>Explore</h1>
-          <p class="explore__subtitle">Discover films by mood, or let fate decide@if (totalUnwatchedStreamable(); as tus) { &middot; {{ tus }} free films to discover}@if (unwatchedAvgRating(); as uar) { &middot; avg &#9733; {{ uar }}}@if (unwatchedLanguageCount(); as ulc) { &middot; {{ ulc }} languages}</p>
+          <p class="explore__subtitle">Discover films by mood, or let fate decide@if (totalUnwatchedStreamable(); as tus) { &middot; {{ tus }} free films to discover}@if (unwatchedAvgRating(); as uar) { &middot; avg &#9733; {{ uar }}}@if (unwatchedLanguageCount(); as ulc) { &middot; {{ ulc }} languages}@if (unwatchedGenreCount(); as ugc) { &middot; {{ ugc }} genres}</p>
         </div>
 
         <div class="explore__random">
@@ -935,6 +935,18 @@ export class ExploreComponent implements OnInit {
       if (m.isStreamable && !watchedIds.has(m.id) && m.language) langs.add(m.language);
     }
     return langs.size > 1 ? langs.size : null;
+  });
+
+  readonly unwatchedGenreCount = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return null;
+    const genres = new Set<string>();
+    for (const m of this.catalog.movies()) {
+      if (m.isStreamable && !watchedIds.has(m.id)) {
+        for (const g of m.genres) genres.add(g);
+      }
+    }
+    return genres.size > 1 ? genres.size : null;
   });
 
   readonly totalUnwatchedStreamable = computed(() => {

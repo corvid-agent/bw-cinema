@@ -172,6 +172,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Avg Your Rating</span>
               </div>
             }
+            @if (newestFilmWatched(); as nfw) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ nfw }}</span>
+                <span class="wrapped__hero-label">Newest Film</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -852,6 +858,14 @@ export class WrappedComponent implements OnInit {
     const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     if (!best || best[1] < 2) return null;
     return best[0];
+  });
+
+  readonly newestFilmWatched = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 2) return null;
+    const newest = Math.max(...films.map((m) => m.year));
+    const oldest = Math.min(...films.map((m) => m.year));
+    return newest - oldest >= 10 ? newest : null;
   });
 
   readonly avgUserRating = computed(() => {
