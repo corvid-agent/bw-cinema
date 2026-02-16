@@ -74,6 +74,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (oldestFilmYear(); as ofy) {
           <p class="hero__avg-rating">Films dating back to {{ ofy }}@if (newestFilmYear(); as nfy) { , up to {{ nfy }}}</p>
         }
+        @if (coDirectedCount(); as cdc) {
+          <p class="hero__avg-rating">{{ cdc }} co-directed films in catalog</p>
+        }
       </div>
     </section>
 
@@ -1279,6 +1282,11 @@ export class HomeComponent implements OnInit {
       if (count > best) { best = count; bestDecade = decade; }
     }
     return best > 0 ? `${bestDecade}s` : null;
+  });
+
+  readonly coDirectedCount = computed(() => {
+    const count = this.catalog.movies().filter((m) => m.directors.length > 1).length;
+    return count > 0 ? count : null;
   });
 
   readonly decadeSpan = computed(() => {

@@ -184,6 +184,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Co-directed Films</span>
               </div>
             }
+            @if (repeatDirectorCount() > 0) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ repeatDirectorCount() }}</span>
+                <span class="wrapped__hero-label">Repeat Directors</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -887,6 +893,20 @@ export class WrappedComponent implements OnInit {
 
   readonly coDirectedCount = computed(() => {
     return this.yearFilms().filter((m) => m.directors.length > 1).length;
+  });
+
+  readonly repeatDirectorCount = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 3) return 0;
+    const counts = new Map<string, number>();
+    for (const m of films) {
+      for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    let repeats = 0;
+    for (const c of counts.values()) {
+      if (c >= 2) repeats++;
+    }
+    return repeats;
   });
 
   readonly avgFilmAge = computed(() => {
