@@ -41,6 +41,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (isCoDirected()) {
               <span class="watch__header-rating">&middot; Co-directed</span>
             }
+            @if (isSilentEra()) {
+              <span class="watch__header-rating">&middot; Silent Era</span>
+            }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
             }
@@ -582,6 +585,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly decadeValue = signal('');
   readonly directorFilmRank = signal('');
   readonly isCoDirected = signal(false);
+  readonly isSilentEra = signal(false);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -606,6 +610,7 @@ export class WatchComponent implements OnInit, OnDestroy {
       this.movieYear.set(String(movie.year));
       if (movie.language && movie.language !== 'English') this.movieLanguage.set(movie.language);
       if (movie.directors.length > 1) this.isCoDirected.set(true);
+      if (movie.year < 1930) this.isSilentEra.set(true);
       const decade = Math.floor(movie.year / 10) * 10;
       this.decadeLabel.set(`${decade}s`);
       this.decadeValue.set(String(decade));

@@ -138,6 +138,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (longestTitle(); as lt) {
             <p class="decade__fact">Longest title: "{{ lt }}"</p>
           }
+          @if (shortestTitle(); as st) {
+            <p class="decade__fact">Shortest title: "{{ st }}"</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -780,6 +783,13 @@ export class DecadeComponent implements OnInit {
     if (f.length < 10) return null;
     const longest = f.reduce((best, m) => m.title.length > best.title.length ? m : best, f[0]);
     return longest.title.length >= 25 ? longest.title : null;
+  });
+
+  readonly shortestTitle = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const shortest = f.reduce((best, m) => m.title.length < best.title.length ? m : best, f[0]);
+    return shortest.title.length <= 10 ? shortest.title : null;
   });
 
   readonly mostProlificDirector = computed(() => {

@@ -425,6 +425,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">avg rating (free films)</span>
               </div>
             }
+            @if (silentEraStreamablePct(); as sesp) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ sesp }}%</span>
+                <span class="stats__fact-text">silent-era films streamable</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1109,6 +1115,13 @@ export class StatsComponent implements OnInit {
     const streamable = this.catalog.movies().filter((m) => m.isStreamable && m.voteAverage > 0);
     if (streamable.length < 10) return null;
     return (streamable.reduce((s, m) => s + m.voteAverage, 0) / streamable.length).toFixed(1);
+  });
+
+  readonly silentEraStreamablePct = computed(() => {
+    const silent = this.catalog.movies().filter((m) => m.year < 1930);
+    if (silent.length < 5) return null;
+    const pct = Math.round((silent.filter((m) => m.isStreamable).length / silent.length) * 100);
+    return pct > 0 ? pct : null;
   });
 
   readonly avgGenresPerFilm = computed(() => {
