@@ -219,6 +219,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (avgFilmAge(); as afa) {
                 <span class="compare__overlap"> &middot; avg {{ afa }} years old</span>
               }
+              @if (bothStreamable()) {
+                <span class="compare__overlap"> &middot; both free to watch</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -814,6 +817,12 @@ export class CompareComponent implements OnInit {
     const b = this.filmB();
     if (!a || !b || a.voteAverage === 0 || b.voteAverage === 0) return null;
     return ((a.voteAverage + b.voteAverage) / 2).toFixed(1);
+  });
+
+  readonly bothStreamable = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    return !!(a && b && a.isStreamable && b.isStreamable);
   });
 
   ngOnInit(): void {

@@ -38,6 +38,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (movieLanguage()) {
               <span class="watch__header-rating">&middot; {{ movieLanguage() }}</span>
             }
+            @if (isCoDirected()) {
+              <span class="watch__header-rating">&middot; Co-directed</span>
+            }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
             }
@@ -578,6 +581,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly decadeLabel = signal('');
   readonly decadeValue = signal('');
   readonly directorFilmRank = signal('');
+  readonly isCoDirected = signal(false);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -601,6 +605,7 @@ export class WatchComponent implements OnInit, OnDestroy {
       if (movie.voteAverage > 0) this.movieRating.set(movie.voteAverage.toFixed(1));
       this.movieYear.set(String(movie.year));
       if (movie.language && movie.language !== 'English') this.movieLanguage.set(movie.language);
+      if (movie.directors.length > 1) this.isCoDirected.set(true);
       const decade = Math.floor(movie.year / 10) * 10;
       this.decadeLabel.set(`${decade}s`);
       this.decadeValue.set(String(decade));
