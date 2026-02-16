@@ -78,6 +78,9 @@ interface QuizStep {
           @if (resultGenreCount(); as rgc) {
             <p class="quiz__decade-range">{{ rgc }} genres covered</p>
           }
+          @if (resultOldestYear(); as roy) {
+            <p class="quiz__decade-range">Oldest from {{ roy }}</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -480,6 +483,14 @@ export class QuizComponent implements OnInit {
     const films = this.results();
     if (films.length < 2) return null;
     return Math.round(films.reduce((s, m) => s + m.year, 0) / films.length);
+  });
+
+  readonly resultOldestYear = computed(() => {
+    const films = this.results();
+    if (films.length < 2) return null;
+    const oldest = Math.min(...films.map((m) => m.year));
+    const newest = Math.max(...films.map((m) => m.year));
+    return newest - oldest >= 5 ? oldest : null;
   });
 
   readonly avgMatchScore = computed(() => {

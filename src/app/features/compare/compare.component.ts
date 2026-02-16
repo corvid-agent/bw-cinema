@@ -207,6 +207,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (combinedDirectorCount() > 1) {
                 <span class="compare__overlap"> &middot; {{ combinedDirectorCount() }} directors</span>
               }
+              @if (combinedLanguageCount() > 1) {
+                <span class="compare__overlap"> &middot; {{ combinedLanguageCount() }} languages</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -765,6 +768,16 @@ export class CompareComponent implements OnInit {
     const gap = Math.abs(a.year - b.year);
     if (gap < 5) return null;
     return Math.round((a.year + b.year) / 2);
+  });
+
+  readonly combinedLanguageCount = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return 0;
+    const langs = new Set<string>();
+    if (a.language) langs.add(a.language);
+    if (b.language) langs.add(b.language);
+    return langs.size;
   });
 
   readonly combinedAvgRating = computed(() => {

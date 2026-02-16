@@ -66,7 +66,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
           <p class="hero__avg-rating">Average catalog rating: &#9733; {{ acr }}</p>
         }
         @if (totalWatchedCount() > 0) {
-          <p class="hero__avg-rating">You've watched {{ totalWatchedCount() }} film{{ totalWatchedCount() !== 1 ? 's' : '' }}@if (watchlistSize() > 0) { &middot; {{ watchlistSize() }} in watchlist}</p>
+          <p class="hero__avg-rating">You've watched {{ totalWatchedCount() }} film{{ totalWatchedCount() !== 1 ? 's' : '' }}@if (watchlistSize() > 0) { &middot; {{ watchlistSize() }} in watchlist}@if (favoritesCount() > 0) { &middot; {{ favoritesCount() }} favorite{{ favoritesCount() !== 1 ? 's' : '' }}}</p>
         }
         @if (oldestFilmYear(); as ofy) {
           <p class="hero__avg-rating">Films dating back to {{ ofy }}@if (newestFilmYear(); as nfy) { , up to {{ nfy }}}</p>
@@ -1232,6 +1232,8 @@ export class HomeComponent implements OnInit {
   readonly totalWatchedCount = computed(() => this.collectionService.watchedIds().size);
 
   readonly watchlistSize = computed(() => this.collectionService.watchlistIds().size);
+
+  readonly favoritesCount = computed(() => this.collectionService.favoriteIds().size);
 
   readonly avgCatalogRating = computed(() => {
     const rated = this.catalog.movies().filter((m) => m.voteAverage > 0);
