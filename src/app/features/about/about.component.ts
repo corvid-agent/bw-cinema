@@ -113,6 +113,19 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
       </section>
 
       <section class="about__section">
+        <h2>Keyboard Shortcuts</h2>
+        <p>Press <kbd class="about__kbd">?</kbd> anywhere to open the shortcuts panel. Here are the available shortcuts:</p>
+        <div class="about__shortcuts">
+          <div class="about__shortcut"><kbd class="about__kbd">/</kbd><span>Focus search bar</span></div>
+          <div class="about__shortcut"><kbd class="about__kbd">?</kbd><span>Show keyboard shortcuts</span></div>
+          <div class="about__shortcut"><kbd class="about__kbd">Esc</kbd><span>Close overlay or dismiss</span></div>
+          <div class="about__shortcut"><kbd class="about__kbd">&larr; &rarr; &uarr; &darr;</kbd><span>Navigate movie grids</span></div>
+          <div class="about__shortcut"><kbd class="about__kbd">j / k</kbd><span>Previous / next film on detail page</span></div>
+          <div class="about__shortcut"><kbd class="about__kbd">Home / End</kbd><span>Jump to first / last in grid</span></div>
+        </div>
+      </section>
+
+      <section class="about__section">
         <h2>Privacy</h2>
         <p>
           Your watchlist and viewing history are stored entirely in your browser's local storage.
@@ -152,6 +165,39 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
     .about__source p {
       margin: 0;
       font-size: 0.95rem;
+    }
+    .about__shortcuts {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+    .about__shortcut {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .about__shortcut span {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .about__kbd {
+      display: inline-block;
+      min-width: 28px;
+      padding: 3px 8px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border-bright);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-heading);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-align: center;
+      white-space: nowrap;
     }
     .about__faq {
       display: flex;
