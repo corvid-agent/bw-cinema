@@ -1,0 +1,162 @@
+{
+  "configVersion": 1,
+  "timestamp": 1771276867454,
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/chunk-3PDIKNBB.js",
+        "/chunk-4JVR23NV.js",
+        "/chunk-4WTEBUG6.js",
+        "/chunk-5BGZ6L4W.js",
+        "/chunk-5L57DTHE.js",
+        "/chunk-75TYTFGY.js",
+        "/chunk-7G6M72YL.js",
+        "/chunk-C4UM7WAK.js",
+        "/chunk-DQARNDGD.js",
+        "/chunk-G5CE23PJ.js",
+        "/chunk-MAZ6WOLX.js",
+        "/chunk-MV2U3B7R.js",
+        "/chunk-NC4TUMNC.js",
+        "/chunk-NKC25IE2.js",
+        "/chunk-O4NLZ5CJ.js",
+        "/chunk-O6AI5D3V.js",
+        "/chunk-QAYKGD2F.js",
+        "/chunk-RH4PY6SG.js",
+        "/chunk-RX2C2XXU.js",
+        "/chunk-SU5YCZCN.js",
+        "/chunk-SUODMSJX.js",
+        "/chunk-TOYJLBVG.js",
+        "/chunk-V7BAAFQI.js",
+        "/chunk-VSFAXQ3C.js",
+        "/chunk-X5DFPYGL.js",
+        "/chunk-ZLMHQJHT.js",
+        "/favicon.ico",
+        "/index.html",
+        "/main-4ODLYLV2.js",
+        "/manifest.webmanifest",
+        "/styles-MHKZLKYN.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/assets/data/catalog.json",
+        "/icons/icon-192.svg",
+        "/icons/icon-512-maskable.svg",
+        "/icons/icon-512.svg"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "fonts",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [],
+      "patterns": [
+        "https:\\/\\/fonts\\.googleapis\\.com\\/.*",
+        "https:\\/\\/fonts\\.gstatic\\.com\\/.*"
+      ]
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "tmdb-api",
+      "patterns": [
+        "https:\\/\\/api\\.themoviedb\\.org\\/.*"
+      ],
+      "strategy": "freshness",
+      "maxSize": 200,
+      "maxAge": 86400000,
+      "timeoutMs": 5000,
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "version": 1
+    },
+    {
+      "name": "tmdb-images",
+      "patterns": [
+        "https:\\/\\/image\\.tmdb\\.org\\/.*"
+      ],
+      "strategy": "performance",
+      "maxSize": 500,
+      "maxAge": 2592000000,
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "version": 1
+    }
+  ],
+  "hashTable": {
+    "/assets/data/catalog.json": "9f1e8ed3c8197a4f88017afa1025be1b50052210",
+    "/chunk-3PDIKNBB.js": "0c68f15060d049f8c83d9f8efbc466da22b02c96",
+    "/chunk-4JVR23NV.js": "5538a9fe5aaf0f5c9e4130f163d1c42a64fc6377",
+    "/chunk-4WTEBUG6.js": "2ad5a26d98cd80c3d1e33738b0372fad9541dfe9",
+    "/chunk-5BGZ6L4W.js": "71fb9f4cbbbc4b794be4595ccbf3da30faf18dd5",
+    "/chunk-5L57DTHE.js": "e642ce569791bfa81c26589520085ccc9c9a88fa",
+    "/chunk-75TYTFGY.js": "6290cafcd7948ec72c2098732fe0d229e80713bf",
+    "/chunk-7G6M72YL.js": "fc14c9f7fe02c720f24108ccd2283ba115f22745",
+    "/chunk-C4UM7WAK.js": "fe3d27c85aaa793ceb07742aa7e1e00680de4bd4",
+    "/chunk-DQARNDGD.js": "cb2880a3c43accaa451188352817975603d5c8a0",
+    "/chunk-G5CE23PJ.js": "7fa75cbb483c0c8ce4495a988178ac69b0fd2e5e",
+    "/chunk-MAZ6WOLX.js": "c9a61369c1fa85bde572e82e7c1e9c27a38027ca",
+    "/chunk-MV2U3B7R.js": "7393c9f5cf617ab7a1951d0646249e879d19c993",
+    "/chunk-NC4TUMNC.js": "d264ea4811aa8e3784ddbaa468533e39c36a9a6f",
+    "/chunk-NKC25IE2.js": "8b690d7f7928c59f0bc57a877e7349542ec3f5a8",
+    "/chunk-O4NLZ5CJ.js": "0c3f9f07dc2963a92b6e69e7674f74404a419662",
+    "/chunk-O6AI5D3V.js": "d8ee50f0c81cb3fae017e4da53351838cc2a0d4b",
+    "/chunk-QAYKGD2F.js": "8f0dd15c257eb98a34c037299da82c9b7d16c31a",
+    "/chunk-RH4PY6SG.js": "d5f42b7ac8a19608b727e2784d054e39f8548e3e",
+    "/chunk-RX2C2XXU.js": "db876c4a12b9054bd7159ebd587230a96b6fc60b",
+    "/chunk-SU5YCZCN.js": "e3f64870a83308927ad4dfdcda30561d8e75dfee",
+    "/chunk-SUODMSJX.js": "70228a62be960289e06c795c1a9e12c2bc899932",
+    "/chunk-TOYJLBVG.js": "250530eb122489a79a2b59f20d8616865a8d44a8",
+    "/chunk-V7BAAFQI.js": "d726df4f03f0718199ad02b88e39611f97e1628a",
+    "/chunk-VSFAXQ3C.js": "75f0e7b39379022b692180152705008d37230de6",
+    "/chunk-X5DFPYGL.js": "da2407ba4119e1a38af8a67f5ea882422390c961",
+    "/chunk-ZLMHQJHT.js": "0062d9bbb72403ce8c36441104afe79a8579728d",
+    "/favicon.ico": "9c39f434fe1261f68c5e3eefdf734630d99c5670",
+    "/icons/icon-192.svg": "4396f95029d8191b5d2474c83b2c0d1651059e50",
+    "/icons/icon-512-maskable.svg": "9a6b9148aaeeaa3273094d99dd8c288a0242d5f6",
+    "/icons/icon-512.svg": "fba9979324bb97c0f9aa02837abfb790c8ff304b",
+    "/index.html": "397f640fd57ada3fd88db101019248a7bc0f6232",
+    "/main-4ODLYLV2.js": "a8e5c15f4eaf63716e8dc17756cbab1ec39dfafe",
+    "/manifest.webmanifest": "fa8bd297922a771f6adee9fa87219b29c0ad5723",
+    "/styles-MHKZLKYN.css": "4b35d15520b19293b4aa9b3cc9b85dac122fa032"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}

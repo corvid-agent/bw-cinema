@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0d0d0d"/>
+  <polygon points="256,160 310,256 256,352 202,256" fill="#d4a843"/>
+  <text x="256" y="420" text-anchor="middle" font-family="Georgia, serif" font-size="72" font-weight="700" fill="#f0ede8">BW</text>
+  <text x="256" y="462" text-anchor="middle" font-family="sans-serif" font-size="28" font-weight="400" fill="#a8a29e" letter-spacing="6">CINEMA</text>
+</svg>
