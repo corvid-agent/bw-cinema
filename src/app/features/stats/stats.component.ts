@@ -305,6 +305,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">year range of catalog</span>
               </div>
             }
+            @if (highRatedPct() > 0) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ highRatedPct() }}%</span>
+                <span class="stats__fact-text">rated 7.0 or higher</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -807,6 +813,13 @@ export class StatsComponent implements OnInit {
   readonly multiGenreCount = computed(() =>
     this.catalog.movies().filter((m) => m.genres.length >= 3).length
   );
+
+  readonly highRatedPct = computed(() => {
+    const rated = this.catalog.movies().filter((m) => m.voteAverage > 0);
+    if (rated.length === 0) return 0;
+    const high = rated.filter((m) => m.voteAverage >= 7.0).length;
+    return Math.round((high / rated.length) * 100);
+  });
 
   readonly mostVersatileDirector = computed(() => {
     const dirGenres = new Map<string, { genres: Set<string>; count: number }>();

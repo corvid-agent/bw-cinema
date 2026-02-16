@@ -1931,6 +1931,16 @@ export class CollectionComponent implements OnInit {
     const topDec = [...decCounts.entries()].sort((a, b) => b[1] - a[1])[0];
     if (topDec) insights.push({ label: 'Preferred Decade', value: `${topDec[0]}s` });
 
+    // Average release year
+    const yearSum = watched.reduce((s, w) => {
+      const m = movieMap.get(w.movieId);
+      return m ? s + m.year : s;
+    }, 0);
+    const matchedCount = watched.filter((w) => movieMap.has(w.movieId)).length;
+    if (matchedCount >= 3) {
+      insights.push({ label: 'Avg Film Year', value: `${Math.round(yearSum / matchedCount)}` });
+    }
+
     // Highest rated film
     const ratedItems = watched.filter((w) => w.userRating != null).sort((a, b) => (b.userRating ?? 0) - (a.userRating ?? 0));
     if (ratedItems.length > 0) {
