@@ -220,6 +220,16 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
               </div>
             </a>
           }
+          @if (longestCareer(); as dir) {
+            <a class="stats__highlight" [routerLink]="['/director', dir.name]">
+              <div class="stats__highlight-initial">{{ dir.name[0] }}</div>
+              <div class="stats__highlight-text">
+                <span class="stats__highlight-label">Longest Career</span>
+                <span class="stats__highlight-value">{{ dir.name }}</span>
+                <span class="stats__highlight-meta">{{ dir.span }} years ({{ dir.count }} films)</span>
+              </div>
+            </a>
+          }
           @if (oldestStreamable(); as film) {
             <a class="stats__highlight" [routerLink]="['/movie', film.id]">
               @if (film.posterUrl) {
@@ -601,6 +611,24 @@ export class StatsComponent implements OnInit {
       .filter(([, v]) => v.count >= 5)
       .map(([name, v]) => ({ name, count: v.count, avgRating: (v.total / v.count).toFixed(1) }))
       .sort((a, b) => parseFloat(b.avgRating) - parseFloat(a.avgRating));
+    return eligible[0] ?? null;
+  });
+
+  readonly longestCareer = computed(() => {
+    const dirYears = new Map<string, { min: number; max: number; count: number }>();
+    for (const m of this.catalog.movies()) {
+      for (const d of m.directors) {
+        const entry = dirYears.get(d) ?? { min: m.year, max: m.year, count: 0 };
+        entry.min = Math.min(entry.min, m.year);
+        entry.max = Math.max(entry.max, m.year);
+        entry.count++;
+        dirYears.set(d, entry);
+      }
+    }
+    const eligible = [...dirYears.entries()]
+      .filter(([, v]) => v.count >= 3)
+      .map(([name, v]) => ({ name, span: v.max - v.min, count: v.count }))
+      .sort((a, b) => b.span - a.span);
     return eligible[0] ?? null;
   });
 

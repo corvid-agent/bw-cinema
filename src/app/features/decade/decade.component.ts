@@ -146,6 +146,23 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             <a class="btn-primary" routerLink="/browse">Browse All Films</a>
           </div>
         }
+
+        <div class="decade__nav">
+          @if (prevDecade()) {
+            <a class="decade__nav-link" [routerLink]="['/decade', prevDecade()]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              {{ prevDecade() }}s
+            </a>
+          } @else {
+            <span></span>
+          }
+          @if (nextDecade()) {
+            <a class="decade__nav-link" [routerLink]="['/decade', nextDecade()]">
+              {{ nextDecade() }}s
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          }
+        </div>
       </div>
     }
   `,
@@ -474,6 +491,26 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       padding: var(--space-3xl);
       color: var(--text-tertiary);
     }
+    .decade__nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: var(--space-2xl);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--border);
+    }
+    .decade__nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .decade__nav-link:hover {
+      color: var(--accent-gold);
+    }
     @media (max-width: 768px) {
       .decade__header { flex-direction: column; gap: var(--space-md); }
     }
@@ -597,6 +634,20 @@ export class DecadeComponent implements OnInit {
       e.heightPct = max > 0 ? Math.round((e.count / max) * 100) : 0;
     }
     return entries;
+  });
+
+  readonly prevDecade = computed(() => {
+    const y = parseInt(this.year(), 10);
+    const prev = y - 10;
+    const hasFilms = this.catalog.movies().some((m) => m.year >= prev && m.year < prev + 10);
+    return hasFilms ? prev : null;
+  });
+
+  readonly nextDecade = computed(() => {
+    const y = parseInt(this.year(), 10);
+    const next = y + 10;
+    const hasFilms = this.catalog.movies().some((m) => m.year >= next && m.year < next + 10);
+    return hasFilms ? next : null;
   });
 
   ngOnInit(): void {

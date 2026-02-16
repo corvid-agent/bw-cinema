@@ -24,6 +24,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             <p class="director__eyebrow">Director</p>
             <h1 class="director__name">{{ name() }}</h1>
             <p class="director__meta">{{ films().length }} film{{ films().length !== 1 ? 's' : '' }} in catalog</p>
+            @if (notableFact()) {
+              <p class="director__fact">{{ notableFact() }}</p>
+            }
           </div>
         </div>
 
@@ -182,6 +185,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       color: var(--text-secondary);
       font-size: 0.95rem;
       margin: 0;
+    }
+    .director__fact {
+      font-size: 0.85rem;
+      font-style: italic;
+      color: var(--accent-gold);
+      margin: var(--space-xs) 0 0;
     }
     .director__stats {
       display: grid;
@@ -567,6 +576,23 @@ export class DirectorComponent implements OnInit {
       for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
     }
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([g]) => g);
+  });
+
+  readonly notableFact = computed(() => {
+    const f = this.films();
+    if (f.length < 2) return null;
+    const years = f.map((m) => m.year);
+    const span = Math.max(...years) - Math.min(...years);
+    const rated = f.filter((m) => m.voteAverage > 0);
+    const avg = rated.length > 0 ? rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length : 0;
+    const allStreamable = f.every((m) => m.isStreamable);
+    const genres = new Set(f.flatMap((m) => m.genres));
+    if (allStreamable && f.length >= 3) return `All ${f.length} films free to watch`;
+    if (avg >= 8 && rated.length >= 3) return `Exceptional average: ${avg.toFixed(1)}/10 across ${rated.length} rated films`;
+    if (span >= 30) return `Career spanning ${span} years`;
+    if (genres.size === 1) return `Dedicated ${[...genres][0]} filmmaker`;
+    if (f.length >= 15) return `One of the most prolific directors in catalog`;
+    return null;
   });
 
   readonly careerTimeline = computed(() => {
