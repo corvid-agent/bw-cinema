@@ -49,6 +49,9 @@ interface QuizStep {
         <div class="quiz__results">
           <h2>Your Recommendations</h2>
           <p class="quiz__results-subtitle">Based on your preferences, here are {{ results().length }} films we think you'll enjoy:</p>
+          @if (poolSize() > results().length) {
+            <p class="quiz__pool-note">Shuffled from {{ poolSize() }} matching films</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -299,6 +302,11 @@ interface QuizStep {
       border-color: var(--accent-gold);
       color: var(--accent-gold);
     }
+    .quiz__pool-note {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      margin: -var(--space-md) 0 var(--space-lg);
+    }
     @media (max-width: 480px) {
       .quiz__result-grid { grid-template-columns: repeat(2, 1fr); }
     }
@@ -366,6 +374,7 @@ export class QuizComponent implements OnInit {
   readonly answers = signal<Record<number, string>>({});
   readonly showResults = signal(false);
   readonly results = signal<MovieSummary[]>([]);
+  readonly poolSize = signal(0);
 
   readonly currentStep = computed(() => this.steps[this.step()]);
   readonly progressPct = computed(() => ((this.step() + 1) / this.steps.length) * 100);
@@ -531,6 +540,8 @@ export class QuizComponent implements OnInit {
     // Streamable filter
     const streamable = a[5];
     if (streamable === 'free') films = films.filter((m) => m.isStreamable);
+
+    this.poolSize.set(films.length);
 
     // Shuffle and pick 5
     for (let i = films.length - 1; i > 0; i--) {

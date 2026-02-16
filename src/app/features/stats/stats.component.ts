@@ -289,6 +289,10 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
               <span class="stats__fact-number">{{ soloDirectorFilms() }}</span>
               <span class="stats__fact-text">single-director films</span>
             </div>
+            <div class="stats__fact-card">
+              <span class="stats__fact-number">{{ coDirectedCount() }}</span>
+              <span class="stats__fact-text">co-directed films</span>
+            </div>
           </div>
         </section>
 
@@ -817,6 +821,10 @@ export class StatsComponent implements OnInit {
 
   readonly soloDirectorFilms = computed(() =>
     this.catalog.movies().filter((m) => m.directors.length === 1).length
+  );
+
+  readonly coDirectedCount = computed(() =>
+    this.catalog.movies().filter((m) => m.directors.length > 1).length
   );
 
   readonly genrePairs = computed(() => {

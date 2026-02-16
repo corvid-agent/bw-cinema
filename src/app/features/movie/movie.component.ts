@@ -62,7 +62,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
               </div>
 
               <div class="detail__meta">
-                <span class="detail__meta-item">{{ m.year }}</span>
+                <span class="detail__meta-item" [title]="yearPeers() > 1 ? 'One of ' + yearPeers() + ' films from ' + m.year : ''">{{ m.year }}</span>
                 @if (m.runtime) {
                   <span class="detail__meta-sep">&middot;</span>
                   <span class="detail__meta-item">{{ m.runtime | runtime }}</span>
@@ -1157,6 +1157,12 @@ export class MovieComponent implements OnInit {
     const idx = ranked.findIndex((m) => m.id === s.id);
     if (idx < 0 || idx >= 20) return null;
     return { rank: idx + 1, decade, total: ranked.length };
+  });
+
+  readonly yearPeers = computed(() => {
+    const s = this.summary();
+    if (!s) return 0;
+    return this.catalogService.movies().filter((m) => m.year === s.year).length;
   });
 
   readonly directorFilms = computed(() => {
