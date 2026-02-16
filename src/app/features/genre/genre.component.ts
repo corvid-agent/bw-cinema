@@ -46,7 +46,17 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
               <span class="genre__stat-value">{{ streamableCount() }}</span>
               <span class="genre__stat-label">Free to Watch</span>
             </div>
+            @if (peakDecade(); as peak) {
+              <div class="genre__stat">
+                <span class="genre__stat-value">{{ peak.decade }}s</span>
+                <span class="genre__stat-label">Peak Decade ({{ peak.count }})</span>
+              </div>
+            }
           </div>
+
+          @if (notableFact()) {
+            <p class="genre__fact">{{ notableFact() }}</p>
+          }
 
           @if (topFilm(); as top) {
             <div class="genre__top-film">
@@ -464,6 +474,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       padding: var(--space-3xl);
       color: var(--text-tertiary);
     }
+    .genre__fact {
+      font-style: italic;
+      color: var(--accent-gold);
+      font-size: 0.95rem;
+      margin: 0 0 var(--space-xl);
+    }
     @media (max-width: 768px) {
       .genre__header { flex-direction: column; gap: var(--space-md); }
     }
@@ -565,6 +581,28 @@ export class GenreComponent implements OnInit {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
       .map(([name, count]) => ({ name, pct: Math.round((count / total) * 100) }));
+  });
+
+  readonly peakDecade = computed(() => {
+    const breakdown = this.decadeBreakdown();
+    if (breakdown.length === 0) return null;
+    return breakdown.reduce((best, d) => d.count > best.count ? d : best);
+  });
+
+  readonly notableFact = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const streamable = f.filter((m) => m.isStreamable);
+    const rated = f.filter((m) => m.voteAverage > 0);
+    const avg = rated.length > 0 ? rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length : 0;
+    const langs = new Set(f.map((m) => m.language).filter(Boolean));
+    const directors = new Set(f.flatMap((m) => m.directors));
+    if (streamable.length === f.length) return `All ${f.length} films are free to watch`;
+    if (avg >= 7.5 && rated.length >= 5) return `Exceptionally well-rated genre — ${avg.toFixed(1)} average across ${rated.length} films`;
+    if (langs.size >= 5) return `Truly international — films in ${langs.size} languages`;
+    if (directors.size >= f.length * 0.8 && f.length >= 10) return `Remarkably diverse — ${directors.size} different directors`;
+    if (streamable.length >= 50) return `${streamable.length} films available to watch for free`;
+    return null;
   });
 
   readonly decadeBreakdown = computed(() => {

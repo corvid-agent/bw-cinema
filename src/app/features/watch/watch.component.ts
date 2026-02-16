@@ -66,6 +66,25 @@ import type { MovieSummary } from '../../core/models/movie.model';
           </button>
         </div>
 
+        @if (directorFilms().length > 0) {
+          <div class="watch__more-director">
+            <h3 class="watch__more-director-title">More from {{ directorName() }}</h3>
+            <div class="watch__more-director-row">
+              @for (m of directorFilms(); track m.id) {
+                <a class="watch__director-film" [routerLink]="m.isStreamable ? ['/watch', m.id] : ['/movie', m.id]">
+                  @if (m.posterUrl) {
+                    <img [src]="m.posterUrl" [alt]="m.title" loading="lazy" />
+                  } @else {
+                    <div class="watch__director-film-placeholder">{{ m.title[0] }}</div>
+                  }
+                  <span class="watch__director-film-title">{{ m.title }}</span>
+                  <span class="watch__director-film-year">{{ m.year }}</span>
+                </a>
+              }
+            </div>
+          </div>
+        }
+
         @if (upNext(); as next) {
           <div class="watch__up-next">
             <span class="watch__up-next-label">Up Next</span>
@@ -249,6 +268,67 @@ import type { MovieSummary } from '../../core/models/movie.model';
       border-color: var(--accent-gold);
       color: var(--accent-gold);
     }
+    .watch__more-director {
+      max-width: 960px;
+      margin: var(--space-xl) auto 0;
+    }
+    .watch__more-director-title {
+      font-size: 1rem;
+      margin-bottom: var(--space-md);
+      color: var(--text-secondary);
+    }
+    .watch__more-director-row {
+      display: flex;
+      gap: var(--space-md);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: var(--space-xs);
+    }
+    .watch__director-film {
+      flex-shrink: 0;
+      width: 100px;
+      text-decoration: none;
+      color: inherit;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .watch__director-film:hover {
+      transform: translateY(-2px);
+    }
+    .watch__director-film img {
+      width: 100px;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: var(--radius);
+      margin-bottom: 4px;
+    }
+    .watch__director-film-placeholder {
+      width: 100px;
+      aspect-ratio: 2 / 3;
+      background: var(--bg-raised);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-heading);
+      color: var(--text-tertiary);
+      font-size: 1.2rem;
+      margin-bottom: 4px;
+    }
+    .watch__director-film-title {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .watch__director-film-year {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+    }
     .watch__up-next {
       max-width: 500px;
       margin: var(--space-xl) auto 0;
@@ -407,9 +487,18 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly upNext = signal<MovieSummary | null>(null);
   readonly upNextReason = signal<string>('');
   readonly similarFilms = signal<MovieSummary[]>([]);
+  readonly directorFilms = signal<MovieSummary[]>([]);
+  readonly directorName = signal('');
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
+  };
+
+  private keyHandler = (e: KeyboardEvent) => {
+    if (e.key === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+      e.preventDefault();
+      this.toggleFullscreen();
+    }
   };
 
   async ngOnInit(): Promise<void> {
@@ -429,16 +518,26 @@ export class WatchComponent implements OnInit, OnDestroy {
         const nextResult = this.findUpNext(movie);
         this.upNext.set(nextResult.movie);
         this.upNextReason.set(nextResult.reason);
+        if (movie.directors.length > 0) {
+          this.directorName.set(movie.directors[0]);
+          const dirFilms = this.catalogService.movies()
+            .filter((m) => m.id !== movie.id && m.directors.some((d) => movie.directors.includes(d)) && m.posterUrl)
+            .sort((a, b) => b.voteAverage - a.voteAverage)
+            .slice(0, 8);
+          this.directorFilms.set(dirFilms);
+        }
       } else {
         this.similarFilms.set(this.findSimilar(movie));
       }
     }
     this.loading.set(false);
     document.addEventListener('fullscreenchange', this.fullscreenHandler);
+    document.addEventListener('keydown', this.keyHandler);
   }
 
   ngOnDestroy(): void {
     document.removeEventListener('fullscreenchange', this.fullscreenHandler);
+    document.removeEventListener('keydown', this.keyHandler);
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {});
     }

@@ -19,7 +19,12 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
     <div class="browse container">
       <div class="browse__top">
         <h1>Browse Films</h1>
-        <p class="browse__subtitle" aria-live="polite" aria-atomic="true">{{ filteredMovies().length }} films found</p>
+        <p class="browse__subtitle" aria-live="polite" aria-atomic="true">
+          {{ filteredMovies().length }} films found
+          @if (!filter().streamableOnly && streamableResultCount() > 0 && streamableResultCount() < filteredMovies().length) {
+            <span class="browse__streamable-count">({{ streamableResultCount() }} free to watch)</span>
+          }
+        </p>
       </div>
 
       @if (catalog.loading()) {
@@ -175,6 +180,10 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       color: var(--text-tertiary);
       font-size: 0.95rem;
       margin: 0;
+    }
+    .browse__streamable-count {
+      color: var(--accent-gold);
+      font-weight: 600;
     }
     .browse__layout {
       display: grid;
@@ -555,6 +564,9 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   });
 
   readonly filteredMovies = computed(() => this.catalog.search(this.filter()));
+  readonly streamableResultCount = computed(() =>
+    this.filteredMovies().filter((m) => m.isStreamable).length
+  );
   readonly paginatedMovies = computed(() =>
     this.filteredMovies().slice(0, this.page() * this.pageSize)
   );
