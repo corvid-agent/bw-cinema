@@ -95,7 +95,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
 
         @if (directorFilms().length > 0) {
           <div class="watch__more-director">
-            <h3 class="watch__more-director-title">More from {{ directorName() }}@if (directorTotalFilms() > 2) { <span class="watch__header-year">({{ directorTotalFilms() }} in catalog)</span>}</h3>
+            <h3 class="watch__more-director-title">More from {{ directorName() }}@if (directorTotalFilms() > 2) { <span class="watch__header-year">({{ directorTotalFilms() }} in catalog)</span>}@if (directorFilmRank()) { <span class="watch__header-year"> · {{ directorFilmRank() }}</span>}</h3>
             <div class="watch__more-director-row">
               @for (m of directorFilms(); track m.id) {
                 <a class="watch__director-film" [routerLink]="m.isStreamable ? ['/watch', m.id] : ['/movie', m.id]">
@@ -577,6 +577,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly movieLanguage = signal('');
   readonly decadeLabel = signal('');
   readonly decadeValue = signal('');
+  readonly directorFilmRank = signal('');
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -624,6 +625,11 @@ export class WatchComponent implements OnInit, OnDestroy {
           const allDirFilms = this.catalogService.movies()
             .filter((m) => m.id !== movie.id && m.directors.some((d) => movie.directors.includes(d)));
           this.directorTotalFilms.set(allDirFilms.length + 1);
+          if (allDirFilms.length >= 2) {
+            const allSorted = [...allDirFilms, movie].sort((a, b) => a.year - b.year);
+            const idx = allSorted.findIndex((m) => m.id === movie.id);
+            if (idx >= 0) this.directorFilmRank.set(`Film ${idx + 1} of ${allSorted.length} chronologically`);
+          }
           const dirFilms = allDirFilms
             .filter((m) => m.posterUrl)
             .sort((a, b) => b.voteAverage - a.voteAverage)

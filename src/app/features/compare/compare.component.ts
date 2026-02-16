@@ -192,6 +192,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
           @if (midpointYear(); as mpy) {
             <p class="compare__double-feature-note">Midpoint: {{ mpy }}</p>
           }
+          @if (yearSpan(); as ys) {
+            <p class="compare__double-feature-note">Spanning {{ ys }}</p>
+          }
           @if (combinedAvgRating(); as avg) {
             <div class="compare__combined-avg">
               Combined Avg: {{ avg }}/10
@@ -771,6 +774,17 @@ export class CompareComponent implements OnInit {
     const gap = Math.abs(a.year - b.year);
     if (gap < 5) return null;
     return Math.round((a.year + b.year) / 2);
+  });
+
+  readonly yearSpan = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return null;
+    const gap = Math.abs(a.year - b.year);
+    if (gap < 5) return null;
+    const min = Math.min(a.year, b.year);
+    const max = Math.max(a.year, b.year);
+    return `${min}–${max}`;
   });
 
   readonly combinedLanguageCount = computed(() => {

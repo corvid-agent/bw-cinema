@@ -118,6 +118,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="decade__stat-label">Median Rating</span>
               </div>
             }
+            @if (avgFilmAge() > 0) {
+              <div class="decade__stat">
+                <span class="decade__stat-value">{{ avgFilmAge() }}</span>
+                <span class="decade__stat-label">Avg Film Age (yrs)</span>
+              </div>
+            }
           </div>
 
           @if (decadeFact(); as fact) {
@@ -733,6 +739,13 @@ export class DecadeComponent implements OnInit {
       ? (rated[mid - 1] + rated[mid]) / 2
       : rated[mid];
     return median.toFixed(1);
+  });
+
+  readonly avgFilmAge = computed(() => {
+    const f = this.films();
+    if (f.length < 2) return 0;
+    const now = new Date().getFullYear();
+    return Math.round(f.reduce((s, m) => s + (now - m.year), 0) / f.length);
   });
 
   readonly coDirectedCount = computed(() =>
