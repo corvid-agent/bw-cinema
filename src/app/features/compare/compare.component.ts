@@ -222,6 +222,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (bothStreamable()) {
                 <span class="compare__overlap"> &middot; both free to watch</span>
               }
+              @if (bothNonEnglish()) {
+                <span class="compare__overlap"> &middot; both non-English</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -823,6 +826,12 @@ export class CompareComponent implements OnInit {
     const a = this.filmA();
     const b = this.filmB();
     return !!(a && b && a.isStreamable && b.isStreamable);
+  });
+
+  readonly bothNonEnglish = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    return !!(a && b && a.language && a.language !== 'English' && a.language !== 'en' && b.language && b.language !== 'English' && b.language !== 'en');
   });
 
   ngOnInit(): void {

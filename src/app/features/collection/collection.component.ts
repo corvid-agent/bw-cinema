@@ -354,6 +354,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Non-English Films</span>
                   </div>
                 }
+                @if (watchedSilentEraCount() > 0) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ watchedSilentEraCount() }}</span>
+                    <span class="stats__card-label">Silent-Era Films</span>
+                  </div>
+                }
               </div>
 
               @if (nextMilestone(); as milestone) {
@@ -1637,6 +1643,12 @@ export class CollectionComponent implements OnInit {
     const films = this.watchedMovies();
     if (films.length < 2) return 0;
     return films.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
+  });
+
+  readonly watchedSilentEraCount = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 2) return 0;
+    return films.filter((m) => m.year < 1930).length;
   });
 
   private computeStreaks(): { current: number; longest: number } {
