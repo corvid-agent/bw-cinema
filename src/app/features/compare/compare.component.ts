@@ -236,6 +236,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (sameLanguage(); as sl) {
                 <span class="compare__overlap"> &middot; both in {{ sl }}</span>
               }
+              @if (bothHighlyRated()) {
+                <span class="compare__overlap"> &middot; both rated 8+</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -843,6 +846,12 @@ export class CompareComponent implements OnInit {
     const a = this.filmA();
     const b = this.filmB();
     return !!(a && b && a.language && a.language !== 'English' && a.language !== 'en' && b.language && b.language !== 'English' && b.language !== 'en');
+  });
+
+  readonly bothHighlyRated = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    return !!(a && b && a.voteAverage >= 8.0 && b.voteAverage >= 8.0);
   });
 
   readonly sameLanguage = computed(() => {
