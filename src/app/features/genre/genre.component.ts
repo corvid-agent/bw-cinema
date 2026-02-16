@@ -145,6 +145,19 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
               </div>
             </div>
           }
+          @if (languageBreakdown().length > 0) {
+            <div class="genre__languages">
+              <h2 class="genre__section-title">Languages</h2>
+              <div class="genre__lang-chips">
+                @for (l of languageBreakdown(); track l.name) {
+                  <span class="genre__lang-chip">
+                    {{ l.name }}
+                    <span class="genre__lang-count">{{ l.count }}</span>
+                  </span>
+                }
+              </div>
+            </div>
+          }
         } @else {
           <div class="genre__empty">
             <p>No films found for this genre.</p>
@@ -469,6 +482,34 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       border-radius: 8px;
       color: var(--text-tertiary);
     }
+    .genre__languages {
+      margin-top: var(--space-xl);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--border);
+    }
+    .genre__lang-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+    }
+    .genre__lang-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: 4px 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    .genre__lang-count {
+      font-size: 0.65rem;
+      background: var(--bg-raised);
+      padding: 1px 5px;
+      border-radius: 6px;
+      color: var(--text-tertiary);
+    }
     .genre__empty {
       text-align: center;
       padding: var(--space-3xl);
@@ -603,6 +644,27 @@ export class GenreComponent implements OnInit {
     if (directors.size >= f.length * 0.8 && f.length >= 10) return `Remarkably diverse — ${directors.size} different directors`;
     if (streamable.length >= 50) return `${streamable.length} films available to watch for free`;
     return null;
+  });
+
+  readonly languageBreakdown = computed(() => {
+    const LANG_NAMES: Record<string, string> = {
+      en: 'English', fr: 'French', de: 'German', ja: 'Japanese', it: 'Italian',
+      es: 'Spanish', ru: 'Russian', sv: 'Swedish', da: 'Danish', pt: 'Portuguese',
+      nl: 'Dutch', zh: 'Chinese', ko: 'Korean', pl: 'Polish', cs: 'Czech',
+      hu: 'Hungarian', fi: 'Finnish', el: 'Greek', no: 'Norwegian', nb: 'Norwegian',
+    };
+    const counts = new Map<string, number>();
+    for (const m of this.films()) {
+      if (m.language) {
+        const name = LANG_NAMES[m.language] ?? m.language.toUpperCase();
+        counts.set(name, (counts.get(name) ?? 0) + 1);
+      }
+    }
+    if (counts.size < 2) return [];
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name, count]) => ({ name, count }));
   });
 
   readonly decadeBreakdown = computed(() => {

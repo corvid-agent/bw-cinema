@@ -74,6 +74,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             <span class="card__divider">&middot;</span>
             <span class="card__genre">{{ movie().genres[0] }}</span>
           }
+          @if (movie().directors.length > 1) {
+            <span class="card__co-dir" title="Co-directed by {{ movie().directors.join(', ') }}">{{ movie().directors.length }}dir</span>
+          }
           @if (movie().language && movie().language !== 'en') {
             <span class="card__lang">{{ (movie().language ?? '').toUpperCase() }}</span>
           }
@@ -330,6 +333,15 @@ import type { MovieSummary } from '../../core/models/movie.model';
     .card__divider {
       color: var(--text-tertiary);
       font-size: 0.7rem;
+    }
+    .card__co-dir {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: var(--accent-gold-dim);
+      color: var(--accent-gold);
+      letter-spacing: 0.02em;
     }
     .card__genre {
       color: var(--text-tertiary);

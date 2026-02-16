@@ -45,6 +45,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
           </button>
         </div>
 
+        <div class="watch__shortcuts">
+          <span class="watch__shortcut"><kbd>f</kbd> fullscreen</span>
+        </div>
+
         <div class="watch__actions">
           @if (!isWatched()) {
             <button class="watch__mark-btn" (click)="markWatched()">
@@ -461,6 +465,31 @@ import type { MovieSummary } from '../../core/models/movie.model';
     .watch__similar h3 {
       font-size: 1.2rem;
       margin-bottom: var(--space-lg);
+    }
+    .watch__shortcuts {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-md);
+      margin-top: var(--space-sm);
+    }
+    .watch__shortcut {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+    }
+    .watch__shortcut kbd {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-right: 3px;
+    }
+    @media (hover: none) {
+      .watch__shortcuts { display: none; }
     }
   `],
 })
