@@ -101,6 +101,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             }
           </div>
 
+          @if (newestFilmYear(); as nfy) {
+            <p class="genre__fact">Most recent: {{ nfy }}</p>
+          }
           @if (watchedInGenre() > 0) {
             <p class="genre__fact">You've watched {{ watchedInGenre() }} {{ name() }} film{{ watchedInGenre() !== 1 ? 's' : '' }}</p>
           }
@@ -652,6 +655,14 @@ export class GenreComponent implements OnInit {
   readonly silentEraCount = computed(() =>
     this.films().filter((m) => m.year < 1930).length
   );
+
+  readonly newestFilmYear = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const newest = Math.max(...f.map((m) => m.year));
+    const oldest = Math.min(...f.map((m) => m.year));
+    return newest - oldest >= 10 ? newest : null;
+  });
 
   readonly watchedInGenre = computed(() => {
     const watchedIds = this.collection.watchedIds();

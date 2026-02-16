@@ -114,6 +114,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Genres</span>
               </div>
             }
+            @if (newestFilmYear(); as nfy) {
+              <a class="director__stat director__stat--link" [routerLink]="['/decade', nfy.decade]">
+                <span class="director__stat-value">{{ nfy.year }}</span>
+                <span class="director__stat-label">Latest Film</span>
+              </a>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -664,6 +670,13 @@ export class DirectorComponent implements OnInit {
       if (m.language) langs.add(m.language);
     }
     return langs.size;
+  });
+
+  readonly newestFilmYear = computed(() => {
+    const f = this.films();
+    if (f.length < 2) return null;
+    const newest = f.reduce((best, m) => m.year > best.year ? m : best);
+    return { year: newest.year, decade: Math.floor(newest.year / 10) * 10 };
   });
 
   readonly uniqueGenreCount = computed(() => {

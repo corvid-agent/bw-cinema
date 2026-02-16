@@ -383,6 +383,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">co-directed films</span>
               </div>
             }
+            @if (avgDirectorCareer(); as adc) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ adc }}yr</span>
+                <span class="stats__fact-text">avg director career span</span>
+              </div>
+            }
             @if (topStreamableDecade(); as tsd) {
               <div class="stats__fact-card">
                 <span class="stats__fact-number">{{ tsd.decade }}s</span>
@@ -999,6 +1005,23 @@ export class StatsComponent implements OnInit {
     const pct = Math.round((multi / movies.length) * 100);
     if (pct === 0) return null;
     return pct;
+  });
+
+  readonly avgDirectorCareer = computed(() => {
+    const dirYears = new Map<string, { min: number; max: number }>();
+    for (const m of this.catalog.movies()) {
+      for (const d of m.directors) {
+        const entry = dirYears.get(d) ?? { min: m.year, max: m.year };
+        if (m.year < entry.min) entry.min = m.year;
+        if (m.year > entry.max) entry.max = m.year;
+        dirYears.set(d, entry);
+      }
+    }
+    const spans = [...dirYears.values()]
+      .filter((v) => v.max - v.min > 0)
+      .map((v) => v.max - v.min);
+    if (spans.length < 10) return null;
+    return Math.round(spans.reduce((s, v) => s + v, 0) / spans.length);
   });
 
   readonly topStreamableDecade = computed(() => {
