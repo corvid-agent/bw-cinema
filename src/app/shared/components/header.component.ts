@@ -114,13 +114,14 @@ import { CatalogService } from '../../core/services/catalog.service';
   `,
   styles: [`
     .header {
-      background-color: rgba(13, 13, 13, 0.85);
+      background-color: var(--bg-surface);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
       z-index: 100;
+      overflow: visible;
     }
     .header__inner {
       display: flex;
@@ -375,16 +376,18 @@ import { CatalogService } from '../../core/services/catalog.service';
         top: 60px;
         left: 0;
         right: 0;
-        background-color: rgba(13, 13, 13, 0.95);
+        background-color: var(--bg-surface);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         flex-direction: column;
         padding: var(--space-sm) var(--space-md);
         border-bottom: 1px solid var(--border);
+        border-top: 1px solid var(--border);
         gap: 2px;
+        box-shadow: var(--shadow-lg);
       }
-      .header__nav--open {
-        display: flex;
+      .header__nav.header__nav--open {
+        display: flex !important;
         max-height: calc(100vh - 60px);
         max-height: calc(100dvh - 60px);
         overflow-y: auto;
