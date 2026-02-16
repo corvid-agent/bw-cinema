@@ -148,6 +148,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Top Decade</span>
               </div>
             }
+            @if (silentEraWatched() > 0) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ silentEraWatched() }}</span>
+                <span class="wrapped__hero-label">Silent Era Films</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -807,6 +813,10 @@ export class WrappedComponent implements OnInit {
     const rated = films.filter((m) => m.voteAverage > 0);
     if (rated.length < 3) return null;
     return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
+  });
+
+  readonly silentEraWatched = computed(() => {
+    return this.yearFilms().filter((m) => m.year < 1930).length;
   });
 
   readonly avgFilmAge = computed(() => {

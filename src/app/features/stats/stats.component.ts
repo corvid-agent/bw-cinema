@@ -359,6 +359,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">films without ratings</span>
               </div>
             }
+            @if (avgGenresPerFilm(); as agpf) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ agpf }}</span>
+                <span class="stats__fact-text">avg genres per film</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -954,6 +960,15 @@ export class StatsComponent implements OnInit {
       for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
     }
     return [...counts.values()].filter((c) => c === 1).length;
+  });
+
+  readonly avgGenresPerFilm = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    const total = movies.reduce((s, m) => s + m.genres.length, 0);
+    const avg = total / movies.length;
+    if (avg < 1.1) return null;
+    return avg.toFixed(1);
   });
 
   readonly genrePairs = computed(() => {

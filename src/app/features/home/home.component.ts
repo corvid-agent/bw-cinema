@@ -66,7 +66,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
           <p class="hero__avg-rating">Average catalog rating: &#9733; {{ acr }}</p>
         }
         @if (oldestFilmYear(); as ofy) {
-          <p class="hero__avg-rating">Films dating back to {{ ofy }}</p>
+          <p class="hero__avg-rating">Films dating back to {{ ofy }}@if (newestFilmYear(); as nfy) { , up to {{ nfy }}}</p>
         }
       </div>
     </section>
@@ -1218,6 +1218,12 @@ export class HomeComponent implements OnInit {
     const movies = this.catalog.movies();
     if (movies.length === 0) return null;
     return movies.reduce((oldest, m) => m.year < oldest ? m.year : oldest, Infinity);
+  });
+
+  readonly newestFilmYear = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    return movies.reduce((newest, m) => m.year > newest ? m.year : newest, 0);
   });
 
   readonly avgCatalogRating = computed(() => {
