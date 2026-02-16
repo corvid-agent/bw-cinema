@@ -71,7 +71,12 @@ const MOODS: Mood[] = [
             <section class="explore__section">
               <h2>Recommended for You</h2>
               <p class="explore__section-desc">Based on your watched films</p>
-              <app-movie-grid [movies]="recommendations()" />
+              <app-movie-grid [movies]="recommendations().slice(0, recLimit())" />
+              @if (recommendations().length > recLimit()) {
+                <div class="explore__load-more">
+                  <button class="btn-secondary" (click)="recLimit.update(l => l + 12)">Show More Recommendations</button>
+                </div>
+              }
             </section>
           } @else {
             <section class="explore__section explore__start-watching">
@@ -224,6 +229,10 @@ const MOODS: Mood[] = [
       font-size: 0.9rem;
       margin: 0 0 var(--space-lg);
     }
+    .explore__load-more {
+      text-align: center;
+      margin-top: var(--space-xl);
+    }
     .explore__active-mood {
       margin-bottom: var(--space-xl);
     }
@@ -322,8 +331,10 @@ export class ExploreComponent implements OnInit {
     this.moodFilms().slice(0, this.moodPage() * 24)
   );
 
+  readonly recLimit = signal(12);
+
   readonly recommendations = computed(() =>
-    this.catalog.getRecommendations(this.collection.watchedIds(), 12)
+    this.catalog.getRecommendations(this.collection.watchedIds(), 48)
   );
 
   readonly recentlyAdded = computed(() =>

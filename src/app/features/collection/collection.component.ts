@@ -48,6 +48,9 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
               @if (watchlistMovies().length > 0) {
                 <span class="collection__count">{{ watchlistMovies().length }}</span>
               }
+              @if (newThisWeek() > 0) {
+                <span class="collection__new-dot" title="{{ newThisWeek() }} added this week"></span>
+              }
             </button>
             <button
               class="collection__tab"
@@ -106,6 +109,18 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                 (input)="collectionQuery.set($any($event.target).value)"
                 autocomplete="off"
               />
+              <select class="collection__filter-select" (change)="genreFilter.set($any($event.target).value)">
+                <option value="">All Genres</option>
+                @for (g of collectionGenres(); track g) {
+                  <option [value]="g">{{ g }}</option>
+                }
+              </select>
+              <select class="collection__filter-select" (change)="decadeFilter.set($any($event.target).value)">
+                <option value="">All Decades</option>
+                @for (d of collectionDecades(); track d) {
+                  <option [value]="d">{{ d }}s</option>
+                }
+              </select>
               @if (activeTab() === 'watched') {
                 <select class="collection__rating-filter" (change)="onRatingFilterChange($event)">
                   <option value="0">All Ratings</option>
@@ -290,6 +305,10 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                 <div class="stats__card">
                   <span class="stats__card-value">{{ watchedMovies().length }}</span>
                   <span class="stats__card-label">Films Watched</span>
+                </div>
+                <div class="stats__card stats__card--highlight">
+                  <span class="stats__card-value">{{ watchedThisYear() }}</span>
+                  <span class="stats__card-label">Watched in {{ currentYear }}</span>
                 </div>
                 <div class="stats__card">
                   <span class="stats__card-value">{{ avgRating() }}</span>
@@ -553,6 +572,15 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       padding: 1px 8px;
       border-radius: 10px;
     }
+    .collection__new-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: rgb(25, 135, 84);
+      margin-left: 2px;
+      vertical-align: super;
+    }
     .collection__actions {
       display: flex;
       gap: var(--space-sm);
@@ -577,6 +605,7 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
     }
     .collection__search {
       display: flex;
+      flex-wrap: wrap;
       gap: var(--space-sm);
       width: 100%;
     }
@@ -594,12 +623,15 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       border-color: var(--accent-gold);
       outline: none;
     }
+    .collection__filter-select,
     .collection__rating-filter {
       padding: var(--space-sm) var(--space-md);
       border-radius: var(--radius-lg);
       background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
       font-size: 0.85rem;
-      min-width: 130px;
+      min-width: 120px;
     }
     .collection__empty {
       text-align: center;
@@ -629,6 +661,10 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       border-radius: var(--radius-lg);
       padding: var(--space-lg);
       text-align: center;
+    }
+    .stats__card--highlight {
+      border-color: var(--accent-gold);
+      background-color: var(--accent-gold-dim);
     }
     .stats__card-value {
       display: block;
@@ -1179,6 +1215,7 @@ export class CollectionComponent implements OnInit {
   private readonly notifications = inject(NotificationService);
   private readonly route = inject(ActivatedRoute);
 
+  readonly currentYear = new Date().getFullYear();
   readonly isSharedView = signal(false);
   readonly sharedMovies = signal<MovieSummary[]>([]);
 
@@ -1186,6 +1223,8 @@ export class CollectionComponent implements OnInit {
   readonly sortBy = signal<SortOption>('added-desc');
   readonly viewMode = signal<ViewMode>('grid');
   readonly collectionQuery = signal('');
+  readonly genreFilter = signal('');
+  readonly decadeFilter = signal('');
   readonly ratingFilter = signal<number>(0);
   readonly heatmapYear = signal<number | null>(null);
 
@@ -1208,8 +1247,22 @@ export class CollectionComponent implements OnInit {
     return this.catalog.movies().filter((m) => ids.has(m.id));
   });
 
-  readonly sortedWatchlist = computed(() => this.applyQuery(this.sortMovies(this.watchlistMovies(), 'watchlist')));
-  readonly sortedWatched = computed(() => this.applyRatingFilter(this.applyQuery(this.sortMovies(this.watchedMovies(), 'watched'))));
+  readonly collectionGenres = computed(() => {
+    const all = [...this.watchlistMovies(), ...this.watchedMovies(), ...this.favoriteMovies()];
+    const genres = new Set<string>();
+    for (const m of all) for (const g of m.genres) genres.add(g);
+    return [...genres].sort();
+  });
+
+  readonly collectionDecades = computed(() => {
+    const all = [...this.watchlistMovies(), ...this.watchedMovies(), ...this.favoriteMovies()];
+    const decades = new Set<number>();
+    for (const m of all) decades.add(Math.floor(m.year / 10) * 10);
+    return [...decades].sort();
+  });
+
+  readonly sortedWatchlist = computed(() => this.applyFilters(this.applyQuery(this.sortMovies(this.watchlistMovies(), 'watchlist'))));
+  readonly sortedWatched = computed(() => this.applyRatingFilter(this.applyFilters(this.applyQuery(this.sortMovies(this.watchedMovies(), 'watched')))));
   readonly sortedFavorites = computed(() => {
     const sort = this.sortBy();
     const movies = [...this.favoriteMovies()];
@@ -1222,7 +1275,7 @@ export class CollectionComponent implements OnInit {
         default: return 0;
       }
     });
-    return this.applyQuery(sorted);
+    return this.applyFilters(this.applyQuery(sorted));
   });
 
   // Stats
@@ -1243,6 +1296,16 @@ export class CollectionComponent implements OnInit {
   readonly totalDecades = computed(() => {
     const decades = new Set(this.watchedMovies().map((m) => Math.floor(m.year / 10) * 10));
     return decades.size;
+  });
+
+  readonly watchedThisYear = computed(() => {
+    const yearStart = new Date(new Date().getFullYear(), 0, 1).getTime();
+    return this.collectionService.watched().filter((w) => w.watchedAt >= yearStart).length;
+  });
+
+  readonly newThisWeek = computed(() => {
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    return this.collectionService.watchlist().filter((w) => w.addedAt >= weekAgo).length;
   });
 
   readonly achievements = computed(() => {
@@ -1566,6 +1629,20 @@ export class CollectionComponent implements OnInit {
       m.directors.some((d) => d.toLowerCase().includes(q)) ||
       m.genres.some((g) => g.toLowerCase().includes(q))
     );
+  }
+
+  private applyFilters(movies: MovieSummary[]): MovieSummary[] {
+    const genre = this.genreFilter();
+    const decade = this.decadeFilter();
+    let result = movies;
+    if (genre) {
+      result = result.filter((m) => m.genres.includes(genre));
+    }
+    if (decade) {
+      const d = parseInt(decade, 10);
+      result = result.filter((m) => Math.floor(m.year / 10) * 10 === d);
+    }
+    return result;
   }
 
   private applyRatingFilter(movies: MovieSummary[]): MovieSummary[] {
