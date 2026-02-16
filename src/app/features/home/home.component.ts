@@ -66,7 +66,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
           <p class="hero__avg-rating">Average catalog rating: &#9733; {{ acr }}</p>
         }
         @if (totalWatchedCount() > 0) {
-          <p class="hero__avg-rating">You've watched {{ totalWatchedCount() }} film{{ totalWatchedCount() !== 1 ? 's' : '' }}@if (watchlistSize() > 0) { &middot; {{ watchlistSize() }} in watchlist}@if (favoritesCount() > 0) { &middot; {{ favoritesCount() }} favorite{{ favoritesCount() !== 1 ? 's' : '' }}}</p>
+          <p class="hero__avg-rating">You've watched {{ totalWatchedCount() }} film{{ totalWatchedCount() !== 1 ? 's' : '' }}@if (watchlistSize() > 0) { &middot; {{ watchlistSize() }} in watchlist}@if (favoritesCount() > 0) { &middot; {{ favoritesCount() }} favorite{{ favoritesCount() !== 1 ? 's' : '' }}}@if (avgWatchedRating(); as awr) { &middot; avg &#9733; {{ awr }}}</p>
         }
         @if (oldestFilmYear(); as ofy) {
           <p class="hero__avg-rating">Films dating back to {{ ofy }}@if (newestFilmYear(); as nfy) { , up to {{ nfy }}}</p>
@@ -1234,6 +1234,15 @@ export class HomeComponent implements OnInit {
   readonly watchlistSize = computed(() => this.collectionService.watchlistIds().size);
 
   readonly favoritesCount = computed(() => this.collectionService.favoriteIds().size);
+
+  readonly avgWatchedRating = computed(() => {
+    const watchedIds = this.collectionService.watchedIds();
+    if (watchedIds.size < 3) return null;
+    const movies = this.catalog.movies();
+    const watched = movies.filter((m) => watchedIds.has(m.id) && m.voteAverage > 0);
+    if (watched.length < 3) return null;
+    return (watched.reduce((s, m) => s + m.voteAverage, 0) / watched.length).toFixed(1);
+  });
 
   readonly avgCatalogRating = computed(() => {
     const rated = this.catalog.movies().filter((m) => m.voteAverage > 0);

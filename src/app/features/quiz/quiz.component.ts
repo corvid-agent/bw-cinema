@@ -81,6 +81,9 @@ interface QuizStep {
           @if (resultOldestYear(); as roy) {
             <p class="quiz__decade-range">Oldest from {{ roy }}</p>
           }
+          @if (resultHighestRated(); as rhr) {
+            <p class="quiz__decade-range">Top pick: {{ rhr }}</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -483,6 +486,16 @@ export class QuizComponent implements OnInit {
     const films = this.results();
     if (films.length < 2) return null;
     return Math.round(films.reduce((s, m) => s + m.year, 0) / films.length);
+  });
+
+  readonly resultHighestRated = computed(() => {
+    const films = this.results();
+    if (films.length < 2) return null;
+    const rated = films.filter((m) => m.voteAverage > 0);
+    if (rated.length === 0) return null;
+    const best = rated.reduce((a, b) => b.voteAverage > a.voteAverage ? b : a);
+    const title = best.title.length > 25 ? best.title.slice(0, 23) + '...' : best.title;
+    return `${title} (${best.voteAverage.toFixed(1)})`;
   });
 
   readonly resultOldestYear = computed(() => {

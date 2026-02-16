@@ -371,7 +371,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
 
           @if (similarWithReasons().length > 0) {
             <section class="detail__similar" aria-label="Similar films">
-              <h2>You Might Also Like@if (similarUnwatchedCount(); as suc) { <span class="detail__section-note">({{ suc }} unwatched)</span>}</h2>
+              <h2>You Might Also Like@if (similarUnwatchedCount(); as suc) { <span class="detail__section-note">({{ suc }} unwatched)</span>}@if (similarStreamableCount(); as ssc) { <span class="detail__section-note">&middot; {{ ssc }} free</span>}</h2>
               <div class="detail__carousel">
                 @for (s of similarWithReasons(); track s.movie.id) {
                   <a class="detail__carousel-card" [routerLink]="['/movie', s.movie.id]">
@@ -1275,6 +1275,13 @@ export class MovieComponent implements OnInit {
     const films = this.similarWithReasons();
     if (films.length === 0) return null;
     const count = films.filter((f) => !this.collection.isWatched(f.movie.id)).length;
+    return count > 0 && count < films.length ? count : null;
+  });
+
+  readonly similarStreamableCount = computed(() => {
+    const films = this.similarWithReasons();
+    if (films.length === 0) return null;
+    const count = films.filter((f) => f.movie.isStreamable).length;
     return count > 0 && count < films.length ? count : null;
   });
 
