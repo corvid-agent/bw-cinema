@@ -245,6 +245,9 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                         @for (dir of m.directors; track dir; let last = $last) {
                           <a [routerLink]="['/director', dir]">{{ dir }}</a>@if (!last) {, }
                         }
+                        @if (totalDirectorFilms(); as tdf) {
+                          <span class="detail__director-count">({{ tdf }} in catalog)</span>
+                        }
                       </span>
                     </div>
                   }
@@ -638,6 +641,11 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       text-transform: uppercase;
       letter-spacing: 0.03em;
       padding-top: 2px;
+    }
+    .detail__director-count {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      margin-left: 4px;
     }
     .detail__tags {
       display: flex;
@@ -1229,6 +1237,13 @@ export class MovieComponent implements OnInit {
     const idx = ranked.findIndex((m) => m.id === s.id);
     if (idx < 0 || idx >= 20) return null;
     return { rank: idx + 1, total: ranked.length };
+  });
+
+  readonly totalDirectorFilms = computed(() => {
+    const s = this.summary();
+    if (!s || s.directors.length === 0) return null;
+    const count = this.catalogService.movies().filter((m) => m.directors.includes(s.directors[0])).length;
+    return count > 1 ? count : null;
   });
 
   readonly yearDecade = computed(() => {
