@@ -358,7 +358,7 @@ interface QuizStep {
     .quiz__pool-note {
       font-size: 0.8rem;
       color: var(--text-tertiary);
-      margin: -var(--space-md) 0 var(--space-lg);
+      margin: calc(-1 * var(--space-md)) 0 var(--space-lg);
     }
     .quiz__decade-range {
       font-size: 0.8rem;

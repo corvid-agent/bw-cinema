@@ -12,11 +12,15 @@ The definitive destination for discovering, tracking, and watching classic black
 - **Compare Films** — Side-by-side comparison of any two films in the catalog.
 - **Catalog Statistics** — Decade distribution, genre breakdown, top directors, language stats.
 - **Genre & Decade Pages** — Dedicated landing pages for each genre and decade.
-- **"What Should I Watch?" Quiz** — 5-question preference quiz with shuffleable recommendations.
+- **"What Should I Watch?" Quiz** — 6-question preference quiz with shuffleable recommendations.
 - **Hidden Gems** — Curated section highlighting well-rated films you may have missed.
 - **Achievements & Streaks** — Gamified watch tracking with badges and streak counters.
 - **Accessibility** — High contrast mode, reduced motion, wide spacing, keyboard navigation, screen reader support.
 - **Themes** — Dark and sepia modes with film-grain overlay.
+- **Explore by Mood** — 8 mood categories, double features, film festivals, serendipity mode.
+- **Actor Pages** — Actor filmography with TMDb cast lookup and career stats.
+- **Year in Review** — Spotify Wrapped-style annual viewing summary.
+- **PWA Support** — Installable as a Progressive Web App with offline caching.
 
 ## Tech Stack
 
@@ -30,8 +34,8 @@ The definitive destination for discovering, tracking, and watching classic black
 ## Getting Started
 
 ```bash
-npm install
-ng serve
+bun install
+bun run start
 ```
 
 Open http://localhost:4200.

@@ -100,12 +100,6 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="decade__stat-label">Films/Director</span>
               </div>
             }
-            @if (languageCount(); as lc) {
-              <div class="decade__stat">
-                <span class="decade__stat-value">{{ lc }}</span>
-                <span class="decade__stat-label">Languages</span>
-              </div>
-            }
             @if (highRatedPct(); as hrp) {
               <div class="decade__stat">
                 <span class="decade__stat-value">{{ hrp }}%</span>

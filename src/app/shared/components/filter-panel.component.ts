@@ -506,7 +506,7 @@ export class FilterPanelComponent {
     this.selectedDirectors.set(new Set());
     this.selectedLanguages.set(new Set());
     this.saveLanguagePref();
-    this.streamableOnly.set(false);
+    this.streamableOnly.set(true);
     this.minRating.set(0);
     this.directorQuery.set('');
     const [min, max] = this.yearBounds();

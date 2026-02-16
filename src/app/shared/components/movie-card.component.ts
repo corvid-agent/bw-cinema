@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, input, signal, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { LazyImageDirective } from '../directives/lazy-image.directive';
 import { CollectionService } from '../../core/services/collection.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -8,9 +8,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
 @Component({
   selector: 'app-movie-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LazyImageDirective],
+  imports: [LazyImageDirective],
   template: `
-    <a class="card" [routerLink]="['/movie', movie().id]" [attr.aria-label]="movie().title + ', ' + movie().year + (movie().voteAverage > 0 ? ', rated ' + movie().voteAverage.toFixed(1) + ' out of 10' : '') + (movie().internetArchiveId ? ', free on Internet Archive' : movie().youtubeId ? ', free on YouTube' : '')">
+    <div class="card" (click)="navigateToMovie()">
       <div class="card__poster">
         @if (movie().posterUrl && !imgFailed()) {
           <img appLazyImage [src]="movie().posterUrl" [alt]="movie().title + ' poster'" [class.loaded]="imgLoaded()" (load)="onImageLoad()" (error)="imgFailed.set(true)" />
@@ -85,7 +85,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
           }
         </div>
       </div>
-    </a>
+    </div>
   `,
   styles: [`
     .card {
@@ -370,9 +370,14 @@ export class MovieCardComponent {
   readonly imgLoaded = signal(false);
   protected readonly collection = inject(CollectionService);
   private readonly notifications = inject(NotificationService);
+  private readonly router = inject(Router);
 
   onImageLoad(): void {
     this.imgLoaded.set(true);
+  }
+
+  navigateToMovie(): void {
+    this.router.navigate(['/movie', this.movie().id]);
   }
 
   addToWatchlist(event: Event): void {

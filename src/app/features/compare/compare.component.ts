@@ -24,6 +24,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
             [value]="queryA()"
             (input)="onSearchA($event)"
             (focus)="showDropA.set(true)"
+            (blur)="closeDropA()"
             autocomplete="off"
           />
           @if (showDropA() && resultsA().length > 0) {
@@ -63,6 +64,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
             [value]="queryB()"
             (input)="onSearchB($event)"
             (focus)="showDropB.set(true)"
+            (blur)="closeDropB()"
             autocomplete="off"
           />
           @if (showDropB() && resultsB().length > 0) {
@@ -876,6 +878,16 @@ export class CompareComponent implements OnInit {
     this.filmB.set(movie);
     this.queryB.set(movie.title);
     this.showDropB.set(false);
+  }
+
+  /** Close dropdown A after a short delay (allows mousedown on items to fire first) */
+  closeDropA(): void {
+    setTimeout(() => this.showDropA.set(false), 200);
+  }
+
+  /** Close dropdown B after a short delay (allows mousedown on items to fire first) */
+  closeDropB(): void {
+    setTimeout(() => this.showDropB.set(false), 200);
   }
 
   copyComparison(): void {
