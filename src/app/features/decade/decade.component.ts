@@ -726,13 +726,6 @@ export class DecadeComponent implements OnInit {
     return { name: best[0], count: best[1] };
   });
 
-  readonly languageCount = computed(() => {
-    const langs = new Set<string>();
-    for (const m of this.films()) {
-      if (m.language) langs.add(m.language);
-    }
-    return langs.size > 1 ? langs.size : null;
-  });
 
   readonly avgFilmsPerDirector = computed(() => {
     const f = this.films();
