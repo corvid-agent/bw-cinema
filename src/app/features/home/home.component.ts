@@ -173,6 +173,33 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         </section>
       }
 
+      <section class="section container cta-row" aria-label="Discover more">
+        <a class="cta-card cta-card--quiz" routerLink="/quiz">
+          <div class="cta-card__icon">?</div>
+          <div>
+            <h3 class="cta-card__title">What Should I Watch?</h3>
+            <p class="cta-card__desc">Take a quick quiz and get personalized picks</p>
+          </div>
+          <span class="cta-card__arrow">&rarr;</span>
+        </a>
+        <a class="cta-card cta-card--wrapped" routerLink="/wrapped">
+          <div class="cta-card__icon">&#9733;</div>
+          <div>
+            <h3 class="cta-card__title">Year in Review</h3>
+            <p class="cta-card__desc">See your {{ currentYear }} viewing stats and highlights</p>
+          </div>
+          <span class="cta-card__arrow">&rarr;</span>
+        </a>
+        <a class="cta-card cta-card--explore" routerLink="/explore">
+          <div class="cta-card__icon">&#9670;</div>
+          <div>
+            <h3 class="cta-card__title">Explore by Mood</h3>
+            <p class="cta-card__desc">Browse films by mood or let fate decide</p>
+          </div>
+          <span class="cta-card__arrow">&rarr;</span>
+        </a>
+      </section>
+
       @for (coll of catalog.curatedCollections().slice(0, 3); track coll.name) {
         <section class="section container" [attr.aria-label]="coll.name">
           <div class="section__header">
@@ -480,7 +507,68 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       color: var(--text-tertiary);
       margin: 0;
     }
+    .cta-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md);
+    }
+    .cta-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .cta-card:hover {
+      border-color: var(--accent-gold);
+      box-shadow: var(--shadow-md);
+      color: inherit;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .cta-card:hover { transform: translateY(-2px); }
+    }
+    .cta-card__icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--accent-gold-dim);
+      color: var(--accent-gold);
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .cta-card__title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 0 0 2px;
+    }
+    .cta-card__desc {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      margin: 0;
+    }
+    .cta-card__arrow {
+      margin-left: auto;
+      color: var(--text-tertiary);
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      transition: color 0.2s, transform 0.2s;
+    }
+    .cta-card:hover .cta-card__arrow {
+      color: var(--accent-gold);
+      transform: translateX(3px);
+    }
     @media (max-width: 768px) {
+      .cta-row { grid-template-columns: 1fr; }
       .hero { padding: var(--space-2xl) 0 var(--space-xl); }
       .hero__title { font-size: 2.2rem; }
       .hero__stats { gap: var(--space-xl); }
@@ -501,6 +589,7 @@ export class HomeComponent implements OnInit {
   private readonly collectionService = inject(CollectionService);
   private readonly recentlyViewedService = inject(RecentlyViewedService);
 
+  readonly currentYear = new Date().getFullYear();
   readonly decades = computed(() => this.catalog.meta()?.decades ?? []);
   readonly genres = computed(() => this.catalog.meta()?.genres.slice(0, 12) ?? []);
   readonly recentMovies = computed(() => {

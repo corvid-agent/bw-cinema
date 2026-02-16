@@ -57,6 +57,14 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
                   <option value="title-desc">Title Z-A</option>
                 </select>
               </div>
+              <button
+                class="browse__lang-toggle"
+                [class.browse__lang-toggle--active]="englishOnly()"
+                (click)="toggleEnglishOnly()"
+                [attr.title]="englishOnly() ? 'Showing English only — click for all languages' : 'Showing all languages — click for English only'"
+              >
+                {{ englishOnly() ? 'EN' : 'ALL' }}
+              </button>
               <app-view-toggle [(mode)]="viewMode" />
               <button class="browse__surprise" (click)="surpriseMe()" title="Random film">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/><polyline points="21 12 16.5 14.6 16.5 19.79"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
@@ -170,6 +178,32 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       color: var(--text-tertiary);
       font-weight: 400;
     }
+    .browse__lang-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 40px;
+      height: 40px;
+      padding: 0 10px;
+      border-radius: var(--radius-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .browse__lang-toggle:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .browse__lang-toggle--active {
+      background: var(--accent-gold-dim);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
     .browse__filter-toggle {
       display: none;
       align-items: center;
@@ -252,6 +286,11 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     sortDirection: 'desc',
   });
 
+  readonly englishOnly = computed(() => {
+    const langs = this.filter().languages;
+    return langs.length === 1 && langs[0] === 'English';
+  });
+
   readonly activeFilterCount = computed(() => {
     const f = this.filter();
     let count = 0;
@@ -328,6 +367,15 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
       genre: null,
     };
     this.router.navigate([], { queryParams, queryParamsHandling: 'merge', replaceUrl: true });
+  }
+
+  toggleEnglishOnly(): void {
+    const isEnglish = this.englishOnly();
+    const newLangs = isEnglish ? [] : ['English'];
+    this.filter.update((f) => ({ ...f, languages: newLangs }));
+    try { localStorage.setItem('bw-cinema-lang-pref', JSON.stringify(newLangs)); } catch { /* noop */ }
+    this.page.set(1);
+    this.syncUrl();
   }
 
   surpriseMe(): void {

@@ -65,6 +65,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/quiz/quiz.component').then((m) => m.QuizComponent),
   },
   {
+    path: 'wrapped',
+    title: 'Year in Review — BW Cinema',
+    loadComponent: () => import('./features/wrapped/wrapped.component').then((m) => m.WrappedComponent),
+  },
+  {
     path: 'actor/:name',
     title: 'Actor — BW Cinema',
     loadComponent: () => import('./features/actor/actor.component').then((m) => m.ActorComponent),

@@ -196,7 +196,14 @@ import { AccessibilityService } from '../../core/services/accessibility.service'
         border-bottom: 1px solid var(--border);
         gap: 2px;
       }
-      .header__nav--open { display: flex; }
+      .header__nav--open {
+        display: flex;
+        max-height: calc(100vh - 60px);
+        max-height: calc(100dvh - 60px);
+        overflow-y: auto;
+        z-index: 99;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
       .header__nav a {
         padding: var(--space-md);
         border-radius: var(--radius);
@@ -205,16 +212,6 @@ import { AccessibilityService } from '../../core/services/accessibility.service'
       .header__a11y-toggle {
         align-self: flex-start;
         margin: var(--space-sm) 0 var(--space-sm) var(--space-md);
-      }
-      .header__nav--open {
-        position: fixed;
-        top: 60px;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 99;
-        overflow-y: auto;
-        padding-bottom: env(safe-area-inset-bottom, 0px);
       }
     }
   `],

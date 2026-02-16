@@ -96,6 +96,29 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
             </button>
           </div>
 
+          @if (activeTab() !== 'stats' && activeTab() !== 'playlists') {
+            <div class="collection__search">
+              <input
+                type="search"
+                class="collection__search-input"
+                placeholder="Search in collection..."
+                [value]="collectionQuery()"
+                (input)="collectionQuery.set($any($event.target).value)"
+                autocomplete="off"
+              />
+              @if (activeTab() === 'watched') {
+                <select class="collection__rating-filter" (change)="onRatingFilterChange($event)">
+                  <option value="0">All Ratings</option>
+                  <option value="1">1+ Stars</option>
+                  <option value="2">2+ Stars</option>
+                  <option value="3">3+ Stars</option>
+                  <option value="4">4+ Stars</option>
+                  <option value="5">5 Stars</option>
+                  <option value="-1">Unrated</option>
+                </select>
+              }
+            </div>
+          }
           @if (activeTab() !== 'stats') {
             <div class="collection__actions">
               <label for="collection-sort" class="sr-only">Sort by</label>
@@ -533,6 +556,32 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
     }
     .collection__import-label {
       cursor: pointer;
+    }
+    .collection__search {
+      display: flex;
+      gap: var(--space-sm);
+      width: 100%;
+    }
+    .collection__search-input {
+      flex: 1;
+      max-width: 320px;
+      padding: var(--space-sm) var(--space-md);
+      background-color: var(--bg-surface);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      font-size: 0.9rem;
+    }
+    .collection__search-input:focus {
+      border-color: var(--accent-gold);
+      outline: none;
+    }
+    .collection__rating-filter {
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-lg);
+      background-color: var(--bg-surface);
+      font-size: 0.85rem;
+      min-width: 130px;
     }
     .collection__empty {
       text-align: center;
@@ -1075,6 +1124,8 @@ export class CollectionComponent implements OnInit {
   readonly activeTab = signal<'watchlist' | 'watched' | 'favorites' | 'playlists' | 'stats'>('watchlist');
   readonly sortBy = signal<SortOption>('added-desc');
   readonly viewMode = signal<ViewMode>('grid');
+  readonly collectionQuery = signal('');
+  readonly ratingFilter = signal<number>(0);
 
   readonly watchlistMovies = computed(() => {
     const ids = this.collectionService.watchlistIds();
@@ -1095,12 +1146,12 @@ export class CollectionComponent implements OnInit {
     return this.catalog.movies().filter((m) => ids.has(m.id));
   });
 
-  readonly sortedWatchlist = computed(() => this.sortMovies(this.watchlistMovies(), 'watchlist'));
-  readonly sortedWatched = computed(() => this.sortMovies(this.watchedMovies(), 'watched'));
+  readonly sortedWatchlist = computed(() => this.applyQuery(this.sortMovies(this.watchlistMovies(), 'watchlist')));
+  readonly sortedWatched = computed(() => this.applyRatingFilter(this.applyQuery(this.sortMovies(this.watchedMovies(), 'watched'))));
   readonly sortedFavorites = computed(() => {
     const sort = this.sortBy();
     const movies = [...this.favoriteMovies()];
-    return movies.sort((a, b) => {
+    const sorted = movies.sort((a, b) => {
       switch (sort) {
         case 'title-asc': return a.title.localeCompare(b.title);
         case 'title-desc': return b.title.localeCompare(a.title);
@@ -1109,6 +1160,7 @@ export class CollectionComponent implements OnInit {
         default: return 0;
       }
     });
+    return this.applyQuery(sorted);
   });
 
   // Stats
@@ -1420,6 +1472,36 @@ export class CollectionComponent implements OnInit {
 
   onSortChange(event: Event): void {
     this.sortBy.set((event.target as HTMLSelectElement).value as SortOption);
+  }
+
+  onRatingFilterChange(event: Event): void {
+    this.ratingFilter.set(parseInt((event.target as HTMLSelectElement).value, 10));
+  }
+
+  private applyQuery(movies: MovieSummary[]): MovieSummary[] {
+    const q = this.collectionQuery().toLowerCase().trim();
+    if (!q) return movies;
+    return movies.filter((m) =>
+      m.title.toLowerCase().includes(q) ||
+      m.directors.some((d) => d.toLowerCase().includes(q)) ||
+      m.genres.some((g) => g.toLowerCase().includes(q))
+    );
+  }
+
+  private applyRatingFilter(movies: MovieSummary[]): MovieSummary[] {
+    const r = this.ratingFilter();
+    if (r === 0) return movies;
+    if (r === -1) {
+      // Unrated only
+      return movies.filter((m) => {
+        const item = this.collectionService.watched().find((w) => w.movieId === m.id);
+        return item && item.userRating == null;
+      });
+    }
+    return movies.filter((m) => {
+      const item = this.collectionService.watched().find((w) => w.movieId === m.id);
+      return item && item.userRating != null && item.userRating >= r;
+    });
   }
 
   exportCsv(): void {
