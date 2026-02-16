@@ -413,7 +413,25 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
 
               @if (watchHeatmap().weeks.length > 0) {
                 <section class="heatmap">
-                  <h3>Watch Calendar</h3>
+                  <div class="heatmap__header">
+                    <h3>Watch Calendar</h3>
+                    @if (heatmapYears().length > 1) {
+                      <div class="heatmap__years">
+                        <button
+                          class="heatmap__year-btn"
+                          [class.heatmap__year-btn--active]="heatmapYear() === null"
+                          (click)="heatmapYear.set(null)"
+                        >Last 12mo</button>
+                        @for (yr of heatmapYears(); track yr) {
+                          <button
+                            class="heatmap__year-btn"
+                            [class.heatmap__year-btn--active]="heatmapYear() === yr"
+                            (click)="heatmapYear.set(yr)"
+                          >{{ yr }}</button>
+                        }
+                      </div>
+                    }
+                  </div>
                   <div class="heatmap__scroll">
                     <div class="heatmap__grid">
                       @for (week of watchHeatmap().weeks; track $index) {
@@ -927,11 +945,47 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       color: var(--text-tertiary);
     }
     /* Heatmap */
+    .heatmap__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+    }
+    .heatmap__header h3 { margin: 0; }
+    .heatmap__years {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .heatmap__year-btn {
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: var(--bg-raised);
+      border: 1px solid transparent;
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      min-height: auto;
+      min-width: auto;
+    }
+    .heatmap__year-btn:hover {
+      color: var(--accent-gold);
+      border-color: var(--accent-gold);
+    }
+    .heatmap__year-btn--active {
+      background: var(--accent-gold-dim);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
     .heatmap {
       margin-top: var(--space-2xl);
     }
     .heatmap h3 {
-      margin-bottom: var(--space-md);
+      margin-bottom: 0;
     }
     .heatmap__scroll {
       overflow-x: auto;
@@ -1126,6 +1180,7 @@ export class CollectionComponent implements OnInit {
   readonly viewMode = signal<ViewMode>('grid');
   readonly collectionQuery = signal('');
   readonly ratingFilter = signal<number>(0);
+  readonly heatmapYear = signal<number | null>(null);
 
   readonly watchlistMovies = computed(() => {
     const ids = this.collectionService.watchlistIds();
@@ -1345,10 +1400,19 @@ export class CollectionComponent implements OnInit {
   });
 
   // Watch heatmap
+  readonly heatmapYears = computed(() => {
+    const years = new Set<number>();
+    for (const w of this.collectionService.watched()) {
+      years.add(new Date(w.watchedAt).getFullYear());
+    }
+    return [...years].sort((a, b) => b - a);
+  });
+
   readonly watchHeatmap = computed(() => {
     const watched = this.collectionService.watched();
     if (watched.length === 0) return { weeks: [] as { days: { date: string; count: number; level: number }[] }[] };
 
+    const selectedYear = this.heatmapYear();
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -1359,8 +1423,17 @@ export class CollectionComponent implements OnInit {
       dayCounts.set(key, (dayCounts.get(key) ?? 0) + 1);
     }
 
-    const startDate = new Date(today);
-    startDate.setDate(startDate.getDate() - 364 - startDate.getDay());
+    let startDate: Date;
+    let endDate: Date;
+    if (selectedYear) {
+      startDate = new Date(selectedYear, 0, 1);
+      startDate.setDate(startDate.getDate() - startDate.getDay());
+      endDate = new Date(selectedYear, 11, 31);
+    } else {
+      endDate = today;
+      startDate = new Date(today);
+      startDate.setDate(startDate.getDate() - 364 - startDate.getDay());
+    }
 
     const weeks: { days: { date: string; count: number; level: number }[] }[] = [];
     for (let w = 0; w < 53; w++) {

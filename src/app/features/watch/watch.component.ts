@@ -53,20 +53,41 @@ import type { MovieSummary } from '../../core/models/movie.model';
       </div>
     } @else {
       <div class="watch__unavailable container">
-        <h2>Film not available for streaming</h2>
-        <p class="text-secondary">This film isn't available for embedded streaming, but you may be able to find it elsewhere.</p>
+        <div class="watch__unavail-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></svg>
+        </div>
+        <h2>Not Available for Free Streaming</h2>
+        <p class="watch__unavail-explain">
+          <strong>{{ movieTitle() }}</strong> is likely still under copyright protection and
+          hasn't been released to the public domain. Only films whose copyrights have expired
+          or were never properly renewed can be freely streamed.
+        </p>
         <div class="watch__fallback-actions">
           @if (movieImdbId()) {
             <a class="btn-secondary watch__fallback-btn" [href]="'https://www.imdb.com/title/' + movieImdbId()" target="_blank" rel="noopener">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               View on IMDb
             </a>
           }
           <a class="btn-secondary watch__fallback-btn" [href]="'https://archive.org/search?query=' + encodedTitle()" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             Search Internet Archive
           </a>
-          <a class="btn-primary watch__fallback-btn" [routerLink]="['/movie', id()]">Back to Film Details</a>
+          <a class="btn-primary watch__fallback-btn" [routerLink]="['/movie', id()]">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to Film Details
+          </a>
         </div>
-        <p class="watch__note">Many classic black &amp; white films are in the public domain and freely available on the Internet Archive.</p>
+        <div class="watch__unavail-info">
+          <h3>About Public Domain Films</h3>
+          <p>
+            Films enter the public domain when their copyright expires. In the US, works published
+            before 1928 are automatically in the public domain. Many later films also entered the
+            public domain due to failure to renew copyright registrations. The Internet Archive
+            hosts over 30,000 freely viewable films.
+          </p>
+          <a routerLink="/about" class="watch__learn-more">Learn more &rarr;</a>
+        </div>
       </div>
     }
   `,
@@ -148,11 +169,48 @@ import type { MovieSummary } from '../../core/models/movie.model';
       border-radius: var(--radius-lg);
       font-size: 0.95rem;
     }
-    .watch__note {
+    .watch__unavail-icon {
       color: var(--text-tertiary);
+      margin-bottom: var(--space-lg);
+    }
+    .watch__unavail-explain {
+      color: var(--text-secondary);
+      max-width: 520px;
+      margin: 0 auto var(--space-sm);
+      line-height: 1.7;
+    }
+    .watch__unavail-explain strong {
+      color: var(--text-primary);
+    }
+    .watch__fallback-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .watch__unavail-info {
+      max-width: 520px;
+      margin: var(--space-2xl) auto 0;
+      padding: var(--space-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-align: left;
+    }
+    .watch__unavail-info h3 {
+      font-size: 0.95rem;
+      margin: 0 0 var(--space-sm);
+      color: var(--text-primary);
+    }
+    .watch__unavail-info p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin: 0 0 var(--space-sm);
+    }
+    .watch__learn-more {
       font-size: 0.85rem;
-      max-width: 480px;
-      margin: var(--space-lg) auto 0;
+      font-weight: 600;
+      color: var(--accent-gold);
     }
   `],
 })

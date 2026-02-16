@@ -9,7 +9,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, LazyImageDirective],
   template: `
-    <a class="card" [routerLink]="['/movie', movie().id]" [attr.aria-label]="movie().title + ', ' + movie().year + (movie().voteAverage > 0 ? ', rated ' + movie().voteAverage.toFixed(1) + ' out of 10' : '') + (movie().isStreamable ? ', free to watch' : '')">
+    <a class="card" [routerLink]="['/movie', movie().id]" [attr.aria-label]="movie().title + ', ' + movie().year + (movie().voteAverage > 0 ? ', rated ' + movie().voteAverage.toFixed(1) + ' out of 10' : '') + (movie().internetArchiveId ? ', free on Internet Archive' : movie().youtubeId ? ', free on YouTube' : '')">
       <div class="card__poster">
         @if (movie().posterUrl && !imgFailed()) {
           <img appLazyImage [src]="movie().posterUrl" [alt]="movie().title + ' poster'" [class.loaded]="imgLoaded()" (load)="onImageLoad()" (error)="imgFailed.set(true)" />
@@ -26,8 +26,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
           @if (movie().voteAverage > 0) {
             <span class="card__rating">{{ movie().voteAverage.toFixed(1) }}</span>
           }
-          @if (movie().isStreamable) {
-            <span class="card__badge">Free</span>
+          @if (movie().internetArchiveId) {
+            <span class="card__badge card__badge--ia">IA</span>
+          } @else if (movie().youtubeId) {
+            <span class="card__badge card__badge--yt">YT</span>
           } @else if (movie().imdbId) {
             <span class="card__badge card__badge--imdb">IMDb</span>
           }
@@ -154,6 +156,14 @@ import type { MovieSummary } from '../../core/models/movie.model';
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-left: auto;
+    }
+    .card__badge--ia {
+      background-color: rgba(25, 135, 84, 0.9);
+      color: #fff;
+    }
+    .card__badge--yt {
+      background-color: rgba(255, 0, 0, 0.85);
+      color: #fff;
     }
     .card__badge--imdb {
       background-color: rgba(245, 197, 24, 0.85);

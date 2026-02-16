@@ -25,12 +25,47 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
             <span class="stats__card-label">Free to Watch</span>
           </div>
           <div class="stats__card">
+            <span class="stats__card-value">{{ streamablePct() }}%</span>
+            <span class="stats__card-label">Streamable</span>
+          </div>
+          <div class="stats__card">
             <span class="stats__card-value">{{ avgRating() }}</span>
             <span class="stats__card-label">Avg. Rating</span>
           </div>
           <div class="stats__card">
             <span class="stats__card-value">{{ yearRange() }}</span>
             <span class="stats__card-label">Year Range</span>
+          </div>
+          <div class="stats__card">
+            <span class="stats__card-value">{{ uniqueDirectors() }}</span>
+            <span class="stats__card-label">Directors</span>
+          </div>
+        </div>
+
+        <div class="stats__availability">
+          <h2>Streaming Availability</h2>
+          <div class="stats__avail-bars">
+            <div class="stats__avail-row">
+              <span class="stats__avail-label">Internet Archive</span>
+              <div class="stats__avail-track">
+                <div class="stats__avail-fill stats__avail-fill--ia" [style.width.%]="iaFilmsPct()"></div>
+              </div>
+              <span class="stats__avail-count">{{ iaFilms() }}</span>
+            </div>
+            <div class="stats__avail-row">
+              <span class="stats__avail-label">YouTube</span>
+              <div class="stats__avail-track">
+                <div class="stats__avail-fill stats__avail-fill--yt" [style.width.%]="ytFilmsPct()"></div>
+              </div>
+              <span class="stats__avail-count">{{ ytFilms() }}</span>
+            </div>
+            <div class="stats__avail-row">
+              <span class="stats__avail-label">Not Streamable</span>
+              <div class="stats__avail-track">
+                <div class="stats__avail-fill stats__avail-fill--none" [style.width.%]="notStreamablePct()"></div>
+              </div>
+              <span class="stats__avail-count">{{ totalFilms() - streamableFilms() }}</span>
+            </div>
           </div>
         </div>
 
@@ -96,6 +131,32 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
               }
             </div>
           </section>
+        </div>
+        <div class="stats__highlights">
+          @if (oldestFilm(); as film) {
+            <a class="stats__highlight" [routerLink]="['/movie', film.id]">
+              <span class="stats__highlight-label">Oldest Film</span>
+              <span class="stats__highlight-value">{{ film.title }} ({{ film.year }})</span>
+            </a>
+          }
+          @if (newestFilm(); as film) {
+            <a class="stats__highlight" [routerLink]="['/movie', film.id]">
+              <span class="stats__highlight-label">Most Recent Film</span>
+              <span class="stats__highlight-value">{{ film.title }} ({{ film.year }})</span>
+            </a>
+          }
+          @if (highestRatedFilm(); as film) {
+            <a class="stats__highlight" [routerLink]="['/movie', film.id]">
+              <span class="stats__highlight-label">Highest Rated</span>
+              <span class="stats__highlight-value">{{ film.title }} ({{ film.voteAverage.toFixed(1) }})</span>
+            </a>
+          }
+          @if (mostFilmedDirector(); as dir) {
+            <a class="stats__highlight" [routerLink]="['/director', dir.name]">
+              <span class="stats__highlight-label">Most Prolific Director</span>
+              <span class="stats__highlight-value">{{ dir.name }} ({{ dir.count }} films)</span>
+            </a>
+          }
         </div>
       }
     </div>
@@ -190,6 +251,86 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
       font-size: 0.8rem;
       color: var(--text-tertiary);
     }
+    .stats__availability {
+      margin-bottom: var(--space-2xl);
+    }
+    .stats__availability h2 {
+      margin-bottom: var(--space-md);
+    }
+    .stats__avail-bars {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .stats__avail-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .stats__avail-label {
+      min-width: 130px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .stats__avail-track {
+      flex: 1;
+      height: 20px;
+      background: var(--bg-raised);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .stats__avail-fill {
+      height: 100%;
+      border-radius: var(--radius);
+      transition: width 0.4s ease;
+    }
+    .stats__avail-fill--ia { background: rgba(25, 135, 84, 0.8); }
+    .stats__avail-fill--yt { background: rgba(255, 0, 0, 0.7); }
+    .stats__avail-fill--none { background: var(--border-bright); }
+    .stats__avail-count {
+      min-width: 50px;
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      text-align: right;
+    }
+    .stats__highlights {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: var(--space-md);
+      margin-top: var(--space-xl);
+    }
+    .stats__highlight {
+      display: block;
+      padding: var(--space-md) var(--space-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s;
+    }
+    .stats__highlight:hover {
+      border-color: var(--accent-gold);
+      color: inherit;
+    }
+    .stats__highlight-label {
+      display: block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-tertiary);
+      font-weight: 600;
+      margin-bottom: var(--space-xs);
+    }
+    .stats__highlight-value {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .stats__highlight:hover .stats__highlight-value {
+      color: var(--accent-gold);
+    }
     @media (max-width: 768px) {
       .stats__sections { grid-template-columns: 1fr; }
     }
@@ -204,6 +345,48 @@ export class StatsComponent implements OnInit {
 
   readonly totalFilms = computed(() => this.catalog.movies().length);
   readonly streamableFilms = computed(() => this.catalog.movies().filter((m) => m.isStreamable).length);
+  readonly streamablePct = computed(() => {
+    const total = this.totalFilms();
+    return total > 0 ? Math.round((this.streamableFilms() / total) * 100) : 0;
+  });
+  readonly iaFilms = computed(() => this.catalog.movies().filter((m) => m.internetArchiveId).length);
+  readonly ytFilms = computed(() => this.catalog.movies().filter((m) => m.youtubeId && !m.internetArchiveId).length);
+  readonly iaFilmsPct = computed(() => {
+    const total = this.totalFilms();
+    return total > 0 ? (this.iaFilms() / total) * 100 : 0;
+  });
+  readonly ytFilmsPct = computed(() => {
+    const total = this.totalFilms();
+    return total > 0 ? (this.ytFilms() / total) * 100 : 0;
+  });
+  readonly notStreamablePct = computed(() => {
+    const total = this.totalFilms();
+    return total > 0 ? ((total - this.streamableFilms()) / total) * 100 : 0;
+  });
+  readonly uniqueDirectors = computed(() => {
+    const dirs = new Set<string>();
+    for (const m of this.catalog.movies()) for (const d of m.directors) dirs.add(d);
+    return dirs.size;
+  });
+  readonly oldestFilm = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    return movies.reduce((oldest, m) => m.year < oldest.year ? m : oldest);
+  });
+  readonly newestFilm = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    return movies.reduce((newest, m) => m.year > newest.year ? m : newest);
+  });
+  readonly highestRatedFilm = computed(() => {
+    const movies = this.catalog.movies().filter((m) => m.voteAverage > 0);
+    if (movies.length === 0) return null;
+    return movies.reduce((best, m) => m.voteAverage > best.voteAverage ? m : best);
+  });
+  readonly mostFilmedDirector = computed(() => {
+    const stats = this.directorStats();
+    return stats.length > 0 ? stats[0] : null;
+  });
 
   readonly avgRating = computed(() => {
     const rated = this.catalog.movies().filter((m) => m.voteAverage > 0);

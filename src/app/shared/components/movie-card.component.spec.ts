@@ -44,9 +44,10 @@ describe('MovieCardComponent', () => {
     expect(el.textContent).toContain('1945');
   });
 
-  it('should show streamable badge', () => {
-    const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).toContain('Free');
+  it('should show Internet Archive badge', () => {
+    const badge = fixture.nativeElement.querySelector('.card__badge--ia');
+    expect(badge).toBeTruthy();
+    expect(badge.textContent).toContain('IA');
   });
 
   it('should render poster image', () => {
@@ -70,8 +71,8 @@ describe('MovieCardComponent', () => {
     expect(placeholder.textContent).toContain('1945');
   });
 
-  it('should show IMDb badge when not streamable but has imdbId', () => {
-    const nonStreamable = { ...mockMovie, isStreamable: false };
+  it('should show IMDb badge when no streaming IDs but has imdbId', () => {
+    const nonStreamable = { ...mockMovie, isStreamable: false, internetArchiveId: null, youtubeId: null };
     fixture.componentRef.setInput('movie', nonStreamable);
     fixture.detectChanges();
     const badge = fixture.nativeElement.querySelector('.card__badge--imdb');
@@ -79,8 +80,8 @@ describe('MovieCardComponent', () => {
     expect(badge.textContent).toContain('IMDb');
   });
 
-  it('should hide badge when not streamable and no imdbId', () => {
-    const noLinks = { ...mockMovie, isStreamable: false, imdbId: null };
+  it('should hide badge when no streaming IDs and no imdbId', () => {
+    const noLinks = { ...mockMovie, isStreamable: false, internetArchiveId: null, youtubeId: null, imdbId: null };
     fixture.componentRef.setInput('movie', noLinks);
     fixture.detectChanges();
     const badge = fixture.nativeElement.querySelector('.card__badge');

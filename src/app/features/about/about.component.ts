@@ -45,6 +45,55 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
       </section>
 
       <section class="about__section">
+        <h2>Frequently Asked Questions</h2>
+        <div class="about__faq">
+          <details class="about__faq-item">
+            <summary>What is the public domain?</summary>
+            <p>
+              Works in the public domain are no longer under copyright protection and can be freely
+              distributed and viewed by anyone. Many classic films — particularly those released before
+              1928, or those whose copyrights were not properly renewed — have entered the public domain.
+              The Internet Archive hosts thousands of these films for free streaming.
+            </p>
+          </details>
+          <details class="about__faq-item">
+            <summary>Why can't I watch some films?</summary>
+            <p>
+              Not all films in our catalog are in the public domain. Films that are still under copyright
+              cannot be freely streamed. For these films, we provide links to IMDb and the Internet Archive
+              so you can find them through other channels. Look for the <strong>IA</strong> (Internet Archive)
+              or <strong>YT</strong> (YouTube) badges on film cards to identify freely streamable titles.
+            </p>
+          </details>
+          <details class="about__faq-item">
+            <summary>How often is the catalog updated?</summary>
+            <p>
+              Our catalog is compiled from Wikidata and enriched with metadata from TMDB. The core
+              catalog is updated periodically as new public domain films are identified and as
+              streaming availability changes.
+            </p>
+          </details>
+          <details class="about__faq-item">
+            <summary>Where is my data stored?</summary>
+            <p>
+              All your personal data — your watchlist, watched films, ratings, reviews, and playlists —
+              is stored locally in your browser using localStorage. Nothing is sent to any server.
+              This means your data stays private, but also that it won't sync across devices.
+              You can export your collection from the Collection page.
+            </p>
+          </details>
+          <details class="about__faq-item">
+            <summary>How do I report a problem?</summary>
+            <p>
+              If you find incorrect film data, broken streaming links, or have suggestions for
+              improvements, please open an issue on our
+              <a href="https://github.com/corvid-agent/bw-cinema/issues" target="_blank" rel="noopener">GitHub repository</a>.
+            </p>
+          </details>
+        </div>
+      </section>
+
+      <section class="about__section">
         <h2>Accessibility</h2>
         <p>
           BW Cinema is designed with accessibility as a priority. We use large, readable fonts,
@@ -93,6 +142,47 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
     .about__source p {
       margin: 0;
       font-size: 0.95rem;
+    }
+    .about__faq {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+    .about__faq-item {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .about__faq-item summary {
+      padding: var(--space-md) var(--space-lg);
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-primary);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .about__faq-item summary::after {
+      content: '+';
+      font-size: 1.2rem;
+      color: var(--accent-gold);
+      font-weight: 400;
+      transition: transform 0.2s;
+    }
+    .about__faq-item[open] summary::after {
+      content: '-';
+    }
+    .about__faq-item summary::-webkit-details-marker { display: none; }
+    .about__faq-item p {
+      padding: 0 var(--space-lg) var(--space-lg);
+      margin: 0;
+      font-size: 0.95rem;
+    }
+    .about__faq-item a {
+      color: var(--accent-gold);
     }
   `],
 })
