@@ -26,7 +26,6 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           </div>
           <div class="decade__actions">
             <a class="btn-secondary decade__browse-link" routerLink="/browse" [queryParams]="{ decade: year() }">Browse with filters</a>
-            <app-view-toggle [(mode)]="viewMode" />
           </div>
         </div>
 
@@ -46,10 +45,29 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             </div>
           </div>
 
+          <div class="decade__view-bar">
+            <div class="decade__sort-btns">
+              <button class="decade__sort-btn" [class.decade__sort-btn--active]="sortMode() === 'rating'" (click)="sortMode.set('rating')">Top Rated</button>
+              <button class="decade__sort-btn" [class.decade__sort-btn--active]="sortMode() === 'newest'" (click)="sortMode.set('newest')">Newest</button>
+              <button class="decade__sort-btn" [class.decade__sort-btn--active]="sortMode() === 'oldest'" (click)="sortMode.set('oldest')">Oldest</button>
+              <button class="decade__sort-btn" [class.decade__sort-btn--active]="sortMode() === 'title'" (click)="sortMode.set('title')">Title</button>
+            </div>
+            <div class="decade__bar-right">
+              <button
+                class="decade__streamable-btn"
+                [class.decade__streamable-btn--active]="streamableOnly()"
+                (click)="streamableOnly.set(!streamableOnly())"
+              >
+                {{ streamableOnly() ? 'Free only' : 'All films' }}
+              </button>
+              <app-view-toggle [(mode)]="viewMode" />
+            </div>
+          </div>
+
           @if (viewMode() === 'grid') {
-            <app-movie-grid [movies]="films()" />
+            <app-movie-grid [movies]="sortedFilms()" />
           } @else {
-            <app-movie-list [movies]="films()" />
+            <app-movie-list [movies]="sortedFilms()" />
           }
         } @else {
           <div class="decade__empty">
@@ -120,6 +138,63 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       letter-spacing: 0.05em;
       color: var(--text-tertiary);
     }
+    .decade__view-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+      flex-wrap: wrap;
+    }
+    .decade__sort-btns {
+      display: flex;
+      gap: var(--space-xs);
+    }
+    .decade__sort-btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .decade__sort-btn:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .decade__sort-btn--active {
+      background: var(--accent-gold-dim);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .decade__bar-right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .decade__streamable-btn {
+      padding: 6px 12px;
+      border-radius: var(--radius-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .decade__streamable-btn:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .decade__streamable-btn--active {
+      background: var(--accent-gold-dim);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
     .decade__empty {
       text-align: center;
       padding: var(--space-3xl);
@@ -140,14 +215,29 @@ export class DecadeComponent implements OnInit {
   private readonly titleService = inject(Title);
 
   readonly viewMode = signal<ViewMode>('grid');
+  readonly sortMode = signal<'rating' | 'newest' | 'oldest' | 'title'>('rating');
+  readonly streamableOnly = signal(true);
 
   readonly decadeLabel = computed(() => `${this.year()}s`);
 
   readonly films = computed(() => {
     const y = parseInt(this.year(), 10);
     return this.catalog.movies()
-      .filter((m) => m.isStreamable && m.year >= y && m.year < y + 10)
-      .sort((a, b) => b.voteAverage - a.voteAverage);
+      .filter((m) => m.year >= y && m.year < y + 10);
+  });
+
+  readonly sortedFilms = computed(() => {
+    let f = this.films();
+    if (this.streamableOnly()) {
+      f = f.filter((m) => m.isStreamable);
+    }
+    const sorted = [...f];
+    switch (this.sortMode()) {
+      case 'rating': return sorted.sort((a, b) => b.voteAverage - a.voteAverage);
+      case 'newest': return sorted.sort((a, b) => b.year - a.year);
+      case 'oldest': return sorted.sort((a, b) => a.year - b.year);
+      case 'title': return sorted.sort((a, b) => a.title.localeCompare(b.title));
+    }
   });
 
   readonly avgRating = computed(() => {

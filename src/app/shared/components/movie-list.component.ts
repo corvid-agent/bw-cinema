@@ -1,5 +1,7 @@
-import { Component, ChangeDetectionStrategy, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { CollectionService } from '../../core/services/collection.service';
+import { NotificationService } from '../../core/services/notification.service';
 import type { MovieSummary } from '../../core/models/movie.model';
 
 @Component({
@@ -36,13 +38,28 @@ import type { MovieSummary } from '../../core/models/movie.model';
               </div>
             }
           </div>
-          <div class="list-item__right" aria-hidden="true">
+          <div class="list-item__right">
             @if (movie.voteAverage > 0) {
-              <span class="list-item__rating">&#9733; {{ movie.voteAverage.toFixed(1) }}</span>
+              <span class="list-item__rating" aria-hidden="true">&#9733; {{ movie.voteAverage.toFixed(1) }}</span>
             }
-            @if (movie.isStreamable) {
-              <span class="list-item__badge">Free</span>
-            }
+            <div class="list-item__actions">
+              @if (movie.isStreamable) {
+                <span class="list-item__badge" aria-hidden="true">Free</span>
+              }
+              @if (collection.isWatched(movie.id)) {
+                <span class="list-item__action list-item__action--watched" aria-label="Watched">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+              } @else if (collection.isInWatchlist(movie.id)) {
+                <button class="list-item__action list-item__action--inlist" aria-label="Remove from watchlist" (click)="removeFromWatchlist($event, movie)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+              } @else {
+                <button class="list-item__action" [attr.aria-label]="'Add ' + movie.title + ' to watchlist'" (click)="addToWatchlist($event, movie)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              }
+            </div>
           </div>
         </a>
       } @empty {
@@ -149,6 +166,43 @@ import type { MovieSummary } from '../../core/models/movie.model';
       background-color: var(--accent-gold);
       color: var(--bg-deep);
     }
+    .list-item__actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .list-item__action {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      min-height: 28px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .list-item__action:hover {
+      background: var(--accent-gold-dim);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .list-item__action--watched {
+      background: rgba(25, 135, 84, 0.2);
+      border-color: rgba(25, 135, 84, 0.5);
+      color: rgb(25, 135, 84);
+      cursor: default;
+    }
+    .list-item__action--inlist {
+      background: var(--accent-gold-dim);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
     .list__empty {
       text-align: center;
       padding: var(--space-3xl);
@@ -158,4 +212,20 @@ import type { MovieSummary } from '../../core/models/movie.model';
 })
 export class MovieListComponent {
   readonly movies = input.required<MovieSummary[]>();
+  protected readonly collection = inject(CollectionService);
+  private readonly notifications = inject(NotificationService);
+
+  addToWatchlist(event: Event, movie: MovieSummary): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.collection.addToWatchlist(movie.id);
+    this.notifications.show(`Added "${movie.title}" to watchlist`, 'success');
+  }
+
+  removeFromWatchlist(event: Event, movie: MovieSummary): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.collection.removeFromWatchlist(movie.id);
+    this.notifications.show('Removed from watchlist', 'info');
+  }
 }

@@ -50,7 +50,7 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (topGenres().length > 0) {
             <div class="director__genres">
               @for (g of topGenres(); track g) {
-                <a class="director__genre-tag" [routerLink]="['/browse']" [queryParams]="{ genre: g }">{{ g }}</a>
+                <a class="director__genre-tag" [routerLink]="['/genre', g]">{{ g }}</a>
               }
             </div>
           }
