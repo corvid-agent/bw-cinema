@@ -246,7 +246,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                           <a [routerLink]="['/director', dir]">{{ dir }}</a>@if (!last) {, }
                         }
                         @if (totalDirectorFilms(); as tdf) {
-                          <span class="detail__director-count">({{ tdf }} in catalog@if (directorAvgRating(); as dar) {, avg &#9733; {{ dar }}})</span>
+                          <span class="detail__director-count">({{ tdf }} in catalog@if (directorAvgRating(); as dar) {, avg &#9733; {{ dar }}}@if (directorStreamablePct(); as dsp) {, {{ dsp }}% free})</span>
                         }
                       </span>
                     </div>
@@ -1261,6 +1261,16 @@ export class MovieComponent implements OnInit {
     const dirFilms = this.catalogService.movies().filter((m) => m.directors.includes(dir) && m.voteAverage > 0);
     if (dirFilms.length < 3) return null;
     return (dirFilms.reduce((sum, m) => sum + m.voteAverage, 0) / dirFilms.length).toFixed(1);
+  });
+
+  readonly directorStreamablePct = computed(() => {
+    const s = this.summary();
+    if (!s || s.directors.length === 0) return null;
+    const dir = s.directors[0];
+    const dirFilms = this.catalogService.movies().filter((m) => m.directors.includes(dir));
+    if (dirFilms.length < 3) return null;
+    const pct = Math.round((dirFilms.filter((m) => m.isStreamable).length / dirFilms.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly genreSiblingCount = computed(() => {

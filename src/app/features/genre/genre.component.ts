@@ -122,6 +122,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (highestRatedTitle(); as hrt) {
             <p class="genre__fact">Top rated: {{ hrt.title }} (&#9733; {{ hrt.rating }})</p>
           }
+          @if (unwatchedStreamableCount() > 0) {
+            <p class="genre__fact">{{ unwatchedStreamableCount() }} free {{ name() }} films you haven't watched</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -841,6 +844,13 @@ export class GenreComponent implements OnInit {
     const f = this.films();
     if (f.length < 5) return 0;
     return f.filter((m) => m.directors.length > 1).length;
+  });
+
+  readonly unwatchedStreamableCount = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return 0;
+    const watchedIds = this.collection.watchedIds();
+    return f.filter((m) => m.isStreamable && !watchedIds.has(m.id)).length;
   });
 
   readonly decadeBreakdown = computed(() => {
