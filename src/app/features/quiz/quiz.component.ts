@@ -87,6 +87,10 @@ interface QuizStep {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Add All to Watchlist
             </button>
+            <button class="quiz__share-btn" (click)="shareResults()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Share Results
+            </button>
             <button class="btn-ghost" (click)="restart()">Start Over</button>
           </div>
         </div>
@@ -264,6 +268,24 @@ interface QuizStep {
       background: var(--accent-gold);
       color: var(--bg-deep);
     }
+    .quiz__share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: var(--space-sm) var(--space-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quiz__share-btn:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
     @media (max-width: 480px) {
       .quiz__result-grid { grid-template-columns: repeat(2, 1fr); }
     }
@@ -394,6 +416,18 @@ export class QuizComponent implements OnInit {
     } else {
       this.notifications.show('All films already in your collection', 'info');
     }
+  }
+
+  shareResults(): void {
+    const films = this.results();
+    if (films.length === 0) return;
+    const titles = films.map((m) => `${m.title} (${m.year})`).join('\n');
+    const text = `My BW Cinema quiz picks:\n\n${titles}\n\nTake the quiz: ${window.location.origin}/quiz`;
+    navigator.clipboard.writeText(text).then(() => {
+      this.notifications.show('Results copied to clipboard', 'success');
+    }).catch(() => {
+      this.notifications.show('Failed to copy', 'error');
+    });
   }
 
   restart(): void {

@@ -69,6 +69,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
         @if (upNext(); as next) {
           <div class="watch__up-next">
             <span class="watch__up-next-label">Up Next</span>
+            @if (upNextReason()) {
+              <span class="watch__up-next-reason">{{ upNextReason() }}</span>
+            }
             <a class="watch__up-next-card" [routerLink]="['/watch', next.id]">
               @if (next.posterUrl) {
                 <img [src]="next.posterUrl" [alt]="next.title" />
@@ -259,6 +262,15 @@ import type { MovieSummary } from '../../core/models/movie.model';
       color: var(--text-tertiary);
       margin-bottom: var(--space-sm);
     }
+    .watch__up-next-reason {
+      display: inline-block;
+      font-size: 0.75rem;
+      color: var(--accent-gold);
+      background: var(--accent-gold-dim);
+      padding: 2px 10px;
+      border-radius: 8px;
+      margin-bottom: var(--space-xs);
+    }
     .watch__up-next-card {
       display: flex;
       align-items: center;
@@ -393,6 +405,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly isFullscreen = signal(false);
   readonly isWatched = signal(false);
   readonly upNext = signal<MovieSummary | null>(null);
+  readonly upNextReason = signal<string>('');
   readonly similarFilms = signal<MovieSummary[]>([]);
 
   private fullscreenHandler = () => {
@@ -413,7 +426,9 @@ export class WatchComponent implements OnInit, OnDestroy {
       if (src) {
         this.safeUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(src.embedUrl));
         this.collectionService.trackProgress(movie.id);
-        this.upNext.set(this.findUpNext(movie));
+        const nextResult = this.findUpNext(movie);
+        this.upNext.set(nextResult.movie);
+        this.upNextReason.set(nextResult.reason);
       } else {
         this.similarFilms.set(this.findSimilar(movie));
       }
@@ -456,7 +471,7 @@ export class WatchComponent implements OnInit, OnDestroy {
     this.notifications.show(`Marked "${this.movieTitle()}" as watched`, 'success');
   }
 
-  private findUpNext(movie: MovieSummary): MovieSummary | null {
+  private findUpNext(movie: MovieSummary): { movie: MovieSummary | null; reason: string } {
     const watchlistIds = this.collectionService.watchlistIds();
     const watchedIds = this.collectionService.watchedIds();
     const genreSet = new Set(movie.genres.map((g) => g.toLowerCase()));
@@ -464,14 +479,25 @@ export class WatchComponent implements OnInit, OnDestroy {
       .filter((m) => m.id !== movie.id && m.isStreamable && !watchedIds.has(m.id) && m.posterUrl)
       .map((m) => {
         let score = 0;
-        if (watchlistIds.has(m.id)) score += 5;
-        for (const g of m.genres) if (genreSet.has(g.toLowerCase())) score += 2;
+        const inWatchlist = watchlistIds.has(m.id);
+        if (inWatchlist) score += 5;
+        const sharedGenres = m.genres.filter((g) => genreSet.has(g.toLowerCase()));
+        score += sharedGenres.length * 2;
+        const sameDirector = m.directors.some((d) => movie.directors.includes(d));
+        if (sameDirector) score += 3;
         if (m.voteAverage >= 7) score += 1;
-        return { movie: m, score };
+        return { movie: m, score, inWatchlist, sharedGenres, sameDirector };
       })
       .filter((x) => x.score > 0)
       .sort((a, b) => b.score - a.score);
-    return candidates[0]?.movie ?? null;
+
+    if (candidates.length === 0) return { movie: null, reason: '' };
+    const pick = candidates[0];
+    let reason = '';
+    if (pick.inWatchlist) reason = 'From your watchlist';
+    else if (pick.sameDirector) reason = `Same director`;
+    else if (pick.sharedGenres.length > 0) reason = `Similar: ${pick.sharedGenres[0]}`;
+    return { movie: pick.movie, reason };
   }
 
   shareFilm(): void {

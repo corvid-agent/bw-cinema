@@ -56,6 +56,9 @@ const MOODS: Mood[] = [
           <button class="explore__random-btn explore__random-btn--secondary" (click)="pickDoubleFeature()">
             Double Feature
           </button>
+          <button class="explore__random-btn explore__random-btn--secondary" (click)="pickFilmFestival()">
+            Film Festival
+          </button>
         </div>
 
         @if (doubleFeature().length === 2) {
@@ -81,6 +84,34 @@ const MOODS: Mood[] = [
             <div class="explore__double-actions">
               <button class="btn-secondary" (click)="pickDoubleFeature()">Shuffle Pair</button>
               <button class="btn-ghost" (click)="doubleFeature.set([])">Dismiss</button>
+            </div>
+          </div>
+        }
+
+        @if (filmFestival().films.length === 3) {
+          <div class="explore__double">
+            <h2>{{ filmFestival().theme }}</h2>
+            <p class="explore__double-desc">A curated triple feature for an all-day movie marathon</p>
+            <div class="explore__festival-trio">
+              @for (m of filmFestival().films; track m.id; let i = $index) {
+                <a class="explore__double-card" [routerLink]="['/movie', m.id]">
+                  <span class="explore__festival-num">{{ i + 1 }}</span>
+                  @if (m.posterUrl) {
+                    <img [src]="m.posterUrl" [alt]="m.title" />
+                  } @else {
+                    <div class="explore__double-placeholder">{{ m.title }}</div>
+                  }
+                  <div class="explore__double-info">
+                    <h3>{{ m.title }}</h3>
+                    <p>{{ m.year }} &middot; {{ m.directors.join(', ') }}</p>
+                    <p class="explore__double-genres">{{ m.genres.slice(0, 2).join(', ') }}</p>
+                  </div>
+                </a>
+              }
+            </div>
+            <div class="explore__double-actions">
+              <button class="btn-secondary" (click)="pickFilmFestival()">Shuffle Festival</button>
+              <button class="btn-ghost" (click)="filmFestival.set({ theme: '', films: [] })">Dismiss</button>
             </div>
           </div>
         }
@@ -340,6 +371,25 @@ const MOODS: Mood[] = [
       color: var(--accent-gold) !important;
       font-weight: 600;
     }
+    .explore__festival-trio {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--space-xl);
+      margin-bottom: var(--space-lg);
+    }
+    .explore__festival-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent-gold);
+      color: var(--bg-deep);
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: var(--space-sm);
+    }
     .explore__double-actions {
       display: flex;
       gap: var(--space-md);
@@ -453,6 +503,7 @@ const MOODS: Mood[] = [
     }
     @media (max-width: 480px) {
       .explore__double-pair { grid-template-columns: 1fr; gap: var(--space-lg); }
+      .explore__festival-trio { grid-template-columns: 1fr; gap: var(--space-lg); }
       .explore__double-card img { width: 120px; }
       .explore__double { padding: var(--space-md); }
       .explore__random {
@@ -479,6 +530,7 @@ export class ExploreComponent implements OnInit {
   readonly moods = MOODS;
   readonly activeMood = signal<Mood | null>(null);
   readonly doubleFeature = signal<MovieSummary[]>([]);
+  readonly filmFestival = signal<{ theme: string; films: MovieSummary[] }>({ theme: '', films: [] });
   readonly moodPage = signal(1);
   private readonly shuffleSeed = signal(0);
 
@@ -629,6 +681,71 @@ export class ExploreComponent implements OnInit {
       ? candidates[Math.floor(Math.random() * Math.min(candidates.length, 10))].movie
       : films.filter((m) => m.id !== first.id)[Math.floor(Math.random() * (films.length - 1))];
     this.doubleFeature.set([first, second]);
+  }
+
+  pickFilmFestival(): void {
+    const watchedIds = this.collection.watchedIds();
+    const films = this.catalog.movies().filter((m) => m.isStreamable && !watchedIds.has(m.id) && m.posterUrl && m.voteAverage >= 5.5);
+    if (films.length < 3) return;
+
+    // Pick a theme: shared genre or shared director or shared decade
+    const themes = [
+      { name: 'Director Spotlight', pick: () => this.pickByDirector(films) },
+      { name: 'Genre Deep Dive', pick: () => this.pickByGenre(films) },
+      { name: 'Decade Marathon', pick: () => this.pickByDecade(films) },
+    ];
+    const theme = themes[Math.floor(Math.random() * themes.length)];
+    const result = theme.pick();
+    if (result) {
+      this.filmFestival.set({ theme: result.theme, films: result.films });
+    }
+  }
+
+  private pickByDirector(films: MovieSummary[]): { theme: string; films: MovieSummary[] } | null {
+    const dirFilms = new Map<string, MovieSummary[]>();
+    for (const m of films) {
+      for (const d of m.directors) {
+        const list = dirFilms.get(d) ?? [];
+        list.push(m);
+        dirFilms.set(d, list);
+      }
+    }
+    const eligible = [...dirFilms.entries()].filter(([, f]) => f.length >= 3);
+    if (eligible.length === 0) return this.pickByGenre(films);
+    const [dir, dirMovies] = eligible[Math.floor(Math.random() * eligible.length)];
+    const shuffled = [...dirMovies].sort(() => Math.random() - 0.5).slice(0, 3);
+    return { theme: `${dir} Festival`, films: shuffled };
+  }
+
+  private pickByGenre(films: MovieSummary[]): { theme: string; films: MovieSummary[] } | null {
+    const genreFilms = new Map<string, MovieSummary[]>();
+    for (const m of films) {
+      for (const g of m.genres) {
+        const list = genreFilms.get(g) ?? [];
+        list.push(m);
+        genreFilms.set(g, list);
+      }
+    }
+    const eligible = [...genreFilms.entries()].filter(([, f]) => f.length >= 6);
+    if (eligible.length === 0) return null;
+    const [genre, genreMovies] = eligible[Math.floor(Math.random() * eligible.length)];
+    const shuffled = [...genreMovies].sort(() => Math.random() - 0.5).slice(0, 3);
+    return { theme: `${genre} Triple Feature`, films: shuffled };
+  }
+
+  private pickByDecade(films: MovieSummary[]): { theme: string; films: MovieSummary[] } | null {
+    const decadeFilms = new Map<number, MovieSummary[]>();
+    for (const m of films) {
+      const d = Math.floor(m.year / 10) * 10;
+      const list = decadeFilms.get(d) ?? [];
+      list.push(m);
+      decadeFilms.set(d, list);
+    }
+    const eligible = [...decadeFilms.entries()].filter(([, f]) => f.length >= 6);
+    if (eligible.length === 0) return this.pickByGenre(films);
+    const [decade, decMovies] = eligible[Math.floor(Math.random() * eligible.length)];
+    const shuffled = [...decMovies].sort(() => Math.random() - 0.5).slice(0, 3);
+    return { theme: `Best of the ${decade}s`, films: shuffled };
   }
 
   pickUnwatched(): void {

@@ -514,6 +514,21 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                 </section>
               }
 
+              @if (discoveryGaps().length > 0) {
+                <section class="gaps">
+                  <h3>Discovery Gaps</h3>
+                  <p class="gaps__desc">Genres and decades you haven't explored yet</p>
+                  <div class="gaps__grid">
+                    @for (gap of discoveryGaps(); track gap.label) {
+                      <a class="gaps__chip" [routerLink]="gap.link">
+                        <span class="gaps__chip-label">{{ gap.label }}</span>
+                        <span class="gaps__chip-count">{{ gap.count }} films</span>
+                      </a>
+                    }
+                  </div>
+                </section>
+              }
+
               @if (viewingInsights().length > 0) {
                 <section class="insights">
                   <h3>Viewing Insights</h3>
@@ -1155,6 +1170,44 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       position: relative;
       padding-left: var(--space-lg);
     }
+    /* Discovery Gaps */
+    .gaps { margin-top: var(--space-xl); }
+    .gaps h3 { margin-bottom: var(--space-xs); }
+    .gaps__desc {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      margin: 0 0 var(--space-md);
+    }
+    .gaps__grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+    .gaps__chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: var(--space-sm) var(--space-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: var(--text-secondary);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .gaps__chip:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .gaps__chip-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .gaps__chip-count {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+    }
     .insights { margin-top: var(--space-xl); }
     .insights__grid {
       display: grid;
@@ -1641,6 +1694,38 @@ export class CollectionComponent implements OnInit {
     this.collectionService.deletePlaylist(id);
     this.notifications.show('Playlist deleted', 'info');
   }
+
+  readonly discoveryGaps = computed(() => {
+    const watched = this.watchedMovies();
+    if (watched.length < 5) return [];
+    const watchedGenres = new Set(watched.flatMap((m) => m.genres));
+    const watchedDecades = new Set(watched.map((m) => Math.floor(m.year / 10) * 10));
+    const allMovies = this.catalog.movies().filter((m) => m.isStreamable);
+    const gaps: { label: string; count: number; link: string[] }[] = [];
+
+    // Unexplored genres with significant catalog presence
+    const genreCounts = new Map<string, number>();
+    for (const m of allMovies) for (const g of m.genres) genreCounts.set(g, (genreCounts.get(g) ?? 0) + 1);
+    for (const [genre, count] of genreCounts) {
+      if (!watchedGenres.has(genre) && count >= 10) {
+        gaps.push({ label: genre, count, link: ['/genre', genre] });
+      }
+    }
+
+    // Unexplored decades
+    const decadeCounts = new Map<number, number>();
+    for (const m of allMovies) {
+      const d = Math.floor(m.year / 10) * 10;
+      decadeCounts.set(d, (decadeCounts.get(d) ?? 0) + 1);
+    }
+    for (const [decade, count] of decadeCounts) {
+      if (!watchedDecades.has(decade) && count >= 5) {
+        gaps.push({ label: `${decade}s`, count, link: ['/decade', String(decade)] });
+      }
+    }
+
+    return gaps.sort((a, b) => b.count - a.count).slice(0, 8);
+  });
 
   readonly viewingInsights = computed(() => {
     const watched = this.collectionService.watched();
