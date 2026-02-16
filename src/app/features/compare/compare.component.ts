@@ -210,6 +210,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (combinedLanguageCount() > 1) {
                 <span class="compare__overlap"> &middot; {{ combinedLanguageCount() }} languages</span>
               }
+              @if (avgFilmAge(); as afa) {
+                <span class="compare__overlap"> &middot; avg {{ afa }} years old</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -778,6 +781,15 @@ export class CompareComponent implements OnInit {
     if (a.language) langs.add(a.language);
     if (b.language) langs.add(b.language);
     return langs.size;
+  });
+
+  readonly avgFilmAge = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return null;
+    const now = new Date().getFullYear();
+    const avg = Math.round(((now - a.year) + (now - b.year)) / 2);
+    return avg >= 30 ? avg : null;
   });
 
   readonly combinedAvgRating = computed(() => {

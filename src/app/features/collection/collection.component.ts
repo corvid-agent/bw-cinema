@@ -2025,6 +2025,15 @@ export class CollectionComponent implements OnInit {
       insights.push({ label: 'Decade Span', value: `${sorted[0]}s–${sorted[sorted.length - 1]}s` });
     }
 
+    // Co-directed films watched
+    const coDirected = watched.filter((w) => {
+      const m = movieMap.get(w.movieId);
+      return m && m.directors.length > 1;
+    }).length;
+    if (coDirected > 0) {
+      insights.push({ label: 'Co-directed Films', value: `${coDirected}` });
+    }
+
     // Avg catalog rating of watched films
     const catalogRated = watched.map((w) => movieMap.get(w.movieId)).filter((m): m is MovieSummary => !!m && m.voteAverage > 0);
     if (catalogRated.length >= 3) {

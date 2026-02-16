@@ -112,6 +112,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="decade__stat-label">Rated 7.0+</span>
               </div>
             }
+            @if (medianRating(); as mr) {
+              <div class="decade__stat">
+                <span class="decade__stat-value">{{ mr }}</span>
+                <span class="decade__stat-label">Median Rating</span>
+              </div>
+            }
           </div>
 
           @if (decadeFact(); as fact) {
@@ -714,6 +720,19 @@ export class DecadeComponent implements OnInit {
     const high = rated.filter((m) => m.voteAverage >= 7.0).length;
     const pct = Math.round((high / rated.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly medianRating = computed(() => {
+    const rated = this.films()
+      .filter((m) => m.voteAverage > 0)
+      .map((m) => m.voteAverage)
+      .sort((a, b) => a - b);
+    if (rated.length < 10) return null;
+    const mid = Math.floor(rated.length / 2);
+    const median = rated.length % 2 === 0
+      ? (rated[mid - 1] + rated[mid]) / 2
+      : rated[mid];
+    return median.toFixed(1);
   });
 
   readonly coDirectedCount = computed(() =>
