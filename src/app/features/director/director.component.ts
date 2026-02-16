@@ -246,6 +246,7 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
     .director__sort-btns {
       display: flex;
       gap: var(--space-xs);
+      flex-wrap: wrap;
     }
     .director__sort-btn {
       padding: 6px 14px;
@@ -316,12 +317,15 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
     }
     @media (max-width: 480px) {
       .director__stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
       }
       .director__header {
         flex-direction: column;
         gap: var(--space-md);
       }
+      .director__sort-btn { padding: 8px 12px; font-size: 0.8rem; }
+      .director__collab-list { grid-template-columns: 1fr; }
+      .director__view-bar { flex-wrap: wrap; }
     }
   `],
 })

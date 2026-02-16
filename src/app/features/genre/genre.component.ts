@@ -149,6 +149,7 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
     .genre__sort-btns {
       display: flex;
       gap: var(--space-xs);
+      flex-wrap: wrap;
     }
     .genre__sort-btn {
       padding: 6px 14px;
@@ -204,7 +205,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       .genre__header { flex-direction: column; gap: var(--space-md); }
     }
     @media (max-width: 480px) {
-      .genre__stats { grid-template-columns: 1fr; }
+      .genre__stats { grid-template-columns: repeat(2, 1fr); }
+      .genre__sort-btn { padding: 8px 12px; font-size: 0.8rem; }
+      .genre__streamable-btn { padding: 8px 12px; }
     }
   `],
 })

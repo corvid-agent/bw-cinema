@@ -373,6 +373,9 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
     @media (max-width: 480px) {
       .stats__overview { grid-template-columns: repeat(2, 1fr); }
       .stats__bar-label { min-width: 70px; font-size: 0.8rem; }
+      .stats__avail-label { min-width: 80px; font-size: 0.8rem; }
+      .stats__highlights { grid-template-columns: repeat(2, 1fr); }
+      .stats__lang-summary { grid-template-columns: 1fr; }
     }
   `],
 })

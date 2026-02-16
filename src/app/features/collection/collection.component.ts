@@ -1155,13 +1155,20 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
         font-size: 0.85rem;
       }
       .stats__overview {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-sm);
+      }
+      .stats__overview .stats__card {
+        padding: var(--space-md);
       }
       .film-tl__track {
         min-width: 400px;
       }
       .collection__actions {
         flex-wrap: wrap;
+      }
+      .challenges__grid {
+        grid-template-columns: 1fr;
       }
     }
   `],
