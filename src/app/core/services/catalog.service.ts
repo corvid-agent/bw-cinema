@@ -134,7 +134,7 @@ export class CatalogService {
     const genreSet = new Set(movie.genres);
 
     return this.movies()
-      .filter((m) => m.id !== movie.id)
+      .filter((m) => m.id !== movie.id && m.isStreamable)
       .map((m) => {
         let score = 0;
         const sharedGenres = m.genres.filter((g) => genreSet.has(g)).length;
@@ -151,13 +151,13 @@ export class CatalogService {
   }
 
   readonly curatedCollections = computed(() => {
-    const movies = this.movies();
-    if (movies.length === 0) return [];
+    const streamable = this.movies().filter((m) => m.isStreamable);
+    if (streamable.length === 0) return [];
 
     const collections: { name: string; description: string; movies: MovieSummary[] }[] = [];
 
     // Film Noir
-    const noir = movies.filter((m) =>
+    const noir = streamable.filter((m) =>
       m.genres.some((g) => g.toLowerCase().includes('noir') || g.toLowerCase() === 'crime' || g.toLowerCase() === 'mystery') &&
       m.year >= 1940 && m.year <= 1959
     ).sort((a, b) => b.voteAverage - a.voteAverage).slice(0, 12);
@@ -166,28 +166,28 @@ export class CatalogService {
     }
 
     // Silent Era
-    const silent = movies.filter((m) => m.year < 1930)
+    const silent = streamable.filter((m) => m.year < 1930)
       .sort((a, b) => b.voteAverage - a.voteAverage).slice(0, 12);
     if (silent.length >= 4) {
       collections.push({ name: 'Silent Cinema Treasures', description: 'Pioneering films from the silent era', movies: silent });
     }
 
     // Horror Classics
-    const horror = movies.filter((m) => m.genres.some((g) => g.toLowerCase() === 'horror'))
+    const horror = streamable.filter((m) => m.genres.some((g) => g.toLowerCase() === 'horror'))
       .sort((a, b) => b.voteAverage - a.voteAverage).slice(0, 12);
     if (horror.length >= 4) {
       collections.push({ name: 'Classic Horror', description: 'Iconic horror films that defined the genre', movies: horror });
     }
 
-    // Top Rated Streamable
-    const topStreamable = movies.filter((m) => m.isStreamable && m.voteAverage >= 6)
+    // Top Rated
+    const topRated = streamable.filter((m) => m.voteAverage >= 6)
       .sort((a, b) => b.voteAverage - a.voteAverage).slice(0, 12);
-    if (topStreamable.length >= 4) {
-      collections.push({ name: 'Best Free Films', description: 'Top-rated films you can stream right now', movies: topStreamable });
+    if (topRated.length >= 4) {
+      collections.push({ name: 'Highest Rated', description: 'The best-rated films you can watch right now', movies: topRated });
     }
 
     // Comedy
-    const comedy = movies.filter((m) => m.genres.some((g) => g.toLowerCase() === 'comedy'))
+    const comedy = streamable.filter((m) => m.genres.some((g) => g.toLowerCase() === 'comedy'))
       .sort((a, b) => b.voteAverage - a.voteAverage).slice(0, 12);
     if (comedy.length >= 4) {
       collections.push({ name: 'Classic Comedies', description: 'Timeless humor from cinema\'s greatest comedians', movies: comedy });
@@ -212,7 +212,7 @@ export class CatalogService {
     }
 
     return this.movies()
-      .filter((m) => !watchedIds.has(m.id))
+      .filter((m) => !watchedIds.has(m.id) && m.isStreamable)
       .map((m) => {
         let score = 0;
         for (const g of m.genres) score += (genreCounts.get(g) ?? 0) * 2;
@@ -220,7 +220,6 @@ export class CatalogService {
         const decade = Math.floor(m.year / 10) * 10;
         score += (decadeCounts.get(decade) ?? 0);
         if (m.voteAverage >= 7) score += 2;
-        if (m.isStreamable) score += 1;
         return { movie: m, score };
       })
       .filter((r) => r.score > 0)

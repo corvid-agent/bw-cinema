@@ -57,13 +57,23 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
                   <option value="title-desc">Title Z-A</option>
                 </select>
               </div>
+              <div class="browse__lang">
+                <label for="lang-select" class="sr-only">Language</label>
+                <select id="lang-select" [value]="selectedLanguage()" (change)="onLanguageChange($event)">
+                  <option value="">All Languages</option>
+                  @for (lang of catalog.availableLanguages(); track lang) {
+                    <option [value]="lang">{{ lang }}</option>
+                  }
+                </select>
+              </div>
               <button
-                class="browse__lang-toggle"
-                [class.browse__lang-toggle--active]="englishOnly()"
-                (click)="toggleEnglishOnly()"
-                [attr.title]="englishOnly() ? 'Showing English only — click for all languages' : 'Showing all languages — click for English only'"
+                class="browse__streamable-toggle"
+                [class.browse__streamable-toggle--active]="filter().streamableOnly"
+                (click)="toggleStreamableOnly()"
+                [attr.title]="filter().streamableOnly ? 'Showing watchable films only — click to show all' : 'Showing all films — click to show watchable only'"
               >
-                {{ englishOnly() ? 'EN' : 'ALL' }}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                {{ filter().streamableOnly ? 'Watchable' : 'All' }}
               </button>
               <app-view-toggle [(mode)]="viewMode" />
               <button class="browse__surprise" (click)="surpriseMe()" title="Random film">
@@ -178,28 +188,33 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       color: var(--text-tertiary);
       font-weight: 400;
     }
-    .browse__lang-toggle {
+    .browse__lang select {
+      min-width: 130px;
+      height: 100%;
+      border-radius: var(--radius-lg);
+      background-color: var(--bg-surface);
+    }
+    .browse__streamable-toggle {
       display: flex;
       align-items: center;
-      justify-content: center;
-      min-width: 40px;
+      gap: 5px;
       height: 40px;
-      padding: 0 10px;
+      padding: 0 12px;
       border-radius: var(--radius-lg);
       background: var(--bg-surface);
       border: 1px solid var(--border);
       color: var(--text-secondary);
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
+      font-size: 0.8rem;
+      font-weight: 600;
       cursor: pointer;
       transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+      white-space: nowrap;
     }
-    .browse__lang-toggle:hover {
+    .browse__streamable-toggle:hover {
       border-color: var(--accent-gold);
       color: var(--accent-gold);
     }
-    .browse__lang-toggle--active {
+    .browse__streamable-toggle--active {
       background: var(--accent-gold-dim);
       border-color: var(--accent-gold);
       color: var(--accent-gold);
@@ -248,7 +263,10 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         flex-wrap: wrap;
       }
       .browse__search { flex: 1 1 100%; }
+      .browse__sort { flex: 1; }
       .browse__sort select { width: 100%; }
+      .browse__lang { flex: 1; }
+      .browse__lang select { width: 100%; }
     }
   `],
 })
@@ -279,16 +297,16 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     genres: [],
     directors: [],
     languages: BrowseComponent.loadLangPref(),
-    streamableOnly: false,
+    streamableOnly: true,
     minRating: 0,
     yearRange: null,
     sortBy: 'rating',
     sortDirection: 'desc',
   });
 
-  readonly englishOnly = computed(() => {
+  readonly selectedLanguage = computed(() => {
     const langs = this.filter().languages;
-    return langs.length === 1 && langs[0] === 'English';
+    return langs.length === 1 ? langs[0] : '';
   });
 
   readonly activeFilterCount = computed(() => {
@@ -319,7 +337,7 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
         genres: p['genres'] ? p['genres'].split(',') : (p['genre'] ? [p['genre']] : f.genres),
         directors: p['directors'] ? p['directors'].split(',') : f.directors,
         languages: p['languages'] ? p['languages'].split(',') : f.languages,
-        streamableOnly: p['streamable'] === '1' ? true : f.streamableOnly,
+        streamableOnly: p['streamable'] === '0' ? false : p['streamable'] === '1' ? true : f.streamableOnly,
         minRating: p['minRating'] ? parseFloat(p['minRating']) : f.minRating,
         yearRange: p['yearMin'] && p['yearMax'] ? [parseInt(p['yearMin'], 10), parseInt(p['yearMax'], 10)] : f.yearRange,
         sortBy: (p['sortBy'] as CatalogFilter['sortBy']) ?? f.sortBy,
@@ -356,7 +374,7 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
       genres: f.genres.length > 0 ? f.genres.join(',') : null,
       directors: f.directors.length > 0 ? f.directors.join(',') : null,
       languages: f.languages.length > 0 ? f.languages.join(',') : null,
-      streamable: f.streamableOnly ? '1' : null,
+      streamable: f.streamableOnly ? null : '0',
       minRating: f.minRating > 0 ? String(f.minRating) : null,
       yearMin: f.yearRange ? String(f.yearRange[0]) : null,
       yearMax: f.yearRange ? String(f.yearRange[1]) : null,
@@ -369,11 +387,17 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     this.router.navigate([], { queryParams, queryParamsHandling: 'merge', replaceUrl: true });
   }
 
-  toggleEnglishOnly(): void {
-    const isEnglish = this.englishOnly();
-    const newLangs = isEnglish ? [] : ['English'];
+  onLanguageChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value;
+    const newLangs = val ? [val] : [];
     this.filter.update((f) => ({ ...f, languages: newLangs }));
     try { localStorage.setItem('bw-cinema-lang-pref', JSON.stringify(newLangs)); } catch { /* noop */ }
+    this.page.set(1);
+    this.syncUrl();
+  }
+
+  toggleStreamableOnly(): void {
+    this.filter.update((f) => ({ ...f, streamableOnly: !f.streamableOnly }));
     this.page.set(1);
     this.syncUrl();
   }

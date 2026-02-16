@@ -142,7 +142,7 @@ export class GenreComponent implements OnInit {
   readonly viewMode = signal<ViewMode>('grid');
   readonly films = computed(() =>
     this.catalog.movies()
-      .filter((m) => m.genres.some((g) => g.toLowerCase() === this.name().toLowerCase()))
+      .filter((m) => m.isStreamable && m.genres.some((g) => g.toLowerCase() === this.name().toLowerCase()))
       .sort((a, b) => b.voteAverage - a.voteAverage)
   );
 

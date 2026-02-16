@@ -285,7 +285,7 @@ export class QuizComponent implements OnInit {
 
   private computeResults(): void {
     const a = this.answers();
-    let films = [...this.catalog.movies()];
+    let films = this.catalog.movies().filter((m) => m.isStreamable);
 
     // Era filter
     const era = a[0];

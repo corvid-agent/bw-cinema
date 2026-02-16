@@ -322,7 +322,7 @@ export class FilterPanelComponent {
   readonly selectedGenres = signal(new Set<string>());
   readonly selectedDirectors = signal(new Set<string>());
   readonly selectedLanguages = signal(FilterPanelComponent.loadLanguagePref());
-  readonly streamableOnly = signal(false);
+  readonly streamableOnly = signal(true);
   readonly minRating = signal(0);
   readonly directorQuery = signal('');
 

@@ -146,7 +146,7 @@ export class DecadeComponent implements OnInit {
   readonly films = computed(() => {
     const y = parseInt(this.year(), 10);
     return this.catalog.movies()
-      .filter((m) => m.year >= y && m.year < y + 10)
+      .filter((m) => m.isStreamable && m.year >= y && m.year < y + 10)
       .sort((a, b) => b.voteAverage - a.voteAverage);
   });
 

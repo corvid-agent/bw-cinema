@@ -267,7 +267,7 @@ export class ExploreComponent implements OnInit {
   readonly moodFilms = computed(() => {
     const mood = this.activeMood();
     if (!mood) return [];
-    let films = this.catalog.movies();
+    let films = this.catalog.movies().filter((m) => m.isStreamable);
 
     if (mood.id === 'foreign') {
       films = films.filter((m) => m.language && m.language !== 'English');
@@ -304,7 +304,7 @@ export class ExploreComponent implements OnInit {
   });
 
   moodCount(mood: Mood): number {
-    const films = this.catalog.movies();
+    const films = this.catalog.movies().filter((m) => m.isStreamable);
     if (mood.id === 'foreign') {
       return films.filter((m) => m.language && m.language !== 'English').length;
     }

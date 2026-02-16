@@ -76,9 +76,9 @@ describe('BrowseComponent', () => {
     expect(el.textContent).toContain('Browse Films');
   });
 
-  it('should display film count', () => {
+  it('should display film count (streamable only by default)', () => {
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).toContain('2 films found');
+    expect(el.textContent).toContain('1 films found');
   });
 
   it('should filter via search', () => {
@@ -88,7 +88,7 @@ describe('BrowseComponent', () => {
     expect(el.textContent).toContain('1 films found');
   });
 
-  it('should paginate results', () => {
-    expect(fixture.componentInstance.paginatedMovies().length).toBe(2);
+  it('should paginate results (streamable only by default)', () => {
+    expect(fixture.componentInstance.paginatedMovies().length).toBe(1);
   });
 });
