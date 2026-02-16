@@ -86,6 +86,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (silentEraStreamablePct(); as sesp) {
           <p class="hero__avg-rating">{{ sesp }}% of silent-era films are free to watch</p>
         }
+        @if (coDirectedCount() > 0) {
+          <p class="hero__avg-rating">{{ coDirectedCount() }} co-directed films in catalog</p>
+        }
       </div>
     </section>
 
@@ -1315,6 +1318,11 @@ export class HomeComponent implements OnInit {
     if (silent.length < 5) return null;
     const pct = Math.round((silent.filter((m) => m.isStreamable).length / silent.length) * 100);
     return pct > 0 ? pct : null;
+  });
+
+  readonly coDirectedCount = computed(() => {
+    const count = this.catalog.movies().filter((m) => m.directors.length > 1).length;
+    return count > 0 ? count : 0;
   });
 
   readonly decadeSpan = computed(() => {

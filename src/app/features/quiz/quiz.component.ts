@@ -96,6 +96,9 @@ interface QuizStep {
           @if (resultSilentEraCount(); as rsec) {
             <p class="quiz__decade-range">{{ rsec }} silent-era films (pre-1930)</p>
           }
+          @if (resultMedianYear(); as rmy) {
+            <p class="quiz__decade-range">Median year: {{ rmy }}</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -536,6 +539,14 @@ export class QuizComponent implements OnInit {
     if (films.length < 3) return null;
     const count = films.filter((m) => m.year < 1930).length;
     return count > 0 ? count : null;
+  });
+
+  readonly resultMedianYear = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const years = films.map((m) => m.year).sort((a, b) => a - b);
+    const mid = Math.floor(years.length / 2);
+    return years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
   });
 
   readonly resultOldestYear = computed(() => {

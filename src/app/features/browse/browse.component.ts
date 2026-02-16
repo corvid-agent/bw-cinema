@@ -81,6 +81,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultMedianRating(); as rmr) {
           <p class="browse__watched-note">Median rating: &#9733; {{ rmr }}</p>
         }
+        @if (resultAvgYear(); as ray) {
+          <p class="browse__watched-note">Average year: {{ ray }}</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -743,6 +746,12 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     const mid = Math.floor(sorted.length / 2);
     const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
     return median.toFixed(1);
+  });
+
+  readonly resultAvgYear = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    return Math.round(films.reduce((s, m) => s + m.year, 0) / films.length);
   });
 
   readonly topResultDirector = computed(() => {
