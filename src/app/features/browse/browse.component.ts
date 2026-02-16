@@ -78,6 +78,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultSilentEraCount(); as rsec) {
           <p class="browse__watched-note">{{ rsec }} silent-era films (pre-1930)</p>
         }
+        @if (resultMedianRating(); as rmr) {
+          <p class="browse__watched-note">Median rating: &#9733; {{ rmr }}</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -731,6 +734,15 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     if (films.length < 10) return null;
     const count = films.filter((m) => m.year < 1930).length;
     return count > 0 ? count : null;
+  });
+
+  readonly resultMedianRating = computed(() => {
+    const rated = this.filteredMovies().filter((m) => m.voteAverage > 0);
+    if (rated.length < 10) return null;
+    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    return median.toFixed(1);
   });
 
   readonly topResultDirector = computed(() => {

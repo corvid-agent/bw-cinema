@@ -83,6 +83,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (nonEnglishCount() > 0) {
           <p class="hero__avg-rating">{{ nonEnglishCount() }} non-English films in catalog</p>
         }
+        @if (silentEraStreamablePct(); as sesp) {
+          <p class="hero__avg-rating">{{ sesp }}% of silent-era films are free to watch</p>
+        }
       </div>
     </section>
 
@@ -1305,6 +1308,13 @@ export class HomeComponent implements OnInit {
   readonly nonEnglishCount = computed(() => {
     const count = this.catalog.movies().filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
     return count > 0 ? count : 0;
+  });
+
+  readonly silentEraStreamablePct = computed(() => {
+    const silent = this.catalog.movies().filter((m) => m.year < 1930);
+    if (silent.length < 5) return null;
+    const pct = Math.round((silent.filter((m) => m.isStreamable).length / silent.length) * 100);
+    return pct > 0 ? pct : null;
   });
 
   readonly decadeSpan = computed(() => {
