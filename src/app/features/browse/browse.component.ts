@@ -14,36 +14,39 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
   imports: [MovieGridComponent, SearchBarComponent, FilterPanelComponent, LoadingSpinnerComponent, KeyboardNavDirective],
   template: `
     <div class="browse container">
-      <h1>Browse Films</h1>
+      <div class="browse__top">
+        <h1>Browse Films</h1>
+        <p class="browse__subtitle">{{ filteredMovies().length }} films found</p>
+      </div>
 
       @if (catalog.loading()) {
         <app-loading-spinner />
       } @else {
         <div class="browse__layout">
-          <div class="browse__sidebar">
+          <aside class="browse__sidebar">
             <app-filter-panel
               [availableDecades]="catalog.meta()?.decades ?? []"
               [availableGenres]="catalog.meta()?.genres ?? []"
               (filterChanged)="onFilterChange($event)"
             />
-          </div>
+          </aside>
 
           <div class="browse__main">
             <div class="browse__toolbar">
-              <app-search-bar (searched)="onSearch($event)" />
+              <div class="browse__search">
+                <app-search-bar (searched)="onSearch($event)" />
+              </div>
               <div class="browse__sort">
                 <label for="sort-select" class="sr-only">Sort by</label>
                 <select id="sort-select" (change)="onSortChange($event)">
+                  <option value="rating-desc" selected>Highest Rated</option>
+                  <option value="year-desc">Newest</option>
+                  <option value="year-asc">Oldest</option>
                   <option value="title-asc">Title A-Z</option>
                   <option value="title-desc">Title Z-A</option>
-                  <option value="year-desc">Newest First</option>
-                  <option value="year-asc">Oldest First</option>
-                  <option value="rating-desc" selected>Highest Rated</option>
                 </select>
               </div>
             </div>
-
-            <p class="browse__count">{{ filteredMovies().length }} films found</p>
 
             <div appKeyboardNav>
               <app-movie-grid [movies]="paginatedMovies()" />
@@ -51,8 +54,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
 
             @if (paginatedMovies().length < filteredMovies().length) {
               <div class="browse__load-more">
-                <button class="btn-primary" (click)="loadMore()">
-                  Load More ({{ filteredMovies().length - paginatedMovies().length }} remaining)
+                <button class="btn-secondary browse__load-btn" (click)="loadMore()">
+                  Show More
+                  <span class="browse__remaining">{{ filteredMovies().length - paginatedMovies().length }} remaining</span>
                 </button>
               </div>
             }
@@ -63,33 +67,66 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
   `,
   styles: [`
     .browse { padding: var(--space-xl) 0; }
+    .browse__top {
+      margin-bottom: var(--space-lg);
+    }
+    .browse__top h1 {
+      margin-bottom: var(--space-xs);
+    }
+    .browse__subtitle {
+      color: var(--text-tertiary);
+      font-size: 0.95rem;
+      margin: 0;
+    }
     .browse__layout {
       display: grid;
-      grid-template-columns: 280px 1fr;
+      grid-template-columns: 260px 1fr;
       gap: var(--space-xl);
-      margin-top: var(--space-lg);
+    }
+    .browse__sidebar {
+      position: sticky;
+      top: 76px;
+      align-self: start;
+      max-height: calc(100vh - 92px);
+      overflow-y: auto;
     }
     .browse__toolbar {
       display: flex;
-      gap: var(--space-md);
-      align-items: flex-start;
+      gap: var(--space-sm);
+      align-items: stretch;
       margin-bottom: var(--space-lg);
     }
-    .browse__sort select {
-      min-width: 180px;
+    .browse__search {
+      flex: 1;
     }
-    .browse__count {
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-      margin: 0 0 var(--space-md);
+    .browse__sort select {
+      min-width: 160px;
+      height: 100%;
+      border-radius: var(--radius-lg);
+      background-color: var(--bg-surface);
     }
     .browse__load-more {
       text-align: center;
-      padding: var(--space-xl) 0;
+      padding: var(--space-2xl) 0 var(--space-md);
     }
-    @media (max-width: 768px) {
+    .browse__load-btn {
+      padding: var(--space-md) var(--space-2xl);
+      border-radius: var(--radius-lg);
+    }
+    .browse__remaining {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+    @media (max-width: 900px) {
       .browse__layout {
         grid-template-columns: 1fr;
+      }
+      .browse__sidebar {
+        position: static;
+        max-height: none;
       }
       .browse__toolbar {
         flex-direction: column;

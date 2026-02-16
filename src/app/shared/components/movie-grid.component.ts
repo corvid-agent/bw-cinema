@@ -13,27 +13,36 @@ import type { MovieSummary } from '../../core/models/movie.model';
           <app-movie-card [movie]="movie" />
         </div>
       } @empty {
-        <p class="grid__empty">No films found matching your criteria.</p>
+        <div class="grid__empty">
+          <p class="grid__empty-text">No films found matching your criteria.</p>
+        </div>
       }
     </div>
   `,
   styles: [`
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: var(--space-lg);
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: var(--space-lg) var(--space-md);
     }
     .grid__empty {
       grid-column: 1 / -1;
       text-align: center;
-      color: var(--text-secondary);
-      padding: var(--space-2xl);
-      font-size: 1.1rem;
+      padding: var(--space-3xl) var(--space-lg);
+    }
+    .grid__empty-text {
+      color: var(--text-tertiary);
+      font-size: 1.05rem;
+    }
+    @media (min-width: 1200px) {
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      }
     }
     @media (max-width: 480px) {
       .grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: var(--space-md);
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: var(--space-md) var(--space-sm);
       }
     }
   `],

@@ -19,9 +19,12 @@ import type { MovieDetail } from '../../core/models/movie.model';
       <app-loading-spinner />
     } @else if (movie(); as m) {
       <div class="detail">
-        @if (m.backdropUrl) {
-          <div class="detail__backdrop" [style.background-image]="'url(' + m.backdropUrl + ')'"></div>
-        }
+        <div class="detail__hero">
+          @if (m.backdropUrl) {
+            <div class="detail__backdrop" [style.background-image]="'url(' + m.backdropUrl + ')'"></div>
+          }
+          <div class="detail__hero-gradient"></div>
+        </div>
 
         <div class="detail__content container">
           <div class="detail__layout">
@@ -29,20 +32,25 @@ import type { MovieDetail } from '../../core/models/movie.model';
               @if (m.posterUrl) {
                 <img [src]="m.posterUrl" [alt]="m.title + ' poster'" />
               } @else {
-                <div class="detail__poster-placeholder">No Poster Available</div>
+                <div class="detail__poster-placeholder">
+                  <span class="detail__poster-title">{{ m.title }}</span>
+                  <span class="detail__poster-year">{{ m.year }}</span>
+                </div>
               }
             </div>
 
             <div class="detail__info">
-              <h1>{{ m.title }}</h1>
+              <h1 class="detail__title">{{ m.title }}</h1>
 
               <div class="detail__meta">
-                <span>{{ m.year }}</span>
+                <span class="detail__meta-item">{{ m.year }}</span>
                 @if (m.runtime) {
-                  <span>&bull; {{ m.runtime | runtime }}</span>
+                  <span class="detail__meta-sep">&middot;</span>
+                  <span class="detail__meta-item">{{ m.runtime | runtime }}</span>
                 }
                 @if (m.originalLanguage) {
-                  <span>&bull; {{ m.originalLanguage.toUpperCase() }}</span>
+                  <span class="detail__meta-sep">&middot;</span>
+                  <span class="detail__meta-item">{{ m.originalLanguage.toUpperCase() }}</span>
                 }
               </div>
 
@@ -54,73 +62,80 @@ import type { MovieDetail } from '../../core/models/movie.model';
                 <p class="detail__overview">{{ m.overview }}</p>
               }
 
-              <div class="detail__ratings">
-                @if (m.tmdbRating) {
-                  <div class="detail__rating">
-                    <span class="detail__rating-label">TMDb</span>
-                    <app-rating-stars [rating]="m.tmdbRating / 2" />
-                    <span class="detail__rating-value">{{ m.tmdbRating.toFixed(1) }}</span>
-                  </div>
-                }
-                @if (m.imdbRating) {
-                  <div class="detail__rating">
-                    <span class="detail__rating-label">IMDb</span>
-                    <span class="detail__rating-value">{{ m.imdbRating }}</span>
-                  </div>
-                }
-                @if (m.rottenTomatoesRating) {
-                  <div class="detail__rating">
-                    <span class="detail__rating-label">RT</span>
-                    <span class="detail__rating-value">{{ m.rottenTomatoesRating }}</span>
-                  </div>
-                }
-              </div>
+              @if (m.tmdbRating || m.imdbRating || m.rottenTomatoesRating) {
+                <div class="detail__ratings">
+                  @if (m.tmdbRating) {
+                    <div class="detail__rating-card">
+                      <span class="detail__rating-source">TMDb</span>
+                      <span class="detail__rating-score">{{ m.tmdbRating.toFixed(1) }}</span>
+                      <app-rating-stars [rating]="m.tmdbRating / 2" />
+                    </div>
+                  }
+                  @if (m.imdbRating) {
+                    <div class="detail__rating-card">
+                      <span class="detail__rating-source">IMDb</span>
+                      <span class="detail__rating-score">{{ m.imdbRating }}</span>
+                    </div>
+                  }
+                  @if (m.rottenTomatoesRating) {
+                    <div class="detail__rating-card">
+                      <span class="detail__rating-source">RT</span>
+                      <span class="detail__rating-score">{{ m.rottenTomatoesRating }}</span>
+                    </div>
+                  }
+                </div>
+              }
 
               <div class="detail__actions">
                 @if (streamingUrl()) {
-                  <a class="btn-primary" [routerLink]="['/watch', m.id]">Watch Film</a>
+                  <a class="btn-primary detail__watch-btn" [routerLink]="['/watch', m.id]">Watch Film</a>
                 }
                 @if (!collection.isInWatchlist(m.id) && !collection.isWatched(m.id)) {
-                  <button class="btn-secondary" (click)="addToWatchlist(m.id)">Add to Watchlist</button>
+                  <button class="btn-secondary" (click)="addToWatchlist(m.id)">+ Watchlist</button>
                 } @else if (collection.isInWatchlist(m.id)) {
-                  <button class="btn-secondary" (click)="removeFromWatchlist(m.id)">Remove from Watchlist</button>
+                  <button class="btn-secondary detail__active-btn" (click)="removeFromWatchlist(m.id)">In Watchlist</button>
                 }
                 @if (!collection.isWatched(m.id)) {
                   <button class="btn-secondary" (click)="markWatched(m.id)">Mark Watched</button>
                 }
               </div>
 
-              <div class="detail__links">
-                @if (m.imdbId) {
-                  <a [href]="'https://www.imdb.com/title/' + m.imdbId" target="_blank" rel="noopener">IMDb</a>
-                }
-                @if (m.internetArchiveId) {
-                  <a [href]="'https://archive.org/details/' + m.internetArchiveId" target="_blank" rel="noopener">Internet Archive</a>
-                }
-              </div>
-
-              @if (m.directors.length > 0) {
-                <div class="detail__section">
-                  <h3>Director{{ m.directors.length > 1 ? 's' : '' }}</h3>
-                  <p>{{ m.directors.join(', ') }}</p>
+              @if (m.directors.length > 0 || m.genres.length > 0) {
+                <div class="detail__details">
+                  @if (m.directors.length > 0) {
+                    <div class="detail__detail-row">
+                      <span class="detail__detail-label">Director{{ m.directors.length > 1 ? 's' : '' }}</span>
+                      <span>{{ m.directors.join(', ') }}</span>
+                    </div>
+                  }
+                  @if (m.genres.length > 0) {
+                    <div class="detail__detail-row">
+                      <span class="detail__detail-label">Genres</span>
+                      <div class="detail__tags">
+                        @for (genre of m.genres; track genre) {
+                          <span class="detail__tag">{{ genre }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
                 </div>
               }
 
-              @if (m.genres.length > 0) {
-                <div class="detail__section">
-                  <h3>Genres</h3>
-                  <div class="detail__tags">
-                    @for (genre of m.genres; track genre) {
-                      <span class="detail__tag">{{ genre }}</span>
-                    }
-                  </div>
+              @if (m.imdbId || m.internetArchiveId) {
+                <div class="detail__links">
+                  @if (m.imdbId) {
+                    <a class="detail__ext-link" [href]="'https://www.imdb.com/title/' + m.imdbId" target="_blank" rel="noopener">IMDb</a>
+                  }
+                  @if (m.internetArchiveId) {
+                    <a class="detail__ext-link" [href]="'https://archive.org/details/' + m.internetArchiveId" target="_blank" rel="noopener">Internet Archive</a>
+                  }
                 </div>
               }
             </div>
           </div>
 
           @if (m.cast.length > 0) {
-            <section class="detail__section">
+            <section class="detail__cast-section">
               <h2>Cast</h2>
               <div class="detail__cast">
                 @for (actor of m.cast; track actor.name) {
@@ -131,7 +146,9 @@ import type { MovieDetail } from '../../core/models/movie.model';
                       <div class="cast-card__placeholder"></div>
                     }
                     <p class="cast-card__name">{{ actor.name }}</p>
-                    <p class="cast-card__character">{{ actor.character }}</p>
+                    @if (actor.character) {
+                      <p class="cast-card__character">{{ actor.character }}</p>
+                    }
                   </div>
                 }
               </div>
@@ -140,7 +157,7 @@ import type { MovieDetail } from '../../core/models/movie.model';
         </div>
       </div>
     } @else {
-      <div class="container" style="padding: var(--space-2xl) 0; text-align: center;">
+      <div class="container detail__not-found">
         <h2>Film not found</h2>
         <p class="text-secondary">This film is not in our catalog.</p>
         <a class="btn-primary" routerLink="/browse">Browse Films</a>
@@ -148,131 +165,235 @@ import type { MovieDetail } from '../../core/models/movie.model';
     }
   `,
   styles: [`
-    .detail__backdrop {
-      height: 300px;
-      background-size: cover;
-      background-position: center;
+    .detail__hero {
       position: relative;
-      opacity: 0.3;
+      height: 350px;
+      overflow: hidden;
     }
-    .detail__content { padding: var(--space-xl) 0; }
+    .detail__backdrop {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center top;
+      opacity: 0.4;
+    }
+    .detail__hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 30%, var(--bg-deep) 100%);
+    }
+    .detail__content {
+      position: relative;
+      margin-top: -120px;
+      padding-bottom: var(--space-2xl);
+    }
     .detail__layout {
       display: grid;
-      grid-template-columns: 300px 1fr;
+      grid-template-columns: 280px 1fr;
       gap: var(--space-xl);
     }
     .detail__poster img {
       width: 100%;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-lg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-poster);
     }
     .detail__poster-placeholder {
       width: 100%;
       aspect-ratio: 2 / 3;
-      background-color: var(--bg-raised);
-      border-radius: var(--radius);
+      background: linear-gradient(170deg, #1a1a1a 0%, #222 40%, #1a1a1a 100%);
+      border-radius: var(--radius-lg);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: var(--text-tertiary);
+      gap: var(--space-sm);
+      box-shadow: var(--shadow-poster);
     }
-    .detail__meta {
+    .detail__poster-title {
+      font-family: var(--font-heading);
       color: var(--text-secondary);
       font-size: 1.1rem;
-      margin-bottom: var(--space-md);
+      text-align: center;
+      padding: 0 var(--space-md);
+    }
+    .detail__poster-year {
+      font-family: var(--font-heading);
+      color: var(--accent-gold);
+      font-size: 1.6rem;
+      font-weight: 700;
+      opacity: 0.5;
+    }
+    .detail__title {
+      font-size: 2.2rem;
+      margin-bottom: var(--space-sm);
+    }
+    .detail__meta {
       display: flex;
+      align-items: center;
       gap: var(--space-sm);
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-bottom: var(--space-lg);
+    }
+    .detail__meta-sep {
+      color: var(--text-tertiary);
     }
     .detail__tagline {
       font-style: italic;
       color: var(--accent-cream);
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       margin: 0 0 var(--space-md);
+      opacity: 0.85;
     }
     .detail__overview {
       color: var(--text-secondary);
-      line-height: 1.7;
-      margin: 0 0 var(--space-lg);
+      line-height: 1.8;
+      margin: 0 0 var(--space-xl);
+      font-size: 0.95rem;
     }
     .detail__ratings {
       display: flex;
-      gap: var(--space-xl);
-      margin-bottom: var(--space-lg);
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
       flex-wrap: wrap;
     }
-    .detail__rating {
+    .detail__rating-card {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: var(--space-sm);
+      gap: 4px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md) var(--space-lg);
+      min-width: 80px;
     }
-    .detail__rating-label {
-      color: var(--text-tertiary);
-      font-size: 0.85rem;
+    .detail__rating-source {
+      font-size: 0.7rem;
       text-transform: uppercase;
-    }
-    .detail__rating-value {
-      color: var(--accent-gold);
+      letter-spacing: 0.08em;
+      color: var(--text-tertiary);
       font-weight: 600;
+    }
+    .detail__rating-score {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      font-family: var(--font-heading);
     }
     .detail__actions {
       display: flex;
-      gap: var(--space-md);
+      gap: var(--space-sm);
       flex-wrap: wrap;
+      margin-bottom: var(--space-xl);
+    }
+    .detail__watch-btn {
+      padding: var(--space-md) var(--space-xl);
+      font-size: 1rem;
+      border-radius: var(--radius-lg);
+      display: inline-block;
+    }
+    .detail__active-btn {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .detail__details {
       margin-bottom: var(--space-lg);
     }
-    .detail__links {
+    .detail__detail-row {
       display: flex;
-      gap: var(--space-lg);
-      margin-bottom: var(--space-lg);
+      gap: var(--space-md);
+      padding: var(--space-sm) 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.95rem;
     }
-    .detail__section { margin-top: var(--space-xl); }
+    .detail__detail-row:last-child {
+      border-bottom: none;
+    }
+    .detail__detail-label {
+      color: var(--text-tertiary);
+      min-width: 90px;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      padding-top: 2px;
+    }
     .detail__tags {
       display: flex;
-      gap: var(--space-sm);
+      gap: var(--space-xs);
       flex-wrap: wrap;
     }
     .detail__tag {
       background-color: var(--bg-raised);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: var(--space-xs) var(--space-md);
-      font-size: 0.9rem;
+      border-radius: 14px;
+      padding: 2px 12px;
+      font-size: 0.85rem;
       color: var(--text-secondary);
+    }
+    .detail__links {
+      display: flex;
+      gap: var(--space-md);
+    }
+    .detail__ext-link {
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 4px 0;
+    }
+    .detail__cast-section {
+      margin-top: var(--space-2xl);
+      padding-top: var(--space-xl);
+      border-top: 1px solid var(--border);
     }
     .detail__cast {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       gap: var(--space-md);
     }
     .cast-card { text-align: center; }
     .cast-card img {
-      width: 80px;
-      height: 80px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
       object-fit: cover;
       margin-bottom: var(--space-sm);
+      box-shadow: var(--shadow-sm);
     }
     .cast-card__placeholder {
-      width: 80px;
-      height: 80px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
       background-color: var(--bg-raised);
       margin: 0 auto var(--space-sm);
     }
     .cast-card__name {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 600;
       margin: 0 0 2px;
+      color: var(--text-primary);
     }
     .cast-card__character {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--text-tertiary);
       margin: 0;
     }
+    .detail__not-found {
+      padding: var(--space-3xl) 0;
+      text-align: center;
+    }
     @media (max-width: 768px) {
-      .detail__layout { grid-template-columns: 1fr; }
-      .detail__poster { max-width: 250px; margin: 0 auto; }
-      .detail__backdrop { height: 200px; }
+      .detail__hero { height: 220px; }
+      .detail__content { margin-top: -60px; }
+      .detail__layout {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+      }
+      .detail__poster {
+        max-width: 200px;
+        margin: 0 auto;
+      }
+      .detail__title { font-size: 1.8rem; }
     }
   `],
 })

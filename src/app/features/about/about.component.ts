@@ -19,22 +19,20 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 
       <section class="about__section">
         <h2>Data Sources</h2>
-        <p>Our catalog is built from multiple trusted sources:</p>
-        <ul class="about__list">
-          <li>
-            <strong>Wikidata</strong> &mdash; Our master film database, providing the comprehensive
-            list of black &amp; white films with cross-referenced identifiers.
-          </li>
-          <li>
-            <strong>The Movie Database (TMDb)</strong> &mdash; Provides poster images, cast information,
-            synopses, and community ratings for movie detail pages. This product uses the TMDb API
-            but is not endorsed or certified by TMDb.
-          </li>
-          <li>
-            <strong>Internet Archive</strong> &mdash; Hosts public domain films that you can watch
-            for free directly on our site.
-          </li>
-        </ul>
+        <div class="about__sources">
+          <div class="about__source">
+            <h3>Wikidata</h3>
+            <p>Our master film database, providing the comprehensive list of black &amp; white films with cross-referenced identifiers.</p>
+          </div>
+          <div class="about__source">
+            <h3>TMDb</h3>
+            <p>Provides poster images, cast information, synopses, and community ratings for movie detail pages. This product uses the TMDb API but is not endorsed or certified by TMDb.</p>
+          </div>
+          <div class="about__source">
+            <h3>Internet Archive</h3>
+            <p>Hosts public domain films that you can watch for free directly on our site.</p>
+          </div>
+        </div>
       </section>
 
       <section class="about__section">
@@ -57,7 +55,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
     </div>
   `,
   styles: [`
-    .about { padding: var(--space-xl) 0; max-width: 800px; }
+    .about { padding: var(--space-2xl) 0; max-width: 800px; }
     .about__section {
       margin-bottom: var(--space-2xl);
     }
@@ -65,18 +63,24 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
       color: var(--text-secondary);
       line-height: 1.8;
     }
-    .about__list {
-      list-style: none;
-      padding: 0;
+    .about__sources {
+      display: grid;
+      gap: var(--space-md);
+      margin-top: var(--space-md);
     }
-    .about__list li {
-      padding: var(--space-md) 0;
-      border-bottom: 1px solid var(--border);
-      color: var(--text-secondary);
-      line-height: 1.7;
+    .about__source {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
     }
-    .about__list li strong {
+    .about__source h3 {
       color: var(--accent-gold);
+      margin-bottom: var(--space-sm);
+    }
+    .about__source p {
+      margin: 0;
+      font-size: 0.95rem;
     }
   `],
 })

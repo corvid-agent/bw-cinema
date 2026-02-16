@@ -45,7 +45,7 @@ describe('MovieCardComponent', () => {
 
   it('should show streamable badge', () => {
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).toContain('Watch Free');
+    expect(el.textContent).toContain('Free');
   });
 
   it('should render poster image', () => {
@@ -73,7 +73,7 @@ describe('MovieCardComponent', () => {
     const nonStreamable = { ...mockMovie, isStreamable: false };
     fixture.componentRef.setInput('movie', nonStreamable);
     fixture.detectChanges();
-    const el = fixture.nativeElement as HTMLElement;
-    expect(el.textContent).not.toContain('Watch Free');
+    const badge = fixture.nativeElement.querySelector('.card__badge');
+    expect(badge).toBeFalsy();
   });
 });

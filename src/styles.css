@@ -1,28 +1,26 @@
 /* BW Cinema — Classic Silver Screen Theme */
 
-/* Self-hosted fonts — using system fallbacks until woff2 files are added */
-/* To add: download Playfair Display + Source Sans Pro woff2 into src/assets/fonts/ */
-
 :root {
   /* Backgrounds */
-  --bg-deep: #111111;
-  --bg-surface: #1a1a1a;
-  --bg-raised: #222222;
-  --bg-input: #181818;
-  --bg-hover: #2a2a2a;
+  --bg-deep: #0d0d0d;
+  --bg-surface: #161616;
+  --bg-raised: #1e1e1e;
+  --bg-input: #141414;
+  --bg-hover: #252525;
 
   /* Borders */
-  --border: #333333;
-  --border-bright: #444444;
+  --border: #2a2a2a;
+  --border-bright: #3a3a3a;
 
   /* Text */
-  --text-primary: #f0f0f0;
-  --text-secondary: #b0b0b0;
-  --text-tertiary: #777777;
+  --text-primary: #f0ede8;
+  --text-secondary: #a8a29e;
+  --text-tertiary: #6b6560;
 
   /* Accents */
   --accent-gold: #d4a843;
-  --accent-gold-dim: rgba(212, 168, 67, 0.15);
+  --accent-gold-bright: #e8c15e;
+  --accent-gold-dim: rgba(212, 168, 67, 0.12);
   --accent-cream: #f5e6c8;
   --accent-silver: #c0c0c0;
 
@@ -35,11 +33,12 @@
   --radius-sm: 4px;
   --radius: 8px;
   --radius-lg: 12px;
+  --radius-xl: 16px;
 
   /* Typography */
   --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-body: 'Source Sans Pro', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-size-base: 18px;
+  --font-body: 'Source Sans 3', 'Source Sans Pro', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-size-base: 17px;
   --line-height: 1.6;
 
   /* Spacing */
@@ -49,17 +48,19 @@
   --space-lg: 24px;
   --space-xl: 32px;
   --space-2xl: 48px;
+  --space-3xl: 64px;
 
   /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-poster: 0 4px 20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 /* Sepia theme variant */
 [data-theme='sepia'] {
   --bg-deep: #1a1610;
-  --bg-surface: #231e16;
+  --bg-surface: #211c14;
   --bg-raised: #2c261c;
   --bg-input: #1e1912;
   --bg-hover: #332c22;
@@ -78,6 +79,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -91,35 +96,44 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb {
+  background: var(--border-bright);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
 /* Film grain overlay */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: 0.03;
+  opacity: 0.025;
   background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="256" height="256" filter="url(%23n)" opacity="0.5"/%3E%3C/svg%3E');
   background-size: 256px 256px;
   z-index: 9999;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body::after {
-    display: none;
-  }
+  html { scroll-behavior: auto; }
+  body::after { display: none; }
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.25;
   margin: 0 0 var(--space-md);
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
-h1 { font-size: 2.4rem; }
-h2 { font-size: 1.8rem; }
-h3 { font-size: 1.4rem; }
+h1 { font-size: 2.4rem; font-weight: 900; }
+h2 { font-size: 1.6rem; }
+h3 { font-size: 1.25rem; }
 
 a {
   color: var(--accent-gold);
@@ -133,46 +147,50 @@ a:hover {
 
 /* Focus styles — accessibility */
 :focus-visible {
-  outline: 3px solid var(--accent-gold);
+  outline: 2px solid var(--accent-gold);
   outline-offset: 2px;
 }
 
 /* Buttons */
 button, .btn {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: 0.95rem;
   cursor: pointer;
   border: none;
   border-radius: var(--radius);
   min-height: 44px;
   min-width: 44px;
   padding: var(--space-sm) var(--space-lg);
-  transition: background-color 0.2s, color 0.2s, transform 0.1s;
+  transition: all 0.2s ease;
+  letter-spacing: 0.01em;
 }
 
 button:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .btn-primary {
   background-color: var(--accent-gold);
   color: var(--bg-deep);
   font-weight: 600;
+  box-shadow: 0 2px 8px rgba(212, 168, 67, 0.25);
 }
 
 .btn-primary:hover {
-  background-color: var(--accent-cream);
+  background-color: var(--accent-gold-bright);
+  box-shadow: 0 4px 16px rgba(212, 168, 67, 0.35);
 }
 
 .btn-secondary {
   background-color: var(--bg-raised);
   color: var(--text-primary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-bright);
 }
 
 .btn-secondary:hover {
   background-color: var(--bg-hover);
-  border-color: var(--border-bright);
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
 }
 
 .btn-ghost {
@@ -195,11 +213,13 @@ input, select, textarea {
   border-radius: var(--radius);
   padding: var(--space-sm) var(--space-md);
   min-height: 44px;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 input:focus, select:focus, textarea:focus {
   border-color: var(--accent-gold);
+  box-shadow: 0 0 0 3px var(--accent-gold-dim);
+  outline: none;
 }
 
 input::placeholder {
@@ -208,9 +228,9 @@ input::placeholder {
 
 /* Utility classes */
 .container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 var(--space-md);
+  padding: 0 var(--space-lg);
 }
 
 .sr-only {
@@ -229,13 +249,22 @@ input::placeholder {
 .text-secondary { color: var(--text-secondary); }
 .text-center { text-align: center; }
 
+/* Image rendering */
+img {
+  image-rendering: auto;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   :root {
     --font-size-base: 16px;
   }
 
+  .container {
+    padding: 0 var(--space-md);
+  }
+
   h1 { font-size: 1.8rem; }
-  h2 { font-size: 1.4rem; }
-  h3 { font-size: 1.2rem; }
+  h2 { font-size: 1.3rem; }
+  h3 { font-size: 1.1rem; }
 }

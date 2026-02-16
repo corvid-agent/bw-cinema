@@ -8,21 +8,24 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   template: `
     <header class="header">
       <div class="header__inner container">
-        <a class="header__logo" routerLink="/home">BW Cinema</a>
+        <a class="header__logo" routerLink="/home">
+          <span class="header__logo-icon">&#9670;</span>
+          BW Cinema
+        </a>
         <button
           class="header__hamburger"
           (click)="menuOpen.set(!menuOpen())"
           [attr.aria-expanded]="menuOpen()"
           aria-label="Toggle navigation menu"
         >
-          <span class="header__hamburger-bar"></span>
-          <span class="header__hamburger-bar"></span>
-          <span class="header__hamburger-bar"></span>
+          <span class="header__hamburger-bar" [class.open]="menuOpen()"></span>
+          <span class="header__hamburger-bar" [class.open]="menuOpen()"></span>
+          <span class="header__hamburger-bar" [class.open]="menuOpen()"></span>
         </button>
         <nav class="header__nav" [class.header__nav--open]="menuOpen()" role="navigation" aria-label="Main navigation">
           <a routerLink="/home" routerLinkActive="active" (click)="menuOpen.set(false)">Home</a>
           <a routerLink="/browse" routerLinkActive="active" (click)="menuOpen.set(false)">Browse</a>
-          <a routerLink="/collection" routerLinkActive="active" (click)="menuOpen.set(false)">My Collection</a>
+          <a routerLink="/collection" routerLinkActive="active" (click)="menuOpen.set(false)">Collection</a>
           <a routerLink="/about" routerLinkActive="active" (click)="menuOpen.set(false)">About</a>
         </nav>
       </div>
@@ -30,7 +33,9 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   `,
   styles: [`
     .header {
-      background-color: var(--bg-surface);
+      background-color: rgba(13, 13, 13, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
@@ -40,31 +45,45 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 64px;
+      height: 60px;
     }
     .header__logo {
       font-family: var(--font-heading);
-      font-size: 1.5rem;
+      font-size: 1.35rem;
       font-weight: 700;
-      color: var(--accent-gold);
+      color: var(--text-primary);
       text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      letter-spacing: 0.02em;
     }
-    .header__logo:hover { color: var(--accent-cream); }
+    .header__logo-icon {
+      color: var(--accent-gold);
+      font-size: 0.7rem;
+    }
+    .header__logo:hover { color: var(--accent-gold); }
     .header__nav {
       display: flex;
-      gap: var(--space-lg);
+      gap: var(--space-xs);
     }
     .header__nav a {
-      color: var(--text-secondary);
-      font-size: 1rem;
-      padding: var(--space-sm) 0;
-      border-bottom: 2px solid transparent;
-      transition: color 0.2s, border-color 0.2s;
+      color: var(--text-tertiary);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: var(--radius);
+      transition: color 0.2s, background-color 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
-    .header__nav a:hover,
-    .header__nav a.active {
+    .header__nav a:hover {
       color: var(--text-primary);
-      border-bottom-color: var(--accent-gold);
+      background-color: var(--bg-hover);
+    }
+    .header__nav a.active {
+      color: var(--accent-gold);
+      background-color: var(--accent-gold-dim);
     }
     .header__hamburger {
       display: none;
@@ -81,29 +100,41 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
     }
     .header__hamburger-bar {
       display: block;
-      width: 24px;
+      width: 22px;
       height: 2px;
       background-color: var(--text-primary);
-      transition: transform 0.2s;
+      transition: transform 0.3s, opacity 0.3s;
+      border-radius: 1px;
+    }
+    .header__hamburger-bar.open:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+    .header__hamburger-bar.open:nth-child(2) {
+      opacity: 0;
+    }
+    .header__hamburger-bar.open:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
     }
     @media (max-width: 768px) {
       .header__hamburger { display: flex; }
       .header__nav {
         display: none;
         position: absolute;
-        top: 64px;
+        top: 60px;
         left: 0;
         right: 0;
-        background-color: var(--bg-surface);
+        background-color: rgba(13, 13, 13, 0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         flex-direction: column;
-        padding: var(--space-md);
+        padding: var(--space-sm) var(--space-md);
         border-bottom: 1px solid var(--border);
-        gap: var(--space-sm);
+        gap: 2px;
       }
       .header__nav--open { display: flex; }
       .header__nav a {
-        padding: var(--space-sm) var(--space-md);
-        border-bottom: none;
+        padding: var(--space-md);
+        border-radius: var(--radius);
       }
     }
   `],

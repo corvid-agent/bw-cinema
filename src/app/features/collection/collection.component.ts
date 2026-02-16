@@ -1,14 +1,14 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
-import type { MovieSummary } from '../../core/models/movie.model';
 
 @Component({
   selector: 'app-collection',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MovieGridComponent, LoadingSpinnerComponent],
+  imports: [RouterLink, MovieGridComponent, LoadingSpinnerComponent],
   template: `
     <div class="collection container">
       <h1>My Collection</h1>
@@ -24,7 +24,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
             role="tab"
             [attr.aria-selected]="activeTab() === 'watchlist'"
           >
-            Watchlist ({{ watchlistMovies().length }})
+            Watchlist
+            @if (watchlistMovies().length > 0) {
+              <span class="collection__count">{{ watchlistMovies().length }}</span>
+            }
           </button>
           <button
             class="collection__tab"
@@ -33,7 +36,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
             role="tab"
             [attr.aria-selected]="activeTab() === 'watched'"
           >
-            Watched ({{ watchedMovies().length }})
+            Watched
+            @if (watchedMovies().length > 0) {
+              <span class="collection__count">{{ watchedMovies().length }}</span>
+            }
           </button>
         </div>
 
@@ -43,8 +49,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               <app-movie-grid [movies]="watchlistMovies()" />
             } @else {
               <div class="collection__empty">
-                <h2>Your watchlist is empty</h2>
-                <p class="text-secondary">Browse films and add ones you'd like to watch later.</p>
+                <p class="collection__empty-title">No films in your watchlist</p>
+                <p class="collection__empty-text">Browse films and add ones you'd like to watch later.</p>
+                <a class="btn-primary" routerLink="/browse">Browse Films</a>
               </div>
             }
           </div>
@@ -56,8 +63,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               <app-movie-grid [movies]="watchedMovies()" />
             } @else {
               <div class="collection__empty">
-                <h2>No films watched yet</h2>
-                <p class="text-secondary">Films you mark as watched will appear here.</p>
+                <p class="collection__empty-title">No films watched yet</p>
+                <p class="collection__empty-text">Films you mark as watched will appear here.</p>
+                <a class="btn-primary" routerLink="/browse">Discover Films</a>
               </div>
             }
           </div>
@@ -69,29 +77,53 @@ import type { MovieSummary } from '../../core/models/movie.model';
     .collection { padding: var(--space-xl) 0; }
     .collection__tabs {
       display: flex;
-      gap: var(--space-sm);
+      gap: 2px;
       margin-bottom: var(--space-xl);
-      border-bottom: 1px solid var(--border);
+      background-color: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      padding: 4px;
+      width: fit-content;
     }
     .collection__tab {
       background: none;
       border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--text-secondary);
-      font-size: 1.1rem;
-      padding: var(--space-md) var(--space-lg);
+      color: var(--text-tertiary);
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: var(--space-sm) var(--space-xl);
       cursor: pointer;
-      transition: color 0.2s, border-color 0.2s;
-      min-height: 48px;
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      min-height: 40px;
     }
     .collection__tab:hover { color: var(--text-primary); }
     .collection__tab--active {
       color: var(--accent-gold);
-      border-bottom-color: var(--accent-gold);
+      background-color: var(--bg-raised);
+    }
+    .collection__count {
+      font-size: 0.75rem;
+      background-color: var(--accent-gold-dim);
+      color: var(--accent-gold);
+      padding: 1px 8px;
+      border-radius: 10px;
     }
     .collection__empty {
       text-align: center;
-      padding: var(--space-2xl);
+      padding: var(--space-3xl) var(--space-lg);
+    }
+    .collection__empty-title {
+      font-family: var(--font-heading);
+      font-size: 1.3rem;
+      color: var(--text-primary);
+      margin: 0 0 var(--space-sm);
+    }
+    .collection__empty-text {
+      color: var(--text-tertiary);
+      margin: 0 0 var(--space-lg);
     }
   `],
 })

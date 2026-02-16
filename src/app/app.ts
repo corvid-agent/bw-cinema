@@ -21,7 +21,7 @@ import { BackToTopComponent } from './shared/components/back-to-top.component';
   `,
   styles: [`
     main {
-      min-height: calc(100vh - 64px - 120px);
+      min-height: calc(100vh - 60px - 100px);
     }
   `],
 })
