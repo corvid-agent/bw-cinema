@@ -124,6 +124,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="decade__stat-label">Avg Film Age (yrs)</span>
               </div>
             }
+            @if (nonEnglishCount() > 0) {
+              <div class="decade__stat">
+                <span class="decade__stat-value">{{ nonEnglishCount() }}</span>
+                <span class="decade__stat-label">Non-English</span>
+              </div>
+            }
           </div>
 
           @if (decadeFact(); as fact) {
@@ -751,6 +757,12 @@ export class DecadeComponent implements OnInit {
   readonly coDirectedCount = computed(() =>
     this.films().filter((m) => m.directors.length > 1).length
   );
+
+  readonly nonEnglishCount = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return 0;
+    return f.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
+  });
 
   readonly uniqueGenreCount = computed(() => {
     const genres = new Set<string>();

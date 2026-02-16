@@ -87,6 +87,9 @@ interface QuizStep {
           @if (resultAvgFilmAge(); as rafa) {
             <p class="quiz__decade-range">Avg age: {{ rafa }} years</p>
           }
+          @if (resultCoDirectedCount(); as rcdc) {
+            <p class="quiz__decade-range">{{ rcdc }} co-directed films</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -506,6 +509,13 @@ export class QuizComponent implements OnInit {
     if (films.length < 2) return null;
     const now = new Date().getFullYear();
     return Math.round(films.reduce((s, m) => s + (now - m.year), 0) / films.length);
+  });
+
+  readonly resultCoDirectedCount = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const count = films.filter((m) => m.directors.length > 1).length;
+    return count > 0 ? count : null;
   });
 
   readonly resultOldestYear = computed(() => {

@@ -195,6 +195,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
           @if (yearSpan(); as ys) {
             <p class="compare__double-feature-note">Spanning {{ ys }}</p>
           }
+          @if (combinedGenreCount(); as cgc) {
+            <p class="compare__double-feature-note">{{ cgc }} genres between them</p>
+          }
           @if (combinedAvgRating(); as avg) {
             <div class="compare__combined-avg">
               Combined Avg: {{ avg }}/10
