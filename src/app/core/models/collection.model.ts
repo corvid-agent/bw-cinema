@@ -8,6 +8,8 @@ export interface WatchedItem {
   watchedAt: number;
   userRating: number | null;
   notes: string | null;
+  review: string | null;
+  reviewedAt: number | null;
 }
 
 export interface Playlist {

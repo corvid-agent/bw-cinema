@@ -8,8 +8,6 @@ import { StreamingService } from '../../core/services/streaming.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { RecentlyViewedService } from '../../core/services/recently-viewed.service';
 import { RatingStarsComponent } from '../../shared/components/rating-stars.component';
-// MovieGridComponent removed — carousel is inline
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
 import { SkeletonDetailComponent } from '../../shared/components/skeleton-detail.component';
 import { RuntimePipe } from '../../shared/pipes/runtime.pipe';
 import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
@@ -17,7 +15,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
 @Component({
   selector: 'app-movie',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RatingStarsComponent, LoadingSpinnerComponent, SkeletonDetailComponent, RuntimePipe],
+  imports: [RouterLink, RatingStarsComponent, SkeletonDetailComponent, RuntimePipe],
   template: `
     @if (loading()) {
       <app-skeleton-detail />
@@ -179,6 +177,32 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                 </div>
               }
 
+              @if (collection.isWatched(m.id)) {
+                <div class="detail__review">
+                  <label class="detail__notes-label" for="film-review">Your Review</label>
+                  @if (!reviewEditing()) {
+                    @if (collection.getReview(m.id)) {
+                      <div class="detail__review-display">
+                        <p class="detail__review-text">{{ collection.getReview(m.id) }}</p>
+                        <button class="btn-ghost detail__review-edit" (click)="reviewEditing.set(true)">Edit</button>
+                      </div>
+                    } @else {
+                      <button class="btn-secondary detail__review-start" (click)="reviewEditing.set(true)">Write a Review</button>
+                    }
+                  } @else {
+                    <textarea
+                      id="film-review"
+                      class="detail__notes-input detail__review-input"
+                      placeholder="Share your thoughts on this film. What made it memorable?"
+                      [value]="collection.getReview(m.id)"
+                      (blur)="onReviewSave(m.id, $event)"
+                      rows="5"
+                    ></textarea>
+                    <p class="detail__review-hint">Click outside to save</p>
+                  }
+                </div>
+              }
+
               @if (m.directors.length > 0 || m.genres.length > 0) {
                 <div class="detail__details">
                   @if (m.directors.length > 0) {
@@ -222,7 +246,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
               <h2>Cast</h2>
               <div class="detail__cast">
                 @for (actor of m.cast; track actor.name) {
-                  <div class="cast-card">
+                  <a class="cast-card" [routerLink]="['/actor', actor.name]">
                     @if (actor.profileUrl) {
                       <img [src]="actor.profileUrl" [alt]="actor.name" loading="lazy" />
                     } @else {
@@ -232,7 +256,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                     @if (actor.character) {
                       <p class="cast-card__character">{{ actor.character }}</p>
                     }
-                  </div>
+                  </a>
                 }
               </div>
             </section>
@@ -455,7 +479,17 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       gap: var(--space-md);
     }
-    .cast-card { text-align: center; }
+    .cast-card {
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s;
+    }
+    .cast-card:hover { color: inherit; }
+    @media (hover: hover) and (pointer: fine) {
+      .cast-card:hover { transform: translateY(-2px); }
+    }
+    .cast-card:hover .cast-card__name { color: var(--accent-gold); }
     .cast-card img {
       width: 72px;
       height: 72px;
@@ -663,6 +697,40 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       padding: var(--space-3xl) 0;
       text-align: center;
     }
+    .detail__review {
+      margin-bottom: var(--space-xl);
+    }
+    .detail__review-display {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md) var(--space-lg);
+    }
+    .detail__review-text {
+      color: var(--text-secondary);
+      line-height: 1.8;
+      font-size: 0.95rem;
+      margin: 0 0 var(--space-sm);
+      white-space: pre-wrap;
+    }
+    .detail__review-edit {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+    }
+    .detail__review-edit:hover {
+      color: var(--accent-gold);
+    }
+    .detail__review-start {
+      font-size: 0.9rem;
+    }
+    .detail__review-input {
+      min-height: 120px;
+    }
+    .detail__review-hint {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      margin: var(--space-xs) 0 0;
+    }
     .detail__imdb-btn {
       border-color: rgba(245, 197, 24, 0.5);
       color: #f5c518;
@@ -730,6 +798,7 @@ export class MovieComponent implements OnInit {
   readonly streamingUrl = signal<string | null>(null);
   readonly shareMenuOpen = signal(false);
   readonly playlistMenuOpen = signal(false);
+  readonly reviewEditing = signal(false);
   private readonly summary = signal<MovieSummary | null>(null);
   readonly similarFilms = computed(() => {
     const s = this.summary();
@@ -824,6 +893,15 @@ export class MovieComponent implements OnInit {
   onNoteChange(movieId: string, event: Event): void {
     const value = (event.target as HTMLTextAreaElement).value;
     this.collection.setNote(movieId, value);
+  }
+
+  onReviewSave(movieId: string, event: Event): void {
+    const value = (event.target as HTMLTextAreaElement).value;
+    this.collection.setReview(movieId, value);
+    this.reviewEditing.set(false);
+    if (value.trim()) {
+      this.notifications.show('Review saved', 'success');
+    }
   }
 
   private updateMetaTags(movie: { title: string; year: number; posterUrl: string | null; directors: string[]; genres: string[] }): void {

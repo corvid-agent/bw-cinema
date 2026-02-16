@@ -29,8 +29,9 @@ import { AccessibilityService } from '../../core/services/accessibility.service'
           <a routerLink="/browse" routerLinkActive="active" (click)="menuOpen.set(false)">Browse</a>
           <a routerLink="/collection" routerLinkActive="active" (click)="menuOpen.set(false)">Collection</a>
           <a routerLink="/compare" routerLinkActive="active" (click)="menuOpen.set(false)">Compare</a>
-          <a routerLink="/about" routerLinkActive="active" (click)="menuOpen.set(false)">About</a>
+          <a routerLink="/explore" routerLinkActive="active" (click)="menuOpen.set(false)">Explore</a>
           <a routerLink="/stats" routerLinkActive="active" (click)="menuOpen.set(false)">Stats</a>
+          <a routerLink="/about" routerLinkActive="active" (click)="menuOpen.set(false)">About</a>
           <button
             class="header__theme-toggle"
             (click)="theme.toggle()"

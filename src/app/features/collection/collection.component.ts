@@ -305,6 +305,25 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                 </section>
               }
 
+              <section class="challenges">
+                <h3>{{ monthlyChallenges().month }} Challenges</h3>
+                <div class="challenges__grid">
+                  @for (ch of monthlyChallenges().challenges; track ch.id) {
+                    <div class="challenges__card" [class.challenges__card--done]="ch.current >= ch.target">
+                      <span class="challenges__icon">{{ ch.icon }}</span>
+                      <div class="challenges__info">
+                        <span class="challenges__name">{{ ch.name }}</span>
+                        <span class="challenges__desc">{{ ch.description }}</span>
+                        <div class="challenges__bar-track">
+                          <div class="challenges__bar-fill" [style.width.%]="(ch.current / ch.target) * 100"></div>
+                        </div>
+                        <span class="challenges__progress">{{ ch.current }}/{{ ch.target }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </section>
+
               <div class="stats__sections">
                 <section class="stats__section">
                   <h3>Top Genres</h3>
@@ -365,6 +384,38 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                         <span class="stats__trend-label">{{ m.label }}</span>
                       </div>
                     }
+                  </div>
+                </section>
+              }
+
+              @if (watchHeatmap().weeks.length > 0) {
+                <section class="heatmap">
+                  <h3>Watch Calendar</h3>
+                  <div class="heatmap__scroll">
+                    <div class="heatmap__grid">
+                      @for (week of watchHeatmap().weeks; track $index) {
+                        <div class="heatmap__col">
+                          @for (day of week.days; track day.date) {
+                            <div
+                              class="heatmap__cell"
+                              [class.heatmap__cell--l1]="day.level === 1"
+                              [class.heatmap__cell--l2]="day.level === 2"
+                              [class.heatmap__cell--l3]="day.level === 3"
+                              [class.heatmap__cell--future]="day.level === -1"
+                              [title]="day.count >= 0 ? day.date + ': ' + day.count + ' film(s)' : ''"
+                            ></div>
+                          }
+                        </div>
+                      }
+                    </div>
+                    <div class="heatmap__legend">
+                      <span>Less</span>
+                      <div class="heatmap__cell heatmap__cell--l0"></div>
+                      <div class="heatmap__cell heatmap__cell--l1"></div>
+                      <div class="heatmap__cell heatmap__cell--l2"></div>
+                      <div class="heatmap__cell heatmap__cell--l3"></div>
+                      <span>More</span>
+                    </div>
                   </div>
                 </section>
               }
@@ -762,6 +813,114 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       color: var(--text-tertiary);
       font-size: 1.2rem;
     }
+    /* Challenges */
+    .challenges {
+      margin-bottom: var(--space-xl);
+    }
+    .challenges h3 {
+      margin-bottom: var(--space-md);
+    }
+    .challenges__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: var(--space-sm);
+    }
+    .challenges__card {
+      display: flex;
+      gap: var(--space-md);
+      align-items: flex-start;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+      transition: border-color 0.3s;
+    }
+    .challenges__card--done {
+      border-color: var(--accent-gold);
+      background-color: var(--accent-gold-dim);
+    }
+    .challenges__icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .challenges__info {
+      flex: 1;
+      min-width: 0;
+    }
+    .challenges__name {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    .challenges__desc {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      margin-bottom: var(--space-xs);
+    }
+    .challenges__bar-track {
+      height: 6px;
+      background-color: var(--bg-raised);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+    .challenges__bar-fill {
+      height: 100%;
+      background-color: var(--accent-gold);
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+    .challenges__progress {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+    }
+    /* Heatmap */
+    .heatmap {
+      margin-top: var(--space-2xl);
+    }
+    .heatmap h3 {
+      margin-bottom: var(--space-md);
+    }
+    .heatmap__scroll {
+      overflow-x: auto;
+      padding-bottom: var(--space-sm);
+    }
+    .heatmap__grid {
+      display: flex;
+      gap: 2px;
+    }
+    .heatmap__col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .heatmap__cell {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      background-color: var(--bg-raised);
+    }
+    .heatmap__cell--l1 { background-color: rgba(212, 175, 55, 0.3); }
+    .heatmap__cell--l2 { background-color: rgba(212, 175, 55, 0.6); }
+    .heatmap__cell--l3 { background-color: var(--accent-gold); }
+    .heatmap__cell--future { background-color: transparent; }
+    .heatmap__legend {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: var(--space-sm);
+      justify-content: flex-end;
+      font-size: 0.65rem;
+      color: var(--text-tertiary);
+    }
+    .heatmap__legend .heatmap__cell {
+      width: 10px;
+      height: 10px;
+    }
+    .heatmap__cell--l0 { background-color: var(--bg-raised); }
     /* Film Release Timeline */
     .film-tl {
       margin-top: var(--space-2xl);
@@ -1101,6 +1260,75 @@ export class CollectionComponent implements OnInit {
       count: yearCounts.get(year)!,
       pct: ((year - min) / range) * 100,
     }));
+  });
+
+  // Monthly challenges
+  readonly monthlyChallenges = computed(() => {
+    const watched = this.collectionService.watched();
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+
+    const monthWatched = watched.filter((w) => {
+      const d = new Date(w.watchedAt);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    });
+    const monthRated = monthWatched.filter((w) => w.userRating != null);
+    const monthReviewed = monthWatched.filter((w) => w.review);
+    const monthMovies = this.catalog.movies().filter(
+      (m) => monthWatched.some((w) => w.movieId === m.id)
+    );
+    const monthDecades = new Set(monthMovies.map((m) => Math.floor(m.year / 10) * 10));
+    const monthName = now.toLocaleDateString('en-US', { month: 'long' });
+
+    return {
+      month: monthName,
+      challenges: [
+        { id: 'watch5', name: 'Film Buff', description: `Watch 5 films in ${monthName}`, current: Math.min(monthWatched.length, 5), target: 5, icon: '🎬' },
+        { id: 'rate3', name: 'Critic', description: `Rate 3 films in ${monthName}`, current: Math.min(monthRated.length, 3), target: 3, icon: '⭐' },
+        { id: 'review1', name: 'Reviewer', description: `Write a review in ${monthName}`, current: Math.min(monthReviewed.length, 1), target: 1, icon: '✍️' },
+        { id: 'decades2', name: 'Time Traveler', description: 'Watch from 2+ decades this month', current: Math.min(monthDecades.size, 2), target: 2, icon: '📅' },
+      ],
+    };
+  });
+
+  // Watch heatmap
+  readonly watchHeatmap = computed(() => {
+    const watched = this.collectionService.watched();
+    if (watched.length === 0) return { weeks: [] as { days: { date: string; count: number; level: number }[] }[] };
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const dayCounts = new Map<string, number>();
+    for (const w of watched) {
+      const d = new Date(w.watchedAt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      dayCounts.set(key, (dayCounts.get(key) ?? 0) + 1);
+    }
+
+    const startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - 364 - startDate.getDay());
+
+    const weeks: { days: { date: string; count: number; level: number }[] }[] = [];
+    for (let w = 0; w < 53; w++) {
+      const days: { date: string; count: number; level: number }[] = [];
+      for (let d = 0; d < 7; d++) {
+        const cellDate = new Date(startDate);
+        cellDate.setDate(cellDate.getDate() + w * 7 + d);
+        const key = `${cellDate.getFullYear()}-${String(cellDate.getMonth() + 1).padStart(2, '0')}-${String(cellDate.getDate()).padStart(2, '0')}`;
+        const count = dayCounts.get(key) ?? 0;
+        const isFuture = cellDate > today;
+        days.push({
+          date: key,
+          count: isFuture ? -1 : count,
+          level: isFuture ? -1 : count === 0 ? 0 : count === 1 ? 1 : count === 2 ? 2 : 3,
+        });
+      }
+      weeks.push({ days });
+    }
+
+    return { weeks };
   });
 
   // Playlists

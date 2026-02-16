@@ -41,7 +41,7 @@ export class CollectionService {
     if (this.watchedIds().has(movieId)) return;
     this.watched.update((list) => [
       ...list,
-      { movieId, watchedAt: Date.now(), userRating, notes: null },
+      { movieId, watchedAt: Date.now(), userRating, notes: null, review: null, reviewedAt: null },
     ]);
     this.removeFromWatchlist(movieId);
     this.removeProgress(movieId);
@@ -70,6 +70,18 @@ export class CollectionService {
 
   getNote(movieId: string): string {
     return this.watched().find((w) => w.movieId === movieId)?.notes ?? '';
+  }
+
+  setReview(movieId: string, review: string): void {
+    const trimmed = review.trim() || null;
+    this.watched.update((list) =>
+      list.map((w) => (w.movieId === movieId ? { ...w, review: trimmed, reviewedAt: trimmed ? Date.now() : null } : w))
+    );
+    this.save();
+  }
+
+  getReview(movieId: string): string {
+    return this.watched().find((w) => w.movieId === movieId)?.review ?? '';
   }
 
   // Favorites
@@ -179,7 +191,7 @@ export class CollectionService {
       if (raw) {
         const collection: UserCollection = JSON.parse(raw);
         this.watchlist.set(collection.watchlist ?? []);
-        this.watched.set((collection.watched ?? []).map((w) => ({ ...w, notes: w.notes ?? null })));
+        this.watched.set((collection.watched ?? []).map((w) => ({ ...w, notes: w.notes ?? null, review: w.review ?? null, reviewedAt: w.reviewedAt ?? null })));
         this.favorites.set(collection.favorites ?? []);
         this.playlists.set(collection.playlists ?? []);
       }

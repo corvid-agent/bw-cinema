@@ -64,5 +64,15 @@ export const routes: Routes = [
     title: 'What Should I Watch? — BW Cinema',
     loadComponent: () => import('./features/quiz/quiz.component').then((m) => m.QuizComponent),
   },
+  {
+    path: 'actor/:name',
+    title: 'Actor — BW Cinema',
+    loadComponent: () => import('./features/actor/actor.component').then((m) => m.ActorComponent),
+  },
+  {
+    path: 'explore',
+    title: 'Explore — BW Cinema',
+    loadComponent: () => import('./features/explore/explore.component').then((m) => m.ExploreComponent),
+  },
   { path: '**', redirectTo: 'home' },
 ];
