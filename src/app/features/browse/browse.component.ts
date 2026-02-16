@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal, computed, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
+import { CollectionService } from '../../core/services/collection.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { SearchBarComponent } from '../../shared/components/search-bar.component';
 import { FilterPanelComponent } from '../../shared/components/filter-panel.component';
@@ -13,7 +14,7 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
 @Component({
   selector: 'app-browse',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MovieGridComponent, MovieListComponent, ViewToggleComponent, SearchBarComponent, FilterPanelComponent, SkeletonGridComponent, KeyboardNavDirective],
+  imports: [RouterLink, MovieGridComponent, MovieListComponent, ViewToggleComponent, SearchBarComponent, FilterPanelComponent, SkeletonGridComponent, KeyboardNavDirective],
   template: `
     <div class="browse container">
       <div class="browse__top">
@@ -94,6 +95,23 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
                 }
                 <button class="browse__chip browse__chip--clear" (click)="clearFilters()">Clear all</button>
               </div>
+            }
+
+            @if (browseSuggestion(); as suggestion) {
+              <a class="browse__suggestion" [routerLink]="['/movie', suggestion.film.id]">
+                <span class="browse__suggestion-text">Because you watched <strong>{{ suggestion.source }}</strong></span>
+                <span class="browse__suggestion-pick">
+                  @if (suggestion.film.posterUrl) {
+                    <img [src]="suggestion.film.posterUrl" [alt]="suggestion.film.title" />
+                  }
+                  <span>
+                    <strong>{{ suggestion.film.title }}</strong> ({{ suggestion.film.year }})
+                    @if (suggestion.film.voteAverage > 0) {
+                      &middot; &#9733; {{ suggestion.film.voteAverage.toFixed(1) }}
+                    }
+                  </span>
+                </span>
+              </a>
             }
 
             @if (filteredMovies().length === 0) {
@@ -220,6 +238,49 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
     .browse__chip--clear:hover {
       background: var(--bg-raised);
       border-color: var(--text-tertiary);
+      color: var(--text-secondary);
+    }
+    .browse__suggestion {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      padding: var(--space-md);
+      margin-bottom: var(--space-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .browse__suggestion:hover {
+      border-color: var(--accent-gold);
+      background: var(--bg-raised);
+    }
+    .browse__suggestion-text {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+    }
+    .browse__suggestion-text strong {
+      color: var(--accent-gold);
+    }
+    .browse__suggestion-pick {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .browse__suggestion-pick img {
+      width: 40px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      aspect-ratio: 2 / 3;
+    }
+    .browse__suggestion-pick strong {
+      color: var(--text-primary);
+    }
+    .browse__suggestion-pick > span {
+      font-size: 0.9rem;
       color: var(--text-secondary);
     }
     .browse__load-more {
@@ -351,6 +412,7 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
 })
 export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   protected readonly catalog = inject(CatalogService);
+  private readonly collection = inject(CollectionService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -420,6 +482,33 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly paginatedMovies = computed(() =>
     this.filteredMovies().slice(0, this.page() * this.pageSize)
   );
+
+  readonly browseSuggestion = computed(() => {
+    const watched = this.collection.watched();
+    if (watched.length === 0) return null;
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    const recent = [...watched].sort((a, b) => b.watchedAt - a.watchedAt).slice(0, 5);
+    const movieMap = new Map(movies.map((m) => [m.id, m]));
+    const watchedIds = this.collection.watchedIds();
+    const watchlistIds = this.collection.watchlistIds();
+    for (const w of recent) {
+      const source = movieMap.get(w.movieId);
+      if (!source || source.genres.length === 0) continue;
+      const match = movies.find(
+        (m) =>
+          m.id !== source.id &&
+          !watchedIds.has(m.id) &&
+          !watchlistIds.has(m.id) &&
+          m.isStreamable &&
+          m.posterUrl &&
+          m.voteAverage >= 6.0 &&
+          m.genres.some((g) => source.genres.includes(g))
+      );
+      if (match) return { source: source.title, film: match };
+    }
+    return null;
+  });
 
   ngOnInit(): void {
     this.catalog.load();

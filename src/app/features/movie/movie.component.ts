@@ -250,13 +250,25 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                 </div>
               }
 
-              @if (m.imdbId || m.internetArchiveId) {
-                <div class="detail__links">
-                  @if (m.imdbId) {
-                    <a class="detail__ext-link" [href]="'https://www.imdb.com/title/' + m.imdbId" target="_blank" rel="noopener">IMDb</a>
-                  }
+              @if (m.imdbId || m.internetArchiveId || m.youtubeId) {
+                <div class="detail__available">
+                  <span class="detail__available-label">Available on</span>
                   @if (m.internetArchiveId) {
-                    <a class="detail__ext-link" [href]="'https://archive.org/details/' + m.internetArchiveId" target="_blank" rel="noopener">Internet Archive</a>
+                    <a class="detail__source-badge detail__source-badge--ia" [href]="'https://archive.org/details/' + m.internetArchiveId" target="_blank" rel="noopener">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                      Internet Archive
+                    </a>
+                  }
+                  @if (m.youtubeId) {
+                    <a class="detail__source-badge detail__source-badge--yt" [href]="'https://www.youtube.com/watch?v=' + m.youtubeId" target="_blank" rel="noopener">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.546 12 3.546 12 3.546s-7.505 0-9.377.504A3.016 3.016 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.504 9.376.504 9.376.504s7.505 0 9.377-.504a3.016 3.016 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                      YouTube
+                    </a>
+                  }
+                  @if (m.imdbId) {
+                    <a class="detail__source-badge detail__source-badge--imdb" [href]="'https://www.imdb.com/title/' + m.imdbId" target="_blank" rel="noopener">
+                      IMDb
+                    </a>
                   }
                 </div>
               }
@@ -540,14 +552,60 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       color: var(--accent-gold);
       background-color: var(--accent-gold-dim);
     }
-    .detail__links {
+    .detail__available {
       display: flex;
-      gap: var(--space-md);
+      align-items: center;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
     }
-    .detail__ext-link {
-      font-size: 0.9rem;
+    .detail__available-label {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       font-weight: 600;
-      padding: 4px 0;
+      margin-right: var(--space-xs);
+    }
+    .detail__source-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .detail__source-badge--ia {
+      background: rgba(25, 135, 84, 0.15);
+      color: rgb(25, 135, 84);
+      border: 1px solid rgba(25, 135, 84, 0.3);
+    }
+    .detail__source-badge--ia:hover {
+      background: rgba(25, 135, 84, 0.25);
+      border-color: rgb(25, 135, 84);
+      color: rgb(25, 135, 84);
+    }
+    .detail__source-badge--yt {
+      background: rgba(255, 0, 0, 0.1);
+      color: rgb(220, 50, 50);
+      border: 1px solid rgba(255, 0, 0, 0.2);
+    }
+    .detail__source-badge--yt:hover {
+      background: rgba(255, 0, 0, 0.2);
+      border-color: rgba(255, 0, 0, 0.5);
+      color: rgb(220, 50, 50);
+    }
+    .detail__source-badge--imdb {
+      background: rgba(245, 197, 24, 0.1);
+      color: #f5c518;
+      border: 1px solid rgba(245, 197, 24, 0.3);
+    }
+    .detail__source-badge--imdb:hover {
+      background: rgba(245, 197, 24, 0.2);
+      border-color: #f5c518;
+      color: #f5c518;
     }
     .detail__cast-section {
       margin-top: var(--space-2xl);
