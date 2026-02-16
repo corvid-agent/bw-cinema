@@ -227,6 +227,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (bothNonEnglish()) {
                 <span class="compare__overlap"> &middot; both non-English</span>
               }
+              @if (bothSilentEra()) {
+                <span class="compare__overlap"> &middot; both silent-era</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -834,6 +837,12 @@ export class CompareComponent implements OnInit {
     const a = this.filmA();
     const b = this.filmB();
     return !!(a && b && a.language && a.language !== 'English' && a.language !== 'en' && b.language && b.language !== 'English' && b.language !== 'en');
+  });
+
+  readonly bothSilentEra = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    return !!(a && b && a.year < 1930 && b.year < 1930);
   });
 
   ngOnInit(): void {

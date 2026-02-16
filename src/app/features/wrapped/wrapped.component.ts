@@ -202,6 +202,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Median Rating</span>
               </div>
             }
+            @if (silentEraWatchedPct(); as sewp) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ sewp }}%</span>
+                <span class="wrapped__hero-label">Silent Era</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -1002,6 +1008,14 @@ export class WrappedComponent implements OnInit {
       );
     }
   }
+
+  readonly silentEraWatchedPct = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 5) return null;
+    const count = films.filter((m) => m.year < 1930).length;
+    const pct = Math.round((count / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
+  });
 
   readonly avgWatchedYear = computed(() => {
     const films = this.yearFilms();
