@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } 
 import { Router, RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { RecentlyViewedService } from '../../core/services/recently-viewed.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { SearchBarComponent } from '../../shared/components/search-bar.component';
@@ -73,11 +74,27 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
                   }
                 </div>
               }
-              @if (fotd.voteAverage > 0) {
-                <p class="fotd__rating">&#9733; {{ fotd.voteAverage.toFixed(1) }}</p>
-              }
+              <div class="fotd__bottom">
+                @if (fotd.voteAverage > 0) {
+                  <span class="fotd__rating">&#9733; {{ fotd.voteAverage.toFixed(1) }}</span>
+                }
+                @if (fotd.isStreamable) {
+                  <span class="fotd__free-badge">Free to Watch</span>
+                }
+              </div>
               <span class="fotd__cta">View Details &rarr;</span>
             </div>
+            <button class="fotd__watchlist-btn"
+              [attr.aria-label]="collectionService.isInWatchlist(fotd.id) ? 'In watchlist' : 'Add ' + fotd.title + ' to watchlist'"
+              (click)="toggleFotdWatchlist($event, fotd)">
+              @if (collectionService.isWatched(fotd.id)) {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              } @else if (collectionService.isInWatchlist(fotd.id)) {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              } @else {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              }
+            </button>
           </a>
         </section>
       }
@@ -403,6 +420,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       margin-bottom: var(--space-md);
     }
     .fotd__card {
+      position: relative;
       display: flex;
       gap: var(--space-xl);
       background-color: var(--bg-surface);
@@ -466,16 +484,53 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       border-radius: 12px;
       color: var(--text-secondary);
     }
+    .fotd__bottom {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-sm);
+    }
     .fotd__rating {
       color: var(--accent-gold);
       font-family: var(--font-heading);
       font-size: 1.1rem;
       font-weight: 700;
-      margin: 0 0 var(--space-sm);
+    }
+    .fotd__free-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      background-color: var(--accent-gold);
+      color: var(--bg-deep);
     }
     .fotd__cta {
       font-size: 0.9rem;
       font-weight: 600;
+      color: var(--accent-gold);
+    }
+    .fotd__watchlist-btn {
+      position: absolute;
+      top: var(--space-md);
+      right: var(--space-md);
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      z-index: 2;
+    }
+    .fotd__watchlist-btn:hover {
+      background: var(--accent-gold-dim);
+      border-color: var(--accent-gold);
       color: var(--accent-gold);
     }
     .gems__scroll {
@@ -614,7 +669,8 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
 export class HomeComponent implements OnInit {
   protected readonly catalog = inject(CatalogService);
   private readonly router = inject(Router);
-  private readonly collectionService = inject(CollectionService);
+  protected readonly collectionService = inject(CollectionService);
+  private readonly notifications = inject(NotificationService);
   private readonly recentlyViewedService = inject(RecentlyViewedService);
 
   readonly currentYear = new Date().getFullYear();
@@ -698,6 +754,19 @@ export class HomeComponent implements OnInit {
 
   browseGenre(genre: string): void {
     this.router.navigate(['/browse'], { queryParams: { genre } });
+  }
+
+  toggleFotdWatchlist(event: Event, movie: { id: string; title: string }): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.collectionService.isWatched(movie.id)) return;
+    if (this.collectionService.isInWatchlist(movie.id)) {
+      this.collectionService.removeFromWatchlist(movie.id);
+      this.notifications.show('Removed from watchlist', 'info');
+    } else {
+      this.collectionService.addToWatchlist(movie.id);
+      this.notifications.show(`Added "${movie.title}" to watchlist`, 'success');
+    }
   }
 
   surpriseMe(): void {
