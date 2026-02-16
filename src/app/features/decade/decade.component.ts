@@ -141,6 +141,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (nonEnglishPct(); as nep) {
             <p class="decade__fact">{{ nep }}% non-English films</p>
           }
+          @if (avgTitleLength(); as atl) {
+            <p class="decade__fact">Avg title length: {{ atl }} characters</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -917,6 +920,12 @@ export class DecadeComponent implements OnInit {
     const count = f.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
     const pct = Math.round((count / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly avgTitleLength = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    return Math.round(f.reduce((s, m) => s + m.title.length, 0) / f.length);
   });
 
   ngOnInit(): void {
