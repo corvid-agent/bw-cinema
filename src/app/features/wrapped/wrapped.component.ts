@@ -142,6 +142,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Avg TMDb Rating</span>
               </div>
             }
+            @if (mostWatchedDecadeName(); as mwd) {
+              <div class="wrapped__hero-stat wrapped__hero-stat--text">
+                <span class="wrapped__hero-value">{{ mwd }}</span>
+                <span class="wrapped__hero-label">Top Decade</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -781,6 +787,19 @@ export class WrappedComponent implements OnInit {
     const films = this.yearFilms();
     if (films.length < 2) return 0;
     return new Set(films.map((m) => Math.floor(m.year / 10) * 10)).size;
+  });
+
+  readonly mostWatchedDecadeName = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 3) return null;
+    const counts = new Map<number, number>();
+    for (const m of films) {
+      const d = Math.floor(m.year / 10) * 10;
+      counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (!best || best[1] < 2) return null;
+    return `${best[0]}s`;
   });
 
   readonly avgCatalogRating = computed(() => {

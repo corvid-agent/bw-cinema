@@ -183,6 +183,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               <span class="compare__similarity-label">Similarity</span>
             </div>
           }
+          @if (doubleFeatureNote(); as dfn) {
+            <p class="compare__double-feature-note">{{ dfn }}</p>
+          }
           @if (combinedAvgRating(); as avg) {
             <div class="compare__combined-avg">
               Combined Avg: {{ avg }}/10
@@ -494,6 +497,14 @@ import type { MovieSummary } from '../../core/models/movie.model';
       font-weight: 600;
       font-size: 0.9rem;
     }
+    .compare__double-feature-note {
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-gold);
+      padding: var(--space-xs) 0;
+      margin: 0;
+    }
     .compare__actions {
       display: flex;
       gap: var(--space-sm);
@@ -703,6 +714,13 @@ export class CompareComponent implements OnInit {
     const diff = Math.abs(a.voteAverage - b.voteAverage);
     if (diff < 0.1) return null;
     return diff.toFixed(1);
+  });
+
+  readonly doubleFeatureNote = computed(() => {
+    const score = this.similarityScore();
+    if (score >= 70) return 'Perfect double feature!';
+    if (score >= 50) return 'Great double feature pairing';
+    return null;
   });
 
   readonly combinedGenreCount = computed(() => {

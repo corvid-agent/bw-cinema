@@ -66,6 +66,9 @@ interface QuizStep {
           @if (resultStreamableCount() > 0) {
             <p class="quiz__decade-range">{{ resultStreamableCount() }} of {{ results().length }} free to watch</p>
           }
+          @if (resultUniqueDirectors() > 1) {
+            <p class="quiz__decade-range">{{ resultUniqueDirectors() }} different directors</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -440,6 +443,14 @@ export class QuizComponent implements OnInit {
   readonly resultStreamableCount = computed(() =>
     this.results().filter((m) => m.isStreamable).length
   );
+
+  readonly resultUniqueDirectors = computed(() => {
+    const dirs = new Set<string>();
+    for (const m of this.results()) {
+      for (const d of m.directors) dirs.add(d);
+    }
+    return dirs.size;
+  });
 
   readonly avgMatchScore = computed(() => {
     const scores = this.matchScores();
