@@ -321,7 +321,7 @@ export class FilterPanelComponent {
   readonly selectedDecades = signal(new Set<number>());
   readonly selectedGenres = signal(new Set<string>());
   readonly selectedDirectors = signal(new Set<string>());
-  readonly selectedLanguages = signal(new Set<string>());
+  readonly selectedLanguages = signal(FilterPanelComponent.loadLanguagePref());
   readonly streamableOnly = signal(false);
   readonly minRating = signal(0);
   readonly directorQuery = signal('');
@@ -334,10 +334,26 @@ export class FilterPanelComponent {
     return [decades[0], decades[decades.length - 1] + 9] as const;
   });
 
+  private static readonly LANG_PREF_KEY = 'bw-cinema-lang-pref';
+
   readonly decadesOpen = signal(false);
   readonly genresOpen = signal(false);
   readonly directorsOpen = signal(false);
-  readonly languagesOpen = signal(false);
+  readonly languagesOpen = signal(this.selectedLanguages().size > 0);
+
+  private static loadLanguagePref(): Set<string> {
+    try {
+      const raw = localStorage.getItem('bw-cinema-lang-pref');
+      if (raw) return new Set(JSON.parse(raw));
+    } catch { /* noop */ }
+    return new Set(['English']);
+  }
+
+  private saveLanguagePref(): void {
+    try {
+      localStorage.setItem(FilterPanelComponent.LANG_PREF_KEY, JSON.stringify([...this.selectedLanguages()]));
+    } catch { /* noop */ }
+  }
 
   readonly filteredDirectors = computed(() => {
     const q = this.directorQuery().toLowerCase();
@@ -383,6 +399,7 @@ export class FilterPanelComponent {
       else next.add(lang);
       return next;
     });
+    this.saveLanguagePref();
     this.emitFilter();
   }
 
@@ -422,6 +439,7 @@ export class FilterPanelComponent {
     this.selectedGenres.set(new Set());
     this.selectedDirectors.set(new Set());
     this.selectedLanguages.set(new Set());
+    this.saveLanguagePref();
     this.streamableOnly.set(false);
     this.minRating.set(0);
     this.directorQuery.set('');

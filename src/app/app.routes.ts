@@ -35,6 +35,11 @@ export const routes: Routes = [
       import('./features/director/director.component').then((m) => m.DirectorComponent),
   },
   {
+    path: 'compare',
+    title: 'Compare Films — BW Cinema',
+    loadComponent: () => import('./features/compare/compare.component').then((m) => m.CompareComponent),
+  },
+  {
     path: 'about',
     title: 'About — BW Cinema',
     loadComponent: () => import('./features/about/about.component').then((m) => m.AboutComponent),

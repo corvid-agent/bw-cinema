@@ -159,6 +159,14 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   protected readonly catalog = inject(CatalogService);
   private readonly route = inject(ActivatedRoute);
 
+  private static loadLangPref(): string[] {
+    try {
+      const raw = localStorage.getItem('bw-cinema-lang-pref');
+      if (raw) return JSON.parse(raw);
+    } catch { /* noop */ }
+    return ['English'];
+  }
+
   @ViewChild('loadMoreSentinel') loadMoreSentinel?: ElementRef<HTMLElement>;
   private observer: IntersectionObserver | null = null;
 
@@ -171,7 +179,7 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     decades: [],
     genres: [],
     directors: [],
-    languages: [],
+    languages: BrowseComponent.loadLangPref(),
     streamableOnly: false,
     minRating: 0,
     yearRange: null,

@@ -71,7 +71,9 @@ export class CatalogService {
       results = results.filter(
         (m) =>
           m.title.toLowerCase().includes(q) ||
-          m.directors.some((d) => d.toLowerCase().includes(q))
+          m.directors.some((d) => d.toLowerCase().includes(q)) ||
+          m.genres.some((g) => g.toLowerCase().includes(q)) ||
+          String(m.year).includes(q)
       );
     }
 

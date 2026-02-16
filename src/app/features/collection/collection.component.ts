@@ -85,7 +85,11 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
               @if (currentMovies().length > 0) {
                 <button class="btn-ghost collection__export" (click)="exportCsv()">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  Export CSV
+                  CSV
+                </button>
+                <button class="btn-ghost collection__export" (click)="exportLetterboxd()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Letterboxd
                 </button>
               }
               <app-view-toggle [(mode)]="viewMode" />
@@ -215,6 +219,23 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                   </div>
                 </section>
               </div>
+
+              @if (ratingDistribution().length > 0) {
+                <section class="stats__section stats__rating-dist">
+                  <h3>Your Rating Distribution</h3>
+                  <div class="stats__bars">
+                    @for (r of ratingDistribution(); track r.name) {
+                      <div class="stats__bar-row">
+                        <span class="stats__bar-label">{{ r.name }} &#9733;</span>
+                        <div class="stats__bar-track">
+                          <div class="stats__bar-fill" [style.width.%]="r.pct"></div>
+                        </div>
+                        <span class="stats__bar-count">{{ r.count }}</span>
+                      </div>
+                    }
+                  </div>
+                </section>
+              }
 
               @if (watchTimeline().length > 0) {
                 <section class="timeline">
@@ -406,6 +427,10 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       display: inline-flex;
       align-items: center;
     }
+    .stats__rating-dist {
+      margin-top: var(--space-xl);
+      max-width: 500px;
+    }
     /* Timeline */
     .timeline {
       margin-top: var(--space-2xl);
@@ -551,6 +576,20 @@ export class CollectionComponent implements OnInit {
     this.watchedMovies().map((m) => `${Math.floor(m.year / 10) * 10}s`)
   ));
 
+  readonly ratingDistribution = computed(() => {
+    const rated = this.collectionService.watched().filter((w) => w.userRating != null);
+    if (rated.length === 0) return [];
+    const buckets = new Map<number, number>();
+    for (const w of rated) {
+      const r = Math.round(w.userRating!);
+      buckets.set(r, (buckets.get(r) ?? 0) + 1);
+    }
+    const max = Math.max(...buckets.values());
+    return Array.from({ length: 10 }, (_, i) => i + 1)
+      .map((r) => ({ name: String(r), count: buckets.get(r) ?? 0, pct: ((buckets.get(r) ?? 0) / max) * 100 }))
+      .filter((r) => r.count > 0);
+  });
+
   readonly watchTimeline = computed(() => {
     const movieMap = new Map(this.catalog.movies().map((m) => [m.id, m]));
     return [...this.collectionService.watched()]
@@ -606,6 +645,32 @@ export class CollectionComponent implements OnInit {
     a.download = `bw-cinema-${tab}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  exportLetterboxd(): void {
+    const movies = this.activeTab() === 'watched' ? this.sortedWatched() : this.sortedWatchlist();
+    const tab = this.activeTab();
+    const headers = ['imdbID', 'Title', 'Year', 'Rating10'];
+
+    const rows = movies.map((m) => {
+      const item = tab === 'watched' ? this.collectionService.watched().find((w) => w.movieId === m.id) : null;
+      return [
+        m.imdbId ?? '',
+        `"${m.title.replace(/"/g, '""')}"`,
+        m.year,
+        item?.userRating ?? '',
+      ].join(',');
+    });
+
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `letterboxd-${tab}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.notifications.show('Letterboxd CSV exported', 'success');
   }
 
   exportBackup(): void {

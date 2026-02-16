@@ -8,7 +8,7 @@ import { StreamingService } from '../../core/services/streaming.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { RecentlyViewedService } from '../../core/services/recently-viewed.service';
 import { RatingStarsComponent } from '../../shared/components/rating-stars.component';
-import { MovieGridComponent } from '../../shared/components/movie-grid.component';
+// MovieGridComponent removed — carousel is inline
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
 import { SkeletonDetailComponent } from '../../shared/components/skeleton-detail.component';
 import { RuntimePipe } from '../../shared/pipes/runtime.pipe';
@@ -17,7 +17,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
 @Component({
   selector: 'app-movie',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RatingStarsComponent, MovieGridComponent, LoadingSpinnerComponent, SkeletonDetailComponent, RuntimePipe],
+  imports: [RouterLink, RatingStarsComponent, LoadingSpinnerComponent, SkeletonDetailComponent, RuntimePipe],
   template: `
     @if (loading()) {
       <app-skeleton-detail />
@@ -114,10 +114,28 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                 @if (!collection.isWatched(m.id)) {
                   <button class="btn-secondary" (click)="markWatched(m.id)">Mark Watched</button>
                 }
-                <button class="btn-ghost detail__share-btn" (click)="share(m)" aria-label="Share this film">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                  Share
-                </button>
+                <div class="detail__share-wrap">
+                  <button class="btn-ghost detail__share-btn" (click)="shareMenuOpen.set(!shareMenuOpen())" aria-label="Share this film">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    Share
+                  </button>
+                  @if (shareMenuOpen()) {
+                    <div class="detail__share-menu">
+                      <button class="detail__share-option" (click)="shareTwitter(m)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        Twitter / X
+                      </button>
+                      <button class="detail__share-option" (click)="shareFacebook(m)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        Facebook
+                      </button>
+                      <button class="detail__share-option" (click)="copyLink()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        Copy Link
+                      </button>
+                    </div>
+                  }
+                </div>
               </div>
 
               @if (collection.isWatched(m.id)) {
@@ -207,7 +225,21 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
           @if (similarFilms().length > 0) {
             <section class="detail__similar" aria-label="Similar films">
               <h2>You Might Also Like</h2>
-              <app-movie-grid [movies]="similarFilms()" />
+              <div class="detail__carousel">
+                @for (s of similarFilms(); track s.id) {
+                  <a class="detail__carousel-card" [routerLink]="['/movie', s.id]">
+                    @if (s.posterUrl) {
+                      <img [src]="s.posterUrl" [alt]="s.title" loading="lazy" />
+                    } @else {
+                      <div class="detail__carousel-placeholder">
+                        <span>{{ s.title }}</span>
+                      </div>
+                    }
+                    <p class="detail__carousel-title">{{ s.title }}</p>
+                    <p class="detail__carousel-meta">{{ s.year }}</p>
+                  </a>
+                }
+              </div>
             </section>
           }
         </div>
@@ -434,11 +466,46 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       color: var(--text-tertiary);
       margin: 0;
     }
+    .detail__share-wrap {
+      position: relative;
+    }
     .detail__share-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       font-size: 0.9rem;
+    }
+    .detail__share-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 4px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-bright);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      z-index: 20;
+      min-width: 160px;
+      padding: var(--space-xs);
+    }
+    .detail__share-option {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      width: 100%;
+      padding: var(--space-sm) var(--space-md);
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: var(--radius);
+      text-align: left;
+      min-height: 40px;
+    }
+    .detail__share-option:hover {
+      background-color: var(--bg-hover);
+      color: var(--text-primary);
     }
     .detail__fav-btn {
       display: inline-flex;
@@ -507,6 +574,69 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       padding-top: var(--space-xl);
       border-top: 1px solid var(--border);
     }
+    .detail__carousel {
+      display: flex;
+      gap: var(--space-md);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: var(--space-sm);
+      -webkit-overflow-scrolling: touch;
+    }
+    .detail__carousel::-webkit-scrollbar {
+      height: 6px;
+    }
+    .detail__carousel::-webkit-scrollbar-track {
+      background: var(--bg-raised);
+      border-radius: 3px;
+    }
+    .detail__carousel::-webkit-scrollbar-thumb {
+      background: var(--border-bright);
+      border-radius: 3px;
+    }
+    .detail__carousel-card {
+      flex: 0 0 140px;
+      scroll-snap-align: start;
+      text-decoration: none;
+      color: var(--text-primary);
+      transition: transform 0.2s;
+    }
+    .detail__carousel-card:hover {
+      transform: translateY(-4px);
+    }
+    .detail__carousel-card img {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: var(--radius);
+      margin-bottom: var(--space-xs);
+    }
+    .detail__carousel-placeholder {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      background: var(--bg-raised);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-sm);
+      margin-bottom: var(--space-xs);
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      text-align: center;
+    }
+    .detail__carousel-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .detail__carousel-meta {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      margin: 0;
+    }
     .detail__not-found {
       padding: var(--space-3xl) 0;
       text-align: center;
@@ -541,6 +671,7 @@ export class MovieComponent implements OnInit {
   readonly movie = signal<MovieDetail | null>(null);
   readonly loading = signal(true);
   readonly streamingUrl = signal<string | null>(null);
+  readonly shareMenuOpen = signal(false);
   private readonly summary = signal<MovieSummary | null>(null);
   readonly similarFilms = computed(() => {
     const s = this.summary();
@@ -636,19 +767,22 @@ export class MovieComponent implements OnInit {
     }
   }
 
-  async share(movie: MovieDetail): Promise<void> {
+  shareTwitter(movie: MovieDetail): void {
     const url = window.location.href;
     const text = `${movie.title} (${movie.year}) — Watch classic B&W cinema`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank', 'noopener,width=550,height=420');
+    this.shareMenuOpen.set(false);
+  }
 
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: movie.title, text, url });
-      } catch {
-        // User cancelled
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-      this.notifications.show('Link copied to clipboard', 'info');
-    }
+  shareFacebook(movie: MovieDetail): void {
+    const url = window.location.href;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'noopener,width=550,height=420');
+    this.shareMenuOpen.set(false);
+  }
+
+  async copyLink(): Promise<void> {
+    await navigator.clipboard.writeText(window.location.href);
+    this.notifications.show('Link copied to clipboard', 'info');
+    this.shareMenuOpen.set(false);
   }
 }

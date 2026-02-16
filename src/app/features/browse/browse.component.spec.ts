@@ -28,7 +28,7 @@ const mockCatalog: Catalog = {
       voteAverage: 8.0,
       genres: ['Drama'],
       directors: ['Dir A'],
-      language: null,
+      language: 'English',
       isStreamable: true,
     },
     {
@@ -43,7 +43,7 @@ const mockCatalog: Catalog = {
       voteAverage: 6.0,
       genres: ['Comedy'],
       directors: ['Dir B'],
-      language: null,
+      language: 'English',
       isStreamable: false,
     },
   ],
