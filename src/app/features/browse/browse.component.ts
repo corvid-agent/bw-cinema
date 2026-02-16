@@ -57,15 +57,17 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
                   <option value="title-desc">Title Z-A</option>
                 </select>
               </div>
-              <div class="browse__lang">
-                <label for="lang-select" class="sr-only">Language</label>
-                <select id="lang-select" [value]="selectedLanguage()" (change)="onLanguageChange($event)">
-                  <option value="">All Languages</option>
-                  @for (lang of catalog.availableLanguages(); track lang) {
-                    <option [value]="lang">{{ lang }}</option>
-                  }
-                </select>
-              </div>
+              @if (catalog.availableLanguages().length > 0) {
+                <div class="browse__lang">
+                  <label for="lang-select" class="sr-only">Language</label>
+                  <select id="lang-select" [value]="selectedLanguage()" (change)="onLanguageChange($event)">
+                    <option value="">All Languages</option>
+                    @for (lang of catalog.availableLanguages(); track lang) {
+                      <option [value]="lang">{{ lang }}</option>
+                    }
+                  </select>
+                </div>
+              }
               <button
                 class="browse__streamable-toggle"
                 [class.browse__streamable-toggle--active]="filter().streamableOnly"
@@ -306,9 +308,12 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   private static loadLangPref(): string[] {
     try {
       const raw = localStorage.getItem('bw-cinema-lang-pref');
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
     } catch { /* noop */ }
-    return ['English'];
+    return [];
   }
 
   @ViewChild('loadMoreSentinel') loadMoreSentinel?: ElementRef<HTMLElement>;

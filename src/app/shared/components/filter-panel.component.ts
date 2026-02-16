@@ -115,26 +115,28 @@ import type { DirectorCount } from '../../core/models/catalog.model';
         </div>
       </div>
 
-      <div class="filters__group">
-        <button class="filters__toggle" (click)="languagesOpen.set(!languagesOpen())">
-          <span>Language</span>
-          <span class="filters__chevron" [class.open]="languagesOpen()">&#9662;</span>
-        </button>
-        @if (languagesOpen()) {
-          <div class="filters__options">
-            @for (lang of availableLanguages(); track lang) {
-              <label class="filters__checkbox">
-                <input
-                  type="checkbox"
-                  [checked]="selectedLanguages().has(lang)"
-                  (change)="toggleLanguage(lang)"
-                />
-                <span>{{ lang }}</span>
-              </label>
-            }
-          </div>
-        }
-      </div>
+      @if (availableLanguages().length > 0) {
+        <div class="filters__group">
+          <button class="filters__toggle" (click)="languagesOpen.set(!languagesOpen())">
+            <span>Language</span>
+            <span class="filters__chevron" [class.open]="languagesOpen()">&#9662;</span>
+          </button>
+          @if (languagesOpen()) {
+            <div class="filters__options">
+              @for (lang of availableLanguages(); track lang) {
+                <label class="filters__checkbox">
+                  <input
+                    type="checkbox"
+                    [checked]="selectedLanguages().has(lang)"
+                    (change)="toggleLanguage(lang)"
+                  />
+                  <span>{{ lang }}</span>
+                </label>
+              }
+            </div>
+          }
+        </div>
+      }
 
       <div class="filters__group filters__group--inline">
         <label class="filters__checkbox filters__checkbox--toggle">
@@ -344,9 +346,12 @@ export class FilterPanelComponent {
   private static loadLanguagePref(): Set<string> {
     try {
       const raw = localStorage.getItem('bw-cinema-lang-pref');
-      if (raw) return new Set(JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return new Set(parsed);
+      }
     } catch { /* noop */ }
-    return new Set(['English']);
+    return new Set();
   }
 
   private saveLanguagePref(): void {
