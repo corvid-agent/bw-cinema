@@ -105,6 +105,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="genre__stat-label">Avg Film Age (yrs)</span>
               </div>
             }
+            @if (coDirectedCount() > 0) {
+              <div class="genre__stat">
+                <span class="genre__stat-value">{{ coDirectedCount() }}</span>
+                <span class="genre__stat-label">Co-directed</span>
+              </div>
+            }
           </div>
 
           @if (newestFilmYear(); as nfy) {
@@ -829,6 +835,12 @@ export class GenreComponent implements OnInit {
     if (f.length < 2) return 0;
     const now = new Date().getFullYear();
     return Math.round(f.reduce((s, m) => s + (now - m.year), 0) / f.length);
+  });
+
+  readonly coDirectedCount = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return 0;
+    return f.filter((m) => m.directors.length > 1).length;
   });
 
   readonly decadeBreakdown = computed(() => {

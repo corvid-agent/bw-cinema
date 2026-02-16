@@ -126,6 +126,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Avg Film Age (yrs)</span>
               </div>
             }
+            @if (coDirectedFilmCount() > 0) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ coDirectedFilmCount() }}</span>
+                <span class="director__stat-label">Co-directed</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -892,6 +898,12 @@ export class DirectorComponent implements OnInit {
     const now = new Date().getFullYear();
     const avg = Math.round(f.reduce((s, m) => s + (now - m.year), 0) / f.length);
     return avg > 0 ? avg : 0;
+  });
+
+  readonly coDirectedFilmCount = computed(() => {
+    const f = this.films();
+    if (f.length < 2) return 0;
+    return f.filter((m) => m.directors.length > 1).length;
   });
 
   readonly soloDirectedPct = computed(() => {
