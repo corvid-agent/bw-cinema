@@ -371,7 +371,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
 
           @if (similarWithReasons().length > 0) {
             <section class="detail__similar" aria-label="Similar films">
-              <h2>You Might Also Like</h2>
+              <h2>You Might Also Like@if (similarUnwatchedCount(); as suc) { <span class="detail__section-note">({{ suc }} unwatched)</span>}</h2>
               <div class="detail__carousel">
                 @for (s of similarWithReasons(); track s.movie.id) {
                   <a class="detail__carousel-card" [routerLink]="['/movie', s.movie.id]">
@@ -892,6 +892,11 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       font-size: 0.9rem;
       font-weight: 600;
     }
+    .detail__section-note {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--text-tertiary);
+    }
     .detail__similar {
       margin-top: var(--space-2xl);
       padding-top: var(--space-xl);
@@ -1264,6 +1269,13 @@ export class MovieComponent implements OnInit {
     const primaryGenre = s.genres[0];
     const count = this.catalogService.movies().filter((m) => m.id !== s.id && m.genres.includes(primaryGenre)).length;
     return count >= 10 ? { genre: primaryGenre, count } : null;
+  });
+
+  readonly similarUnwatchedCount = computed(() => {
+    const films = this.similarWithReasons();
+    if (films.length === 0) return null;
+    const count = films.filter((f) => !this.collection.isWatched(f.movie.id)).length;
+    return count > 0 && count < films.length ? count : null;
   });
 
   readonly yearDecade = computed(() => {

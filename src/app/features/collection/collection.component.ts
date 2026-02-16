@@ -2025,6 +2025,14 @@ export class CollectionComponent implements OnInit {
       insights.push({ label: 'Decade Span', value: `${sorted[0]}s–${sorted[sorted.length - 1]}s` });
     }
 
+    // Average film age
+    const currentYear = new Date().getFullYear();
+    const ages = watched.map((w) => movieMap.get(w.movieId)).filter((m): m is MovieSummary => !!m).map((m) => currentYear - m.year);
+    if (ages.length >= 3) {
+      const avgAge = Math.round(ages.reduce((s, a) => s + a, 0) / ages.length);
+      if (avgAge >= 10) insights.push({ label: 'Avg Film Age', value: `${avgAge} years` });
+    }
+
     // Rating bias vs TMDb
     if (ratedItems.length >= 3) {
       let userTotal = 0;
