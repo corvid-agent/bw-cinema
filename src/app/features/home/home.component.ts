@@ -65,6 +65,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (avgCatalogRating(); as acr) {
           <p class="hero__avg-rating">Average catalog rating: &#9733; {{ acr }}</p>
         }
+        @if (totalWatchedCount() > 0) {
+          <p class="hero__avg-rating">You've watched {{ totalWatchedCount() }} film{{ totalWatchedCount() !== 1 ? 's' : '' }}</p>
+        }
         @if (oldestFilmYear(); as ofy) {
           <p class="hero__avg-rating">Films dating back to {{ ofy }}@if (newestFilmYear(); as nfy) { , up to {{ nfy }}}</p>
         }
@@ -1225,6 +1228,8 @@ export class HomeComponent implements OnInit {
     if (movies.length === 0) return null;
     return movies.reduce((newest, m) => m.year > newest ? m.year : newest, 0);
   });
+
+  readonly totalWatchedCount = computed(() => this.collectionService.watchedIds().size);
 
   readonly avgCatalogRating = computed(() => {
     const rated = this.catalog.movies().filter((m) => m.voteAverage > 0);

@@ -74,6 +74,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="genre__stat-label">Avg Year</span>
               </div>
             }
+            @if (medianYear(); as my) {
+              <div class="genre__stat">
+                <span class="genre__stat-value">{{ my }}</span>
+                <span class="genre__stat-label">Median Year</span>
+              </div>
+            }
             @if (exclusiveCount(); as ec) {
               <div class="genre__stat">
                 <span class="genre__stat-value">{{ ec }}</span>
@@ -750,6 +756,17 @@ export class GenreComponent implements OnInit {
     const diff = genreAvg - catAvg;
     if (Math.abs(diff) < 0.2) return null;
     return diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
+  });
+
+  readonly medianYear = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const years = f.map((m) => m.year).sort((a, b) => a - b);
+    const mid = Math.floor(years.length / 2);
+    const median = years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
+    const avg = this.avgYear();
+    if (avg !== null && Math.abs(median - avg) < 3) return null;
+    return median;
   });
 
   readonly exclusiveCount = computed(() => {

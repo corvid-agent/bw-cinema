@@ -365,6 +365,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">avg genres per film</span>
               </div>
             }
+            @if (multiDirectorPct(); as mdp) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ mdp }}%</span>
+                <span class="stats__fact-text">co-directed films</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -960,6 +966,15 @@ export class StatsComponent implements OnInit {
       for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
     }
     return [...counts.values()].filter((c) => c === 1).length;
+  });
+
+  readonly multiDirectorPct = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    const multi = movies.filter((m) => m.directors.length > 1).length;
+    const pct = Math.round((multi / movies.length) * 100);
+    if (pct === 0) return null;
+    return pct;
   });
 
   readonly avgGenresPerFilm = computed(() => {
