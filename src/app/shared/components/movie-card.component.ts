@@ -24,7 +24,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
           </div>
         }
         <div class="card__overlay" aria-hidden="true">
-          @if (movie().voteAverage > 0) {
+          @if (collection.getUserRating(movie().id); as ur) {
+            <span class="card__user-rating" title="Your rating">{{ ur }}/10</span>
+          } @else if (movie().voteAverage > 0) {
             <span class="card__rating">{{ movie().voteAverage.toFixed(1) }}</span>
           }
           @if (movie().internetArchiveId) {
@@ -165,6 +167,15 @@ import type { MovieSummary } from '../../core/models/movie.model';
       background-color: rgba(0, 0, 0, 0.75);
       color: var(--accent-gold);
       font-size: 0.8rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      backdrop-filter: blur(4px);
+    }
+    .card__user-rating {
+      background-color: rgba(25, 135, 84, 0.85);
+      color: #fff;
+      font-size: 0.75rem;
       font-weight: 700;
       padding: 3px 8px;
       border-radius: var(--radius-sm);

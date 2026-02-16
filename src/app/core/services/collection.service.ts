@@ -171,6 +171,10 @@ export class CollectionService {
     return this.watchedIds().has(movieId);
   }
 
+  getUserRating(movieId: string): number | null {
+    return this.watched().find((w) => w.movieId === movieId)?.userRating ?? null;
+  }
+
   private save(): void {
     const collection: UserCollection = {
       watchlist: this.watchlist(),

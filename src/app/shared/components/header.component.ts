@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, signal, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../../core/services/theme.service';
 import { AccessibilityService } from '../../core/services/accessibility.service';
+import { CollectionService } from '../../core/services/collection.service';
 
 @Component({
   selector: 'app-header',
@@ -28,7 +29,12 @@ import { AccessibilityService } from '../../core/services/accessibility.service'
         <nav class="header__nav" [class.header__nav--open]="menuOpen()" role="navigation" aria-label="Main navigation">
           <a routerLink="/home" routerLinkActive="active" (click)="menuOpen.set(false)">Home</a>
           <a routerLink="/browse" routerLinkActive="active" (click)="menuOpen.set(false)">Browse</a>
-          <a routerLink="/collection" routerLinkActive="active" (click)="menuOpen.set(false)">Collection</a>
+          <a routerLink="/collection" routerLinkActive="active" (click)="menuOpen.set(false)" class="header__nav-collection">
+            Collection
+            @if (watchlistCount() > 0) {
+              <span class="header__badge">{{ watchlistCount() }}</span>
+            }
+          </a>
           <a routerLink="/compare" routerLinkActive="active" (click)="menuOpen.set(false)">Compare</a>
           <a routerLink="/explore" routerLinkActive="active" (click)="menuOpen.set(false)">Explore</a>
           <a routerLink="/stats" routerLinkActive="active" (click)="menuOpen.set(false)">Stats</a>
@@ -36,12 +42,13 @@ import { AccessibilityService } from '../../core/services/accessibility.service'
           <form class="header__search" (ngSubmit)="onSearch()" role="search">
             <svg class="header__search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input
+              #searchInput
               class="header__search-input"
               type="search"
               placeholder="Search films..."
               [(ngModel)]="searchQuery"
               name="q"
-              aria-label="Search films"
+              aria-label="Search films (press / to focus)"
               (keydown.escape)="searchQuery.set('')"
             />
           </form>
@@ -123,6 +130,25 @@ import { AccessibilityService } from '../../core/services/accessibility.service'
     .header__nav a.active {
       color: var(--accent-gold);
       background-color: var(--accent-gold-dim);
+    }
+    .header__nav-collection {
+      position: relative;
+    }
+    .header__badge {
+      background-color: var(--accent-gold);
+      color: var(--bg-deep);
+      font-size: 0.65rem;
+      font-weight: 700;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 4px;
+      vertical-align: super;
+      line-height: 1;
     }
     .header__hamburger {
       display: none;
@@ -273,10 +299,29 @@ import { AccessibilityService } from '../../core/services/accessibility.service'
 })
 export class HeaderComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly collection = inject(CollectionService);
   readonly theme = inject(ThemeService);
   readonly a11y = inject(AccessibilityService);
   readonly menuOpen = signal(false);
   readonly searchQuery = signal('');
+  readonly watchlistCount = computed(() => this.collection.watchlistIds().size);
+
+  @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
+
+  @HostListener('document:keydown', ['$event'])
+  onGlobalKey(event: KeyboardEvent): void {
+    if (event.key === '/' && !this.isInputFocused()) {
+      event.preventDefault();
+      this.searchInput?.nativeElement.focus();
+    }
+  }
+
+  private isInputFocused(): boolean {
+    const el = document.activeElement;
+    if (!el) return false;
+    const tag = el.tagName.toLowerCase();
+    return tag === 'input' || tag === 'textarea' || tag === 'select' || (el as HTMLElement).isContentEditable;
+  }
 
   ngOnInit(): void {
     this.router.events.subscribe((event) => {

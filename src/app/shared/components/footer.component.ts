@@ -30,8 +30,17 @@ import { RouterLink } from '@angular/router';
             <h4 class="footer__nav-heading">Info</h4>
             <a routerLink="/stats">Catalog Stats</a>
             <a routerLink="/about">About</a>
+            <a href="https://github.com/corvid-agent/bw-cinema" target="_blank" rel="noopener">GitHub</a>
           </div>
         </nav>
+        <div class="footer__decades">
+          <h4 class="footer__nav-heading">Browse by Decade</h4>
+          <div class="footer__decade-links">
+            @for (d of decades; track d) {
+              <a class="footer__decade-link" [routerLink]="['/decade', d]">{{ d }}s</a>
+            }
+          </div>
+        </div>
         <p class="footer__credits">
           Data from
           <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata (opens in new tab)</a>
@@ -113,6 +122,34 @@ import { RouterLink } from '@angular/router';
     .footer__nav-col a:hover {
       color: var(--accent-gold);
     }
+    .footer__decades {
+      max-width: 480px;
+      margin: 0 auto var(--space-xl);
+      text-align: center;
+    }
+    .footer__decades .footer__nav-heading {
+      margin-bottom: var(--space-md);
+    }
+    .footer__decade-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-xs);
+    }
+    .footer__decade-link {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text-tertiary);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .footer__decade-link:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      background-color: var(--accent-gold-dim);
+    }
     .footer__credits {
       color: var(--text-tertiary);
       font-size: 0.85rem;
@@ -142,4 +179,6 @@ import { RouterLink } from '@angular/router';
     }
   `],
 })
-export class FooterComponent {}
+export class FooterComponent {
+  readonly decades = [1890, 1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970];
+}
