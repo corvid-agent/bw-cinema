@@ -309,6 +309,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
               <span class="stats__fact-number">{{ avgYear() }}</span>
               <span class="stats__fact-text">average release year</span>
             </div>
+            @if (medianYear() > 0) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ medianYear() }}</span>
+                <span class="stats__fact-text">median release year</span>
+              </div>
+            }
             <div class="stats__fact-card">
               <span class="stats__fact-number">{{ filmsWithPosters() }}%</span>
               <span class="stats__fact-text">films have poster artwork</span>
@@ -897,6 +903,14 @@ export class StatsComponent implements OnInit {
     const movies = this.catalog.movies();
     if (movies.length === 0) return 0;
     return Math.round(movies.reduce((s, m) => s + m.year, 0) / movies.length);
+  });
+
+  readonly medianYear = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return 0;
+    const years = movies.map((m) => m.year).sort((a, b) => a - b);
+    const mid = Math.floor(years.length / 2);
+    return years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
   });
 
   readonly yearSpan = computed(() => {

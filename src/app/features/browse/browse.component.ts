@@ -72,6 +72,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultCoDirectedCount(); as rcdc) {
           <p class="browse__watched-note">{{ rcdc }} co-directed films</p>
         }
+        @if (resultNonEnglishCount(); as rnec) {
+          <p class="browse__watched-note">{{ rnec }} non-English films</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -710,6 +713,13 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     const films = this.filteredMovies();
     if (films.length < 10) return null;
     const count = films.filter((m) => m.directors.length > 1).length;
+    return count > 0 ? count : null;
+  });
+
+  readonly resultNonEnglishCount = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const count = films.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
     return count > 0 ? count : null;
   });
 
