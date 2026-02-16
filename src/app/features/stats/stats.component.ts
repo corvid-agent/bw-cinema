@@ -431,6 +431,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">silent-era films streamable</span>
               </div>
             }
+            @if (coDirectedPct(); as cdp) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ cdp }}%</span>
+                <span class="stats__fact-text">co-directed films</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1147,6 +1153,14 @@ export class StatsComponent implements OnInit {
     const sorted = [...pairCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
     const max = sorted[0]?.[1] ?? 1;
     return sorted.map(([name, count]) => ({ name, count, pct: (count / max) * 100 }));
+  });
+
+  readonly coDirectedPct = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    const count = movies.filter((m) => m.directors.length > 1).length;
+    const pct = Math.round((count / movies.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   ngOnInit(): void {

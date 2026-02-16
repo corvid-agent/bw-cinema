@@ -135,6 +135,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (shortestTitle(); as st) {
             <p class="decade__fact">Shortest title: "{{ st }}"</p>
           }
+          @if (medianRating(); as mr) {
+            <p class="decade__fact">Median rating: &#9733; {{ mr }}</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -894,6 +897,15 @@ export class DecadeComponent implements OnInit {
     const next = y + 10;
     const hasFilms = this.catalog.movies().some((m) => m.year >= next && m.year < next + 10);
     return hasFilms ? next : null;
+  });
+
+  readonly medianRating = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length < 5) return null;
+    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    return median.toFixed(1);
   });
 
   ngOnInit(): void {
