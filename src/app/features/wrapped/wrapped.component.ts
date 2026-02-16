@@ -118,6 +118,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Decade Span</span>
               </div>
             }
+            @if (streamablePct() > 0 && streamablePct() < 100) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ streamablePct() }}%</span>
+                <span class="wrapped__hero-label">Free to Stream</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -744,6 +750,13 @@ export class WrappedComponent implements OnInit {
     if (decades.size < 2) return null;
     const sorted = [...decades].sort((a, b) => a - b);
     return `${sorted[0]}s–${sorted[sorted.length - 1]}s`;
+  });
+
+  readonly streamablePct = computed(() => {
+    const films = this.yearFilms();
+    if (films.length === 0) return 0;
+    const streamable = films.filter((m) => m.isStreamable).length;
+    return Math.round((streamable / films.length) * 100);
   });
 
   private maxBarValue = computed(() => {

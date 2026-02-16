@@ -183,6 +183,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               <span class="compare__similarity-label">Similarity</span>
             </div>
           }
+          @if (combinedAvgRating(); as avg) {
+            <div class="compare__combined-avg">Combined Avg: {{ avg }}/10</div>
+          }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
             <div class="compare__shared">
               @for (note of comparisonNotes(); track note) {
@@ -467,6 +470,14 @@ import type { MovieSummary } from '../../core/models/movie.model';
       letter-spacing: 0.05em;
       font-weight: 600;
     }
+    .compare__combined-avg {
+      text-align: center;
+      padding: var(--space-sm) var(--space-md);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border);
+    }
     .compare__note {
       color: var(--accent-gold);
       font-weight: 600;
@@ -662,6 +673,13 @@ export class CompareComponent implements OnInit {
       return `${older.title} predates ${newer.title} by ${newer.year - older.year} years.`;
     }
     return `${a.title} and ${b.title} — two films from ${a.year}.`;
+  });
+
+  readonly combinedAvgRating = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b || a.voteAverage === 0 || b.voteAverage === 0) return null;
+    return ((a.voteAverage + b.voteAverage) / 2).toFixed(1);
   });
 
   ngOnInit(): void {

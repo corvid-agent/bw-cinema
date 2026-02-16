@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
@@ -30,7 +30,7 @@ const MOODS: Mood[] = [
 @Component({
   selector: 'app-explore',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MovieGridComponent, LoadingSpinnerComponent],
+  imports: [RouterLink, MovieGridComponent, LoadingSpinnerComponent],
   template: `
     @if (catalog.loading()) {
       <div class="explore container">
@@ -133,6 +133,14 @@ const MOODS: Mood[] = [
             </div>
             <span class="explore__catalog-detail">{{ prog.watched }} of {{ prog.total }} streamable films watched</span>
           </div>
+        }
+
+        @if (topRatedUnwatched(); as next) {
+          <a class="explore__next-up" [routerLink]="['/movie', next.id]">
+            <span class="explore__next-up-label">Next Up</span>
+            <span class="explore__next-up-title">{{ next.title }} ({{ next.year }})</span>
+            <span class="explore__next-up-rating">{{ next.voteAverage.toFixed(1) }}</span>
+          </a>
         }
 
         @if (!activeMood()) {
@@ -597,6 +605,45 @@ const MOODS: Mood[] = [
       font-size: 0.75rem;
       color: var(--text-tertiary);
     }
+    .explore__next-up {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-2xl);
+      padding: var(--space-md) var(--space-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s;
+    }
+    .explore__next-up:hover { border-color: var(--accent-gold); color: inherit; }
+    .explore__next-up-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent-gold);
+      flex-shrink: 0;
+    }
+    .explore__next-up-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .explore__next-up-rating {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      flex-shrink: 0;
+    }
     @media (max-width: 480px) {
       .explore__double-pair { grid-template-columns: 1fr; gap: var(--space-lg); }
       .explore__festival-trio { grid-template-columns: 1fr; gap: var(--space-lg); }
@@ -732,6 +779,15 @@ export class ExploreComponent implements OnInit {
     const mood = MOODS.find((m) => m.name === least.name);
     if (!mood) return null;
     return { mood, pct: least.pct };
+  });
+
+  readonly topRatedUnwatched = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return null;
+    const films = this.catalog.movies()
+      .filter((m) => m.isStreamable && !watchedIds.has(m.id) && m.voteAverage > 0)
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+    return films.length > 0 ? films[0] : null;
   });
 
   moodWatchedCount(mood: Mood): number {
