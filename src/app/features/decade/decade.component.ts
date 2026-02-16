@@ -138,6 +138,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (medianRating(); as mr) {
             <p class="decade__fact">Median rating: &#9733; {{ mr }}</p>
           }
+          @if (nonEnglishPct(); as nep) {
+            <p class="decade__fact">{{ nep }}% non-English films</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -906,6 +909,14 @@ export class DecadeComponent implements OnInit {
     const mid = Math.floor(sorted.length / 2);
     const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
     return median.toFixed(1);
+  });
+
+  readonly nonEnglishPct = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const count = f.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
+    const pct = Math.round((count / f.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   ngOnInit(): void {

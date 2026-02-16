@@ -437,6 +437,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">co-directed films</span>
               </div>
             }
+            @if (avgTitleLength() > 0) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ avgTitleLength() }}</span>
+                <span class="stats__fact-text">avg title length (chars)</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1161,6 +1167,12 @@ export class StatsComponent implements OnInit {
     const count = movies.filter((m) => m.directors.length > 1).length;
     const pct = Math.round((count / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly avgTitleLength = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return 0;
+    return Math.round(movies.reduce((s, m) => s + m.title.length, 0) / movies.length);
   });
 
   ngOnInit(): void {

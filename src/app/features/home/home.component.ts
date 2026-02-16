@@ -89,6 +89,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (coDirectedCount() > 0) {
           <p class="hero__avg-rating">{{ coDirectedCount() }} co-directed films in catalog</p>
         }
+        @if (medianYear() > 0) {
+          <p class="hero__avg-rating">Median film year: {{ medianYear() }}</p>
+        }
       </div>
     </section>
 
@@ -1323,6 +1326,14 @@ export class HomeComponent implements OnInit {
   readonly coDirectedCount = computed(() => {
     const count = this.catalog.movies().filter((m) => m.directors.length > 1).length;
     return count > 0 ? count : 0;
+  });
+
+  readonly medianYear = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return 0;
+    const years = movies.map((m) => m.year).sort((a, b) => a - b);
+    const mid = Math.floor(years.length / 2);
+    return years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
   });
 
   readonly decadeSpan = computed(() => {
