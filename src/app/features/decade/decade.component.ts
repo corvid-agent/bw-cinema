@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
@@ -25,7 +25,10 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             <p class="decade__meta">{{ films().length }} film{{ films().length !== 1 ? 's' : '' }} in catalog</p>
           </div>
           <div class="decade__actions">
-            <a class="btn-secondary decade__browse-link" routerLink="/browse" [queryParams]="{ decade: year() }">Browse with filters</a>
+            <a class="btn-secondary decade__browse-link" routerLink="/browse" [queryParams]="{ decades: year() }">Browse with filters</a>
+            <button class="decade__surprise-btn" (click)="surpriseMe()" aria-label="Random film from this decade" title="Random film">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="1" width="22" height="22" rx="4"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="16" cy="8" r="1.5" fill="currentColor"/><circle cx="8" cy="16" r="1.5" fill="currentColor"/><circle cx="16" cy="16" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+            </button>
           </div>
         </div>
 
@@ -196,6 +199,24 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       border-color: var(--accent-gold);
       color: var(--accent-gold);
     }
+    .decade__surprise-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .decade__surprise-btn:hover {
+      background: var(--accent-gold-dim);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
     .decade__empty {
       text-align: center;
       padding: var(--space-3xl);
@@ -216,6 +237,7 @@ export class DecadeComponent implements OnInit {
 
   protected readonly catalog = inject(CatalogService);
   private readonly titleService = inject(Title);
+  private readonly router = inject(Router);
 
   readonly viewMode = signal<ViewMode>('grid');
   readonly sortMode = signal<'rating' | 'newest' | 'oldest' | 'title'>('rating');
@@ -265,5 +287,12 @@ export class DecadeComponent implements OnInit {
   ngOnInit(): void {
     this.catalog.load();
     this.titleService.setTitle(`${this.year()}s Films — BW Cinema`);
+  }
+
+  surpriseMe(): void {
+    const eligible = this.sortedFilms();
+    if (eligible.length === 0) return;
+    const pick = eligible[Math.floor(Math.random() * eligible.length)];
+    this.router.navigate(['/movie', pick.id]);
   }
 }
