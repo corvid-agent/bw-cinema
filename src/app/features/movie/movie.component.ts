@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { MovieService } from '../../core/services/movie.service';
 import { CollectionService } from '../../core/services/collection.service';
@@ -405,6 +406,7 @@ export class MovieComponent implements OnInit {
   protected readonly collection = inject(CollectionService);
   private readonly streaming = inject(StreamingService);
   private readonly notifications = inject(NotificationService);
+  private readonly titleService = inject(Title);
 
   readonly movie = signal<MovieDetail | null>(null);
   readonly loading = signal(true);
@@ -415,8 +417,10 @@ export class MovieComponent implements OnInit {
     const summary = this.catalogService.movies().find((m) => m.id === this.id());
     if (!summary) {
       this.loading.set(false);
+      this.titleService.setTitle('Film Not Found — BW Cinema');
       return;
     }
+    this.titleService.setTitle(`${summary.title} (${summary.year}) — BW Cinema`);
     const source = this.streaming.getSource(summary.internetArchiveId, summary.youtubeId);
     this.streamingUrl.set(source?.embedUrl ?? null);
 

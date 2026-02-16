@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, input, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { StreamingService, StreamingSource } from '../../core/services/streaming.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
@@ -85,6 +85,7 @@ export class WatchComponent implements OnInit {
   private readonly catalogService = inject(CatalogService);
   private readonly streamingService = inject(StreamingService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly titleService = inject(Title);
 
   readonly loading = signal(true);
   readonly movieTitle = signal('');
@@ -96,6 +97,7 @@ export class WatchComponent implements OnInit {
     const movie = this.catalogService.movies().find((m) => m.id === this.id());
     if (movie) {
       this.movieTitle.set(movie.title);
+      this.titleService.setTitle(`Watch ${movie.title} — BW Cinema`);
       const src = this.streamingService.getSource(movie.internetArchiveId, movie.youtubeId);
       this.source.set(src);
       if (src) {
