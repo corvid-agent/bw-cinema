@@ -47,6 +47,26 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             </div>
           </div>
 
+          @if (bestFilm(); as best) {
+            <div class="director__best-film">
+              <a class="director__best-film-card" [routerLink]="['/movie', best.id]">
+                @if (best.posterUrl) {
+                  <img class="director__best-film-poster" [src]="best.posterUrl" [alt]="best.title" loading="lazy" />
+                } @else {
+                  <div class="director__best-film-placeholder">{{ best.title[0] }}</div>
+                }
+                <div class="director__best-film-info">
+                  <span class="director__best-film-label">Best Rated Film</span>
+                  <strong class="director__best-film-title">{{ best.title }}</strong>
+                  <span class="director__best-film-meta">{{ best.year }} &middot; {{ best.genres.slice(0, 2).join(', ') }}</span>
+                  @if (best.voteAverage > 0) {
+                    <span class="director__best-film-rating">&#9733; {{ best.voteAverage.toFixed(1) }}</span>
+                  }
+                </div>
+              </a>
+            </div>
+          }
+
           @if (topGenres().length > 0) {
             <div class="director__genres">
               @for (g of topGenres(); track g) {
@@ -183,6 +203,71 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-tertiary);
+    }
+    .director__best-film {
+      margin-bottom: var(--space-xl);
+    }
+    .director__best-film-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-lg);
+      padding: var(--space-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .director__best-film-card:hover {
+      border-color: var(--accent-gold);
+      box-shadow: var(--shadow-md);
+      color: inherit;
+    }
+    .director__best-film-poster {
+      width: 60px;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .director__best-film-placeholder {
+      width: 60px;
+      aspect-ratio: 2 / 3;
+      background: var(--bg-raised);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-heading);
+      color: var(--text-tertiary);
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .director__best-film-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .director__best-film-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-gold);
+      font-weight: 600;
+    }
+    .director__best-film-title {
+      font-size: 1.1rem;
+    }
+    .director__best-film-meta {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .director__best-film-rating {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent-gold);
     }
     .director__genres {
       display: flex;
@@ -454,6 +539,12 @@ export class DirectorComponent implements OnInit {
   readonly decadesActive = computed(() => {
     const decades = new Set(this.films().map((m) => Math.floor(m.year / 10) * 10));
     return decades.size;
+  });
+
+  readonly bestFilm = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length === 0) return null;
+    return rated.reduce((best, m) => m.voteAverage > best.voteAverage ? m : best);
   });
 
   readonly topGenres = computed(() => {

@@ -46,6 +46,10 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
               <span class="decade__stat-value">{{ topGenre() }}</span>
               <span class="decade__stat-label">Top Genre</span>
             </div>
+            <div class="decade__stat">
+              <span class="decade__stat-value">{{ languageCount() }}</span>
+              <span class="decade__stat-label">Languages</span>
+            </div>
           </div>
 
           <div class="decade__view-bar">
@@ -437,6 +441,14 @@ export class DecadeComponent implements OnInit {
   readonly streamableCount = computed(() =>
     this.films().filter((m) => m.isStreamable).length
   );
+
+  readonly languageCount = computed(() => {
+    const langs = new Set<string>();
+    for (const m of this.films()) {
+      if (m.language) langs.add(m.language);
+    }
+    return langs.size;
+  });
 
   readonly topGenre = computed(() => {
     const counts = new Map<string, number>();

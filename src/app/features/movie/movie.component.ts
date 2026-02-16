@@ -313,13 +313,20 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
               <div class="detail__carousel">
                 @for (s of directorFilms(); track s.id) {
                   <a class="detail__carousel-card" [routerLink]="['/movie', s.id]">
-                    @if (s.posterUrl) {
-                      <img [src]="s.posterUrl" [alt]="s.title" loading="lazy" />
-                    } @else {
-                      <div class="detail__carousel-placeholder">
-                        <span>{{ s.title }}</span>
-                      </div>
-                    }
+                    <div class="detail__carousel-poster-wrap">
+                      @if (s.posterUrl) {
+                        <img [src]="s.posterUrl" [alt]="s.title" loading="lazy" />
+                      } @else {
+                        <div class="detail__carousel-placeholder">
+                          <span>{{ s.title }}</span>
+                        </div>
+                      }
+                      @if (collection.isWatched(s.id)) {
+                        <span class="detail__carousel-badge detail__carousel-badge--watched" title="Watched">&#10003;</span>
+                      } @else if (collection.isInWatchlist(s.id)) {
+                        <span class="detail__carousel-badge detail__carousel-badge--watchlist" title="In watchlist">+</span>
+                      }
+                    </div>
                     <p class="detail__carousel-title">{{ s.title }}</p>
                     <p class="detail__carousel-meta">{{ s.year }}</p>
                   </a>
@@ -334,13 +341,20 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
               <div class="detail__carousel">
                 @for (s of similarWithReasons(); track s.movie.id) {
                   <a class="detail__carousel-card" [routerLink]="['/movie', s.movie.id]">
-                    @if (s.movie.posterUrl) {
-                      <img [src]="s.movie.posterUrl" [alt]="s.movie.title" loading="lazy" />
-                    } @else {
-                      <div class="detail__carousel-placeholder">
-                        <span>{{ s.movie.title }}</span>
-                      </div>
-                    }
+                    <div class="detail__carousel-poster-wrap">
+                      @if (s.movie.posterUrl) {
+                        <img [src]="s.movie.posterUrl" [alt]="s.movie.title" loading="lazy" />
+                      } @else {
+                        <div class="detail__carousel-placeholder">
+                          <span>{{ s.movie.title }}</span>
+                        </div>
+                      }
+                      @if (collection.isWatched(s.movie.id)) {
+                        <span class="detail__carousel-badge detail__carousel-badge--watched" title="Watched">&#10003;</span>
+                      } @else if (collection.isInWatchlist(s.movie.id)) {
+                        <span class="detail__carousel-badge detail__carousel-badge--watchlist" title="In watchlist">+</span>
+                      }
+                    </div>
                     <p class="detail__carousel-title">{{ s.movie.title }}</p>
                     <p class="detail__carousel-meta">{{ s.movie.year }}</p>
                     @if (s.reason) {
@@ -819,12 +833,38 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
     .detail__carousel-card:hover {
       transform: translateY(-4px);
     }
+    .detail__carousel-poster-wrap {
+      position: relative;
+    }
     .detail__carousel-card img {
       width: 100%;
       aspect-ratio: 2 / 3;
       object-fit: cover;
       border-radius: var(--radius);
       margin-bottom: var(--space-xs);
+    }
+    .detail__carousel-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      backdrop-filter: blur(4px);
+    }
+    .detail__carousel-badge--watched {
+      background: rgba(212, 175, 55, 0.9);
+      color: var(--bg-deep);
+    }
+    .detail__carousel-badge--watchlist {
+      background: rgba(0, 0, 0, 0.6);
+      color: var(--accent-gold);
+      border: 1px solid var(--accent-gold);
     }
     .detail__carousel-placeholder {
       width: 100%;
