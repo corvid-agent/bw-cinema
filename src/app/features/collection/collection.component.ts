@@ -360,6 +360,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Silent-Era Films</span>
                   </div>
                 }
+                @if (watchedMedianYear(); as wmy) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ wmy }}</span>
+                    <span class="stats__card-label">Median Year</span>
+                  </div>
+                }
               </div>
 
               @if (nextMilestone(); as milestone) {
@@ -1649,6 +1655,14 @@ export class CollectionComponent implements OnInit {
     const films = this.watchedMovies();
     if (films.length < 2) return 0;
     return films.filter((m) => m.year < 1930).length;
+  });
+
+  readonly watchedMedianYear = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 5) return null;
+    const years = films.map((m) => m.year).sort((a, b) => a - b);
+    const mid = Math.floor(years.length / 2);
+    return years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
   });
 
   private computeStreaks(): { current: number; longest: number } {

@@ -111,6 +111,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="genre__stat-label">Co-directed</span>
               </div>
             }
+            @if (silentEraCount() > 0) {
+              <div class="genre__stat">
+                <span class="genre__stat-value">{{ silentEraCount() }}</span>
+                <span class="genre__stat-label">Silent Era</span>
+              </div>
+            }
           </div>
 
           @if (newestFilmYear(); as nfy) {
@@ -862,6 +868,11 @@ export class GenreComponent implements OnInit {
     const count = f.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
     const pct = Math.round((count / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : 0;
+  });
+
+  readonly silentEraCount = computed(() => {
+    const count = this.films().filter((m) => m.year < 1930).length;
+    return count > 0 ? count : 0;
   });
 
   readonly decadeBreakdown = computed(() => {

@@ -259,7 +259,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                           <a class="detail__tag" [routerLink]="['/genre', genre]">{{ genre }}</a>
                         }
                         @if (genreSiblingCount(); as gsc) {
-                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English})</span>
+                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era})</span>
                         }
                       </div>
                     </div>
@@ -1304,6 +1304,16 @@ export class MovieComponent implements OnInit {
     const count = films.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
     const pct = Math.round((count / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly genreSilentEraCount = computed(() => {
+    const s = this.summary();
+    if (!s || s.genres.length === 0) return null;
+    const genre = s.genres[0];
+    const films = this.catalogService.movies().filter((m) => m.genres.includes(genre));
+    if (films.length < 10) return null;
+    const count = films.filter((m) => m.year < 1930).length;
+    return count > 0 ? count : null;
   });
 
   readonly yearDecade = computed(() => {
