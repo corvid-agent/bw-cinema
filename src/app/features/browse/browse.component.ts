@@ -48,6 +48,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (watchedInResults() > 0) {
           <p class="browse__watched-note">{{ watchedInResults() }} already watched</p>
         }
+        @if (topResultDirector(); as trd) {
+          <p class="browse__watched-note">Top director: <a [routerLink]="['/director', trd.name]">{{ trd.name }}</a> ({{ trd.count }})</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -635,6 +638,18 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     if (films.length < 5) return null;
     return Math.round(films.reduce((s, m) => s + m.year, 0) / films.length);
   });
+  readonly topResultDirector = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const counts = new Map<string, number>();
+    for (const m of films) {
+      for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (!best || best[1] < 3) return null;
+    return { name: best[0], count: best[1] };
+  });
+
   readonly paginatedMovies = computed(() =>
     this.filteredMovies().slice(0, this.page() * this.pageSize)
   );

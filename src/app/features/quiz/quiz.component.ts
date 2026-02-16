@@ -63,6 +63,9 @@ interface QuizStep {
           @if (resultAvgRating(); as avgR) {
             <p class="quiz__decade-range">Avg rating: &#9733; {{ avgR }}</p>
           }
+          @if (resultStreamableCount() > 0) {
+            <p class="quiz__decade-range">{{ resultStreamableCount() }} of {{ results().length }} free to watch</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -433,6 +436,10 @@ export class QuizComponent implements OnInit {
     if (rated.length === 0) return null;
     return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
   });
+
+  readonly resultStreamableCount = computed(() =>
+    this.results().filter((m) => m.isStreamable).length
+  );
 
   readonly avgMatchScore = computed(() => {
     const scores = this.matchScores();
