@@ -189,6 +189,36 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
             </a>
           }
         </div>
+
+        <section class="stats__fun-facts">
+          <h2>Fun Facts</h2>
+          <div class="stats__facts-grid">
+            <div class="stats__fact-card">
+              <span class="stats__fact-number">{{ silentFilmCount() }}</span>
+              <span class="stats__fact-text">silent-era films (pre-1930)</span>
+            </div>
+            <div class="stats__fact-card">
+              <span class="stats__fact-number">{{ filmNoirCount() }}</span>
+              <span class="stats__fact-text">film noir titles</span>
+            </div>
+            <div class="stats__fact-card">
+              <span class="stats__fact-number">{{ peakDecade() }}</span>
+              <span class="stats__fact-text">most represented decade</span>
+            </div>
+            <div class="stats__fact-card">
+              <span class="stats__fact-number">{{ avgYear() }}</span>
+              <span class="stats__fact-text">average release year</span>
+            </div>
+            <div class="stats__fact-card">
+              <span class="stats__fact-number">{{ filmsWithPosters() }}%</span>
+              <span class="stats__fact-text">films have poster artwork</span>
+            </div>
+            <div class="stats__fact-card">
+              <span class="stats__fact-number">{{ multiGenreCount() }}</span>
+              <span class="stats__fact-text">films span 3+ genres</span>
+            </div>
+          </div>
+        </section>
       }
     </div>
   `,
@@ -367,6 +397,36 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
       grid-template-columns: 1fr 1fr;
       gap: var(--space-md);
     }
+    .stats__fun-facts {
+      margin-top: var(--space-2xl);
+    }
+    .stats__fun-facts h2 {
+      margin-bottom: var(--space-lg);
+    }
+    .stats__facts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md);
+    }
+    .stats__fact-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      text-align: center;
+    }
+    .stats__fact-number {
+      display: block;
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      margin-bottom: 4px;
+    }
+    .stats__fact-text {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+    }
     @media (max-width: 768px) {
       .stats__sections { grid-template-columns: 1fr; }
     }
@@ -376,6 +436,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
       .stats__avail-label { min-width: 80px; font-size: 0.8rem; }
       .stats__highlights { grid-template-columns: repeat(2, 1fr); }
       .stats__lang-summary { grid-template-columns: 1fr; }
+      .stats__facts-grid { grid-template-columns: repeat(2, 1fr); }
     }
   `],
 })
@@ -515,6 +576,46 @@ export class StatsComponent implements OnInit {
       pct: ((buckets.get(name) ?? 0) / max) * 100,
     })).filter((r) => r.count > 0);
   });
+
+  readonly silentFilmCount = computed(() =>
+    this.catalog.movies().filter((m) => m.year < 1930).length
+  );
+
+  readonly filmNoirCount = computed(() =>
+    this.catalog.movies().filter((m) =>
+      m.genres.some((g) => g.toLowerCase().includes('noir'))
+    ).length
+  );
+
+  readonly peakDecade = computed(() => {
+    const counts = new Map<number, number>();
+    for (const m of this.catalog.movies()) {
+      const d = Math.floor(m.year / 10) * 10;
+      counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    let best = 0;
+    let bestDecade = 1950;
+    for (const [decade, count] of counts) {
+      if (count > best) { best = count; bestDecade = decade; }
+    }
+    return `${bestDecade}s`;
+  });
+
+  readonly avgYear = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return 0;
+    return Math.round(movies.reduce((s, m) => s + m.year, 0) / movies.length);
+  });
+
+  readonly filmsWithPosters = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return 0;
+    return Math.round((movies.filter((m) => m.posterUrl).length / movies.length) * 100);
+  });
+
+  readonly multiGenreCount = computed(() =>
+    this.catalog.movies().filter((m) => m.genres.length >= 3).length
+  );
 
   ngOnInit(): void {
     this.catalog.load();

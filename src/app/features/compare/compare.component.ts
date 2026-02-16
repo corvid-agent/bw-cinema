@@ -111,8 +111,22 @@ import type { MovieSummary } from '../../core/models/movie.model';
           </div>
           <div class="compare__row">
             <div class="compare__cell compare__cell--label">Rating</div>
-            <div class="compare__cell" [class.compare__cell--winner]="filmA()!.voteAverage > filmB()!.voteAverage">{{ filmA()!.voteAverage || '—' }}</div>
-            <div class="compare__cell" [class.compare__cell--winner]="filmB()!.voteAverage > filmA()!.voteAverage">{{ filmB()!.voteAverage || '—' }}</div>
+            <div class="compare__cell" [class.compare__cell--winner]="filmA()!.voteAverage > filmB()!.voteAverage">
+              {{ filmA()!.voteAverage || '—' }}
+              @if (filmA()!.voteAverage > 0) {
+                <div class="compare__rating-bar">
+                  <div class="compare__rating-fill compare__rating-fill--a" [style.width.%]="filmA()!.voteAverage * 10"></div>
+                </div>
+              }
+            </div>
+            <div class="compare__cell" [class.compare__cell--winner]="filmB()!.voteAverage > filmA()!.voteAverage">
+              {{ filmB()!.voteAverage || '—' }}
+              @if (filmB()!.voteAverage > 0) {
+                <div class="compare__rating-bar">
+                  <div class="compare__rating-fill compare__rating-fill--b" [style.width.%]="filmB()!.voteAverage * 10"></div>
+                </div>
+              }
+            </div>
           </div>
           <div class="compare__row">
             <div class="compare__cell compare__cell--label">Directors</div>
@@ -352,6 +366,21 @@ import type { MovieSummary } from '../../core/models/movie.model';
       color: var(--accent-gold);
       background: var(--accent-gold-dim);
     }
+    .compare__rating-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-raised);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .compare__rating-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+    .compare__rating-fill--a { background: var(--accent-gold); }
+    .compare__rating-fill--b { background: var(--accent-gold); }
     .compare__shared {
       padding: var(--space-md);
       font-size: 0.9rem;
