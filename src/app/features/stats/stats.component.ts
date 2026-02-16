@@ -299,6 +299,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">languages represented</span>
               </div>
             }
+            @if (yearSpan()) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ yearSpan() }}</span>
+                <span class="stats__fact-text">year range of catalog</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -783,6 +789,13 @@ export class StatsComponent implements OnInit {
     const movies = this.catalog.movies();
     if (movies.length === 0) return 0;
     return Math.round(movies.reduce((s, m) => s + m.year, 0) / movies.length);
+  });
+
+  readonly yearSpan = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return '';
+    const years = movies.map((m) => m.year);
+    return `${Math.min(...years)}–${Math.max(...years)}`;
   });
 
   readonly filmsWithPosters = computed(() => {

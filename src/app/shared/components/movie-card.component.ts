@@ -80,6 +80,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
           @if (movie().language && movie().language !== 'en') {
             <span class="card__lang">{{ (movie().language ?? '').toUpperCase() }}</span>
           }
+          @if (movie().year < 1930) {
+            <span class="card__silent">Silent</span>
+          }
         </div>
       </div>
     </a>
@@ -249,6 +252,15 @@ import type { MovieSummary } from '../../core/models/movie.model';
       color: var(--text-tertiary);
       letter-spacing: 0.04em;
       margin-left: auto;
+    }
+    .card__silent {
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: var(--accent-gold-dim);
+      color: var(--accent-gold);
+      letter-spacing: 0.04em;
     }
     .card__heart {
       position: absolute;

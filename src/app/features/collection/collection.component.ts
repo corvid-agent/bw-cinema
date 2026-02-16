@@ -1941,6 +1941,27 @@ export class CollectionComponent implements OnInit {
       }
     }
 
+    // Rating bias vs TMDb
+    if (ratedItems.length >= 3) {
+      let userTotal = 0;
+      let tmdbTotal = 0;
+      let count = 0;
+      for (const w of ratedItems) {
+        const m = movieMap.get(w.movieId);
+        if (m && m.voteAverage > 0 && w.userRating != null) {
+          userTotal += w.userRating;
+          tmdbTotal += m.voteAverage;
+          count++;
+        }
+      }
+      if (count >= 3) {
+        const diff = (userTotal / count) - (tmdbTotal / count);
+        if (Math.abs(diff) >= 0.3) {
+          insights.push({ label: 'Rating Bias', value: diff > 0 ? `+${diff.toFixed(1)} vs TMDb` : `${diff.toFixed(1)} vs TMDb` });
+        }
+      }
+    }
+
     return insights;
   });
 
