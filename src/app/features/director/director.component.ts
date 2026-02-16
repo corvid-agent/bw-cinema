@@ -78,6 +78,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Avg Year</span>
               </div>
             }
+            @if (longestGap(); as gap) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ gap }}yr</span>
+                <span class="director__stat-label">Longest Gap</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -790,6 +796,19 @@ export class DirectorComponent implements OnInit {
   readonly completionPct = computed(() => {
     const total = this.films().length;
     return total > 0 ? Math.round((this.watchedCount() / total) * 100) : 0;
+  });
+
+  readonly longestGap = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const years = [...new Set(f.map((m) => m.year))].sort((a, b) => a - b);
+    if (years.length < 2) return null;
+    let maxGap = 0;
+    for (let i = 1; i < years.length; i++) {
+      maxGap = Math.max(maxGap, years[i] - years[i - 1]);
+    }
+    if (maxGap < 5) return null;
+    return maxGap;
   });
 
   ngOnInit(): void {

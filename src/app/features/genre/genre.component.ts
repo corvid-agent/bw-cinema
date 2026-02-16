@@ -74,6 +74,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="genre__stat-label">Avg Year</span>
               </div>
             }
+            @if (exclusiveCount(); as ec) {
+              <div class="genre__stat">
+                <span class="genre__stat-value">{{ ec }}</span>
+                <span class="genre__stat-label">Pure {{ name() }}</span>
+              </div>
+            }
           </div>
 
           @if (notableFact()) {
@@ -709,6 +715,14 @@ export class GenreComponent implements OnInit {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
       .map(([name, count]) => ({ name, count }));
+  });
+
+  readonly exclusiveCount = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const count = f.filter((m) => m.genres.length === 1).length;
+    if (count < 1) return null;
+    return count;
   });
 
   readonly decadeBreakdown = computed(() => {

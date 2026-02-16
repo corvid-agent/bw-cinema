@@ -76,6 +76,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="decade__stat-label">Co-Directed</span>
               </div>
             }
+            @if (mostProlificDirector(); as mpd) {
+              <a class="decade__stat decade__stat--link" [routerLink]="['/director', mpd.name]">
+                <span class="decade__stat-value">{{ mpd.count }}</span>
+                <span class="decade__stat-label">{{ mpd.name }}</span>
+              </a>
+            }
           </div>
 
           @if (decadeFact(); as fact) {
@@ -258,6 +264,15 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
     }
     .decade__stat-value--positive {
       color: #198754;
+    }
+    .decade__stat--link {
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .decade__stat--link:hover {
+      border-color: var(--accent-gold);
     }
     .decade__fact {
       font-style: italic;
@@ -666,6 +681,18 @@ export class DecadeComponent implements OnInit {
   readonly coDirectedCount = computed(() =>
     this.films().filter((m) => m.directors.length > 1).length
   );
+
+  readonly mostProlificDirector = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const counts = new Map<string, number>();
+    for (const m of f) {
+      for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (!best || best[1] < 3) return null;
+    return { name: best[0], count: best[1] };
+  });
 
   readonly decadeFact = computed(() => {
     const f = this.films();
