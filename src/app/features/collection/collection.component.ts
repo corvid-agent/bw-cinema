@@ -497,6 +497,20 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                 </section>
               }
 
+              @if (viewingInsights().length > 0) {
+                <section class="insights">
+                  <h3>Viewing Insights</h3>
+                  <div class="insights__grid">
+                    @for (insight of viewingInsights(); track insight.label) {
+                      <div class="insights__card">
+                        <span class="insights__value">{{ insight.value }}</span>
+                        <span class="insights__label">{{ insight.label }}</span>
+                      </div>
+                    }
+                  </div>
+                </section>
+              }
+
               @if (watchTimeline().length > 0) {
                 <section class="timeline">
                   <h3>Watch History</h3>
@@ -1116,6 +1130,34 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       position: relative;
       padding-left: var(--space-lg);
     }
+    .insights { margin-top: var(--space-xl); }
+    .insights__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: var(--space-md);
+      margin-top: var(--space-md);
+    }
+    .insights__card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+      text-align: center;
+    }
+    .insights__value {
+      display: block;
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      margin-bottom: 4px;
+    }
+    .insights__label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+    }
     .timeline__list::before {
       content: '';
       position: absolute;
@@ -1561,6 +1603,64 @@ export class CollectionComponent implements OnInit {
     this.collectionService.deletePlaylist(id);
     this.notifications.show('Playlist deleted', 'info');
   }
+
+  readonly viewingInsights = computed(() => {
+    const watched = this.collectionService.watched();
+    if (watched.length < 3) return [];
+    const movies = this.catalog.movies();
+    const movieMap = new Map(movies.map((m) => [m.id, m]));
+    const insights: { label: string; value: string }[] = [];
+
+    // Films per month
+    const dates = watched.map((w) => w.watchedAt).sort();
+    const firstDate = new Date(dates[0]);
+    const now = new Date();
+    const monthsActive = Math.max(1, (now.getFullYear() - firstDate.getFullYear()) * 12 + now.getMonth() - firstDate.getMonth() + 1);
+    const perMonth = (watched.length / monthsActive).toFixed(1);
+    insights.push({ label: 'Films per Month', value: perMonth });
+
+    // Favorite genre
+    const genreCounts = new Map<string, number>();
+    for (const w of watched) {
+      const m = movieMap.get(w.movieId);
+      if (m) for (const g of m.genres) genreCounts.set(g, (genreCounts.get(g) ?? 0) + 1);
+    }
+    const topGenre = [...genreCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (topGenre) insights.push({ label: 'Favorite Genre', value: topGenre[0] });
+
+    // Most watched director
+    const dirCounts = new Map<string, number>();
+    for (const w of watched) {
+      const m = movieMap.get(w.movieId);
+      if (m) for (const d of m.directors) dirCounts.set(d, (dirCounts.get(d) ?? 0) + 1);
+    }
+    const topDir = [...dirCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (topDir && topDir[1] >= 2) insights.push({ label: 'Top Director', value: topDir[0] });
+
+    // Preferred decade
+    const decCounts = new Map<number, number>();
+    for (const w of watched) {
+      const m = movieMap.get(w.movieId);
+      if (m) {
+        const d = Math.floor(m.year / 10) * 10;
+        decCounts.set(d, (decCounts.get(d) ?? 0) + 1);
+      }
+    }
+    const topDec = [...decCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (topDec) insights.push({ label: 'Preferred Decade', value: `${topDec[0]}s` });
+
+    // Highest rated film
+    const ratedItems = watched.filter((w) => w.userRating != null).sort((a, b) => (b.userRating ?? 0) - (a.userRating ?? 0));
+    if (ratedItems.length > 0) {
+      const topFilm = movieMap.get(ratedItems[0].movieId);
+      if (topFilm) {
+        const title = topFilm.title.length > 18 ? topFilm.title.slice(0, 16) + '...' : topFilm.title;
+        insights.push({ label: 'Highest Rated', value: title });
+      }
+    }
+
+    return insights;
+  });
 
   readonly watchTimeline = computed(() => {
     const movieMap = new Map(this.catalog.movies().map((m) => [m.id, m]));

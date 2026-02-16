@@ -72,6 +72,50 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           } @else {
             <app-movie-list [movies]="sortedFilms()" />
           }
+
+          @if (genreBreakdown().length > 0) {
+            <div class="decade__genres">
+              <h2 class="decade__section-title">Genres of the {{ decadeLabel() }}</h2>
+              <div class="decade__genre-chips">
+                @for (g of genreBreakdown(); track g.name) {
+                  <a class="decade__genre-chip" [routerLink]="['/genre', g.name]">
+                    {{ g.name }}
+                    <span class="decade__genre-count">{{ g.count }}</span>
+                  </a>
+                }
+              </div>
+            </div>
+          }
+
+          @if (topDirectors().length > 0) {
+            <div class="decade__directors">
+              <h2 class="decade__section-title">Notable Directors</h2>
+              <div class="decade__directors-grid">
+                @for (d of topDirectors(); track d.name) {
+                  <a class="decade__director-card" [routerLink]="['/director', d.name]">
+                    <span class="decade__director-name">{{ d.name }}</span>
+                    <span class="decade__director-films">{{ d.count }} film{{ d.count !== 1 ? 's' : '' }}</span>
+                    <span class="decade__director-rating">{{ d.avgRating }}</span>
+                  </a>
+                }
+              </div>
+            </div>
+          }
+
+          @if (yearByYear().length > 1) {
+            <div class="decade__yearly">
+              <h2 class="decade__section-title">Year by Year</h2>
+              <div class="decade__yearly-chart">
+                @for (y of yearByYear(); track y.year) {
+                  <div class="decade__yearly-bar" [title]="y.year + ': ' + y.count + ' films'">
+                    <div class="decade__yearly-fill" [style.height.%]="y.heightPct"></div>
+                    <span class="decade__yearly-count">{{ y.count }}</span>
+                    <span class="decade__yearly-label">{{ y.year }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
         } @else {
           <div class="decade__empty">
             <p>No films found for this decade.</p>
@@ -217,6 +261,125 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       border-color: var(--accent-gold);
       color: var(--accent-gold);
     }
+    .decade__section-title {
+      font-size: 1.2rem;
+      margin-bottom: var(--space-md);
+    }
+    .decade__genres {
+      margin-top: var(--space-2xl);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--border);
+    }
+    .decade__genre-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+    .decade__genre-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: 6px 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .decade__genre-chip:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .decade__genre-count {
+      font-size: 0.7rem;
+      background: var(--bg-raised);
+      padding: 1px 6px;
+      border-radius: 8px;
+      color: var(--text-tertiary);
+    }
+    .decade__directors {
+      margin-top: var(--space-xl);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--border);
+    }
+    .decade__directors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-md);
+    }
+    .decade__director-card {
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .decade__director-card:hover {
+      border-color: var(--accent-gold);
+      color: inherit;
+    }
+    .decade__director-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    .decade__director-films {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+    }
+    .decade__director-rating {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      margin-top: var(--space-xs);
+    }
+    .decade__yearly {
+      margin-top: var(--space-xl);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--border);
+    }
+    .decade__yearly-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: var(--space-sm);
+      height: 120px;
+      padding: var(--space-md) 0;
+    }
+    .decade__yearly-bar {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 100%;
+      cursor: default;
+    }
+    .decade__yearly-fill {
+      width: 100%;
+      max-width: 40px;
+      background: linear-gradient(to top, var(--accent-gold), var(--accent-gold-dim));
+      border-radius: 4px 4px 0 0;
+      min-height: 4px;
+      transition: height 0.4s ease;
+    }
+    .decade__yearly-count {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      margin-bottom: 2px;
+    }
+    .decade__yearly-label {
+      font-size: 0.65rem;
+      color: var(--text-tertiary);
+      margin-top: var(--space-xs);
+    }
     .decade__empty {
       text-align: center;
       padding: var(--space-3xl);
@@ -282,6 +445,55 @@ export class DecadeComponent implements OnInit {
     }
     const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
     return sorted[0]?.[0] ?? '—';
+  });
+
+  readonly genreBreakdown = computed(() => {
+    const counts = new Map<string, number>();
+    for (const m of this.films()) {
+      for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([name, count]) => ({ name, count }));
+  });
+
+  readonly topDirectors = computed(() => {
+    const dirMap = new Map<string, { count: number; totalRating: number }>();
+    for (const m of this.films()) {
+      for (const d of m.directors) {
+        const entry = dirMap.get(d) ?? { count: 0, totalRating: 0 };
+        entry.count++;
+        entry.totalRating += m.voteAverage;
+        dirMap.set(d, entry);
+      }
+    }
+    return [...dirMap.entries()]
+      .filter(([, v]) => v.count >= 2)
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 8)
+      .map(([name, v]) => ({
+        name,
+        count: v.count,
+        avgRating: (v.totalRating / v.count).toFixed(1),
+      }));
+  });
+
+  readonly yearByYear = computed(() => {
+    const y = parseInt(this.year(), 10);
+    const counts = new Map<number, number>();
+    for (const m of this.films()) {
+      counts.set(m.year, (counts.get(m.year) ?? 0) + 1);
+    }
+    const entries: { year: number; count: number; heightPct: number }[] = [];
+    for (let yr = y; yr < y + 10; yr++) {
+      entries.push({ year: yr, count: counts.get(yr) ?? 0, heightPct: 0 });
+    }
+    const max = Math.max(...entries.map((e) => e.count));
+    for (const e of entries) {
+      e.heightPct = max > 0 ? Math.round((e.count / max) * 100) : 0;
+    }
+    return entries;
   });
 
   ngOnInit(): void {
