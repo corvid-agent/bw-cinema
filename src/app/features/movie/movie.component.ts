@@ -262,6 +262,30 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
             </section>
           }
 
+          @if (directorFilms().length > 0) {
+            <section class="detail__similar" aria-label="More by director">
+              <div class="detail__section-header">
+                <h2>More by {{ movie()!.directors[0] }}</h2>
+                <a class="detail__section-link" [routerLink]="['/director', movie()!.directors[0]]">View all &rarr;</a>
+              </div>
+              <div class="detail__carousel">
+                @for (s of directorFilms(); track s.id) {
+                  <a class="detail__carousel-card" [routerLink]="['/movie', s.id]">
+                    @if (s.posterUrl) {
+                      <img [src]="s.posterUrl" [alt]="s.title" loading="lazy" />
+                    } @else {
+                      <div class="detail__carousel-placeholder">
+                        <span>{{ s.title }}</span>
+                      </div>
+                    }
+                    <p class="detail__carousel-title">{{ s.title }}</p>
+                    <p class="detail__carousel-meta">{{ s.year }}</p>
+                  </a>
+                }
+              </div>
+            </section>
+          }
+
           @if (similarFilms().length > 0) {
             <section class="detail__similar" aria-label="Similar films">
               <h2>You Might Also Like</h2>
@@ -625,6 +649,17 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       color: var(--text-tertiary);
       font-weight: 600;
     }
+    .detail__section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: var(--space-sm);
+    }
+    .detail__section-header h2 { margin-bottom: 0; }
+    .detail__section-link {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
     .detail__similar {
       margin-top: var(--space-2xl);
       padding-top: var(--space-xl);
@@ -803,6 +838,16 @@ export class MovieComponent implements OnInit {
   readonly similarFilms = computed(() => {
     const s = this.summary();
     return s ? this.catalogService.getSimilar(s) : [];
+  });
+
+  readonly directorFilms = computed(() => {
+    const s = this.summary();
+    if (!s || s.directors.length === 0) return [];
+    const dir = s.directors[0];
+    return this.catalogService.movies()
+      .filter((m) => m.id !== s.id && m.directors.includes(dir))
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 8);
   });
 
   @HostListener('document:keydown', ['$event'])

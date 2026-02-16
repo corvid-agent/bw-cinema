@@ -1,8 +1,10 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-footer',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink],
   template: `
     <footer class="footer" role="contentinfo">
       <div class="footer__inner container">
@@ -11,6 +13,25 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
           <span class="footer__sep" aria-hidden="true">&mdash;</span>
           <span class="footer__tagline">Celebrating classic black &amp; white film</span>
         </div>
+        <nav class="footer__nav" aria-label="Footer navigation">
+          <div class="footer__nav-col">
+            <h4 class="footer__nav-heading">Discover</h4>
+            <a routerLink="/browse">Browse Films</a>
+            <a routerLink="/explore">Explore by Mood</a>
+            <a routerLink="/quiz">Film Quiz</a>
+          </div>
+          <div class="footer__nav-col">
+            <h4 class="footer__nav-heading">Library</h4>
+            <a routerLink="/collection">My Collection</a>
+            <a routerLink="/wrapped">Year in Review</a>
+            <a routerLink="/compare">Compare Films</a>
+          </div>
+          <div class="footer__nav-col">
+            <h4 class="footer__nav-heading">Info</h4>
+            <a routerLink="/stats">Catalog Stats</a>
+            <a routerLink="/about">About</a>
+          </div>
+        </nav>
         <p class="footer__credits">
           Data from
           <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata (opens in new tab)</a>
@@ -61,6 +82,36 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
     .footer__tagline {
       color: var(--text-secondary);
       font-size: 0.9rem;
+    }
+    .footer__nav {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-lg);
+      max-width: 480px;
+      margin: 0 auto var(--space-xl);
+      text-align: left;
+    }
+    .footer__nav-heading {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-tertiary);
+      font-weight: 600;
+      margin: 0 0 var(--space-sm);
+    }
+    .footer__nav-col {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .footer__nav-col a {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer__nav-col a:hover {
+      color: var(--accent-gold);
     }
     .footer__credits {
       color: var(--text-tertiary);

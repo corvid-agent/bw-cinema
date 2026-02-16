@@ -34,6 +34,14 @@ import type { MovieSummary } from '../../core/models/movie.model';
             <span class="card__badge card__badge--imdb">IMDb</span>
           }
         </div>
+        <div class="card__hover-info" aria-hidden="true">
+          @if (movie().directors.length > 0) {
+            <span class="card__hover-director">{{ movie().directors[0] }}</span>
+          }
+          @if (movie().genres.length > 0) {
+            <span class="card__hover-genres">{{ movie().genres.slice(0, 2).join(' / ') }}</span>
+          }
+        </div>
         @if (collection.isFavorite(movie().id)) {
           <span class="card__heart" aria-label="Favorited">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -168,6 +176,36 @@ import type { MovieSummary } from '../../core/models/movie.model';
     .card__badge--imdb {
       background-color: rgba(245, 197, 24, 0.85);
       color: #000;
+    }
+    .card__hover-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: var(--space-md) var(--space-sm) var(--space-sm);
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .card:hover .card__hover-info {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .card__hover-director {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent-gold);
+    }
+    .card__hover-genres {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.7);
     }
     .card__heart {
       position: absolute;

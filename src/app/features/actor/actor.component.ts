@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed, i
 import { RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
+import { CollectionService } from '../../core/services/collection.service';
 import { MovieService } from '../../core/services/movie.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { MovieListComponent } from '../../shared/components/movie-list.component';
@@ -35,7 +36,6 @@ import type { MovieSummary } from '../../core/models/movie.model';
               <p class="actor__meta">{{ films().length }} film{{ films().length !== 1 ? 's' : '' }} in catalog</p>
             </div>
           </div>
-          <app-view-toggle [(mode)]="viewMode" />
         </div>
 
         @if (films().length > 0) {
@@ -76,10 +76,35 @@ import type { MovieSummary } from '../../core/models/movie.model';
             </div>
           }
 
+          @if (watchedCount() > 0 || unwatchedFilms().length > 0) {
+            <div class="actor__completion">
+              <div class="actor__completion-header">
+                <span class="actor__completion-text">{{ watchedCount() }} of {{ films().length }} watched</span>
+                <span class="actor__completion-pct">{{ completionPct() }}%</span>
+              </div>
+              <div class="actor__completion-track">
+                <div class="actor__completion-fill" [style.width.%]="completionPct()"></div>
+              </div>
+              @if (unwatchedFilms().length > 0) {
+                <button class="actor__add-unwatched" (click)="addUnwatchedToWatchlist()">
+                  Add {{ unwatchedFilms().length }} unwatched to watchlist
+                </button>
+              }
+            </div>
+          }
+
+          <div class="actor__view-bar">
+            <div class="actor__sort-btns">
+              <button class="actor__sort-btn" [class.actor__sort-btn--active]="sortMode() === 'rating'" (click)="sortMode.set('rating')">Top Rated</button>
+              <button class="actor__sort-btn" [class.actor__sort-btn--active]="sortMode() === 'chronological'" (click)="sortMode.set('chronological')">Chronological</button>
+            </div>
+            <app-view-toggle [(mode)]="viewMode" />
+          </div>
+
           @if (viewMode() === 'grid') {
-            <app-movie-grid [movies]="films()" />
+            <app-movie-grid [movies]="sortedFilms()" />
           } @else {
-            <app-movie-list [movies]="films()" />
+            <app-movie-list [movies]="sortedFilms()" />
           }
         } @else {
           <div class="actor__empty">
@@ -217,6 +242,85 @@ import type { MovieSummary } from '../../core/models/movie.model';
       border-radius: 8px;
       color: var(--text-tertiary);
     }
+    .actor__completion {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md) var(--space-lg);
+      margin-bottom: var(--space-lg);
+    }
+    .actor__completion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-sm);
+    }
+    .actor__completion-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .actor__completion-pct {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+    }
+    .actor__completion-track {
+      height: 8px;
+      background: var(--bg-raised);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: var(--space-sm);
+    }
+    .actor__completion-fill {
+      height: 100%;
+      background: var(--accent-gold);
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+    .actor__add-unwatched {
+      background: none;
+      border: none;
+      color: var(--accent-gold);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0;
+      min-height: auto;
+      min-width: auto;
+      cursor: pointer;
+    }
+    .actor__add-unwatched:hover { text-decoration: underline; }
+    .actor__view-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+    }
+    .actor__sort-btns {
+      display: flex;
+      gap: var(--space-xs);
+    }
+    .actor__sort-btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .actor__sort-btn:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .actor__sort-btn--active {
+      background: var(--accent-gold-dim);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
     .actor__empty {
       text-align: center;
       padding: var(--space-3xl);
@@ -235,10 +339,12 @@ export class ActorComponent implements OnInit {
   readonly name = input.required<string>();
 
   protected readonly catalog = inject(CatalogService);
+  private readonly collectionService = inject(CollectionService);
   private readonly movieService = inject(MovieService);
   private readonly titleService = inject(Title);
 
   readonly viewMode = signal<ViewMode>('grid');
+  readonly sortMode = signal<'rating' | 'chronological'>('rating');
   readonly photoUrl = signal<string | null>(null);
 
   /** Films this actor appears in — resolved by loading details for catalog films */
@@ -250,6 +356,30 @@ export class ActorComponent implements OnInit {
     return this.catalog.movies()
       .filter((m) => ids.has(m.id))
       .sort((a, b) => b.voteAverage - a.voteAverage);
+  });
+
+  readonly sortedFilms = computed(() => {
+    const f = [...this.films()];
+    if (this.sortMode() === 'chronological') {
+      return f.sort((a, b) => a.year - b.year);
+    }
+    return f.sort((a, b) => b.voteAverage - a.voteAverage);
+  });
+
+  readonly watchedCount = computed(() => {
+    const ids = this.collectionService.watchedIds();
+    return this.films().filter((m) => ids.has(m.id)).length;
+  });
+
+  readonly unwatchedFilms = computed(() => {
+    const watchedIds = this.collectionService.watchedIds();
+    const watchlistIds = this.collectionService.watchlistIds();
+    return this.films().filter((m) => !watchedIds.has(m.id) && !watchlistIds.has(m.id));
+  });
+
+  readonly completionPct = computed(() => {
+    const total = this.films().length;
+    return total > 0 ? Math.round((this.watchedCount() / total) * 100) : 0;
   });
 
   readonly yearRange = computed(() => {
@@ -327,5 +457,11 @@ export class ActorComponent implements OnInit {
       }
     }
     this.actorFilmIds.set(new Set(matchIds));
+  }
+
+  addUnwatchedToWatchlist(): void {
+    for (const m of this.unwatchedFilms()) {
+      this.collectionService.addToWatchlist(m.id);
+    }
   }
 }
