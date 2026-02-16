@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
+import { AccessibilityService } from '../../core/services/accessibility.service';
 
 @Component({
   selector: 'app-header',
@@ -39,6 +40,15 @@ import { ThemeService } from '../../core/services/theme.service';
             } @else {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             }
+          </button>
+          <button
+            class="header__a11y-toggle"
+            (click)="a11y.panelOpen.set(!a11y.panelOpen())"
+            [attr.aria-expanded]="a11y.panelOpen()"
+            aria-label="Accessibility settings"
+            title="Accessibility settings"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2.5"/><path d="M12 7v5"/><path d="m8 10 4 2 4-2"/><path d="m9 22 3-7 3 7"/></svg>
           </button>
         </nav>
       </div>
@@ -145,9 +155,27 @@ import { ThemeService } from '../../core/services/theme.service';
       transition: background-color 0.2s, border-color 0.2s;
       margin-left: var(--space-sm);
     }
-    .header__theme-toggle:hover {
+    .header__theme-toggle:hover,
+    .header__a11y-toggle:hover {
       background: var(--accent-gold-dim);
       border-color: var(--accent-gold);
+    }
+    .header__a11y-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      min-height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      color: var(--accent-gold);
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s;
+      margin-left: 4px;
     }
     @media (max-width: 768px) {
       .header__hamburger { display: flex; }
@@ -170,7 +198,8 @@ import { ThemeService } from '../../core/services/theme.service';
         padding: var(--space-md);
         border-radius: var(--radius);
       }
-      .header__theme-toggle {
+      .header__theme-toggle,
+      .header__a11y-toggle {
         align-self: flex-start;
         margin: var(--space-sm) 0 var(--space-sm) var(--space-md);
       }
@@ -179,5 +208,6 @@ import { ThemeService } from '../../core/services/theme.service';
 })
 export class HeaderComponent {
   readonly theme = inject(ThemeService);
+  readonly a11y = inject(AccessibilityService);
   readonly menuOpen = signal(false);
 }

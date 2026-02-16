@@ -26,6 +26,16 @@ export class CatalogService {
       .slice(0, 12);
   });
 
+  readonly filmOfTheDay = computed(() => {
+    const candidates = this.movies().filter(
+      (m) => m.isStreamable && m.voteAverage >= 6 && m.genres.length > 0
+    );
+    if (candidates.length === 0) return null;
+    const today = new Date();
+    const seed = today.getFullYear() * 366 + (today.getMonth() + 1) * 31 + today.getDate();
+    return candidates[seed % candidates.length];
+  });
+
   async load(): Promise<void> {
     if (this.loaded()) return;
     this.loading.set(true);
@@ -62,6 +72,13 @@ export class CatalogService {
     if (filter.genres.length > 0) {
       results = results.filter((m) =>
         m.genres.some((g) => filter.genres.includes(g))
+      );
+    }
+
+    if (filter.directors.length > 0) {
+      const dirLower = filter.directors.map((d) => d.toLowerCase());
+      results = results.filter((m) =>
+        m.directors.some((d) => dirLower.includes(d.toLowerCase()))
       );
     }
 

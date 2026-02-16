@@ -4,20 +4,20 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
   selector: 'app-footer',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <footer class="footer">
+    <footer class="footer" role="contentinfo">
       <div class="footer__inner container">
         <div class="footer__top">
           <span class="footer__brand">BW Cinema</span>
-          <span class="footer__sep">&mdash;</span>
+          <span class="footer__sep" aria-hidden="true">&mdash;</span>
           <span class="footer__tagline">Celebrating classic black &amp; white film</span>
         </div>
         <p class="footer__credits">
           Data from
-          <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a>
+          <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata (opens in new tab)</a>
           &amp;
-          <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDb</a>.
+          <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDb (opens in new tab)</a>.
           Streaming via
-          <a href="https://archive.org" target="_blank" rel="noopener">Internet Archive</a>.
+          <a href="https://archive.org" target="_blank" rel="noopener">Internet Archive (opens in new tab)</a>.
         </p>
         <p class="footer__disclaimer">
           This product uses the TMDb API but is not endorsed or certified by TMDb.

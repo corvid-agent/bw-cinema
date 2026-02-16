@@ -22,6 +22,7 @@ export interface CatalogFilter {
   query: string;
   decades: number[];
   genres: string[];
+  directors: string[];
   streamableOnly: boolean;
   minRating: number;
   sortBy: 'title' | 'year' | 'rating';

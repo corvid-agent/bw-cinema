@@ -73,6 +73,67 @@
   --accent-cream: #e8d8b8;
 }
 
+/* High contrast mode */
+.high-contrast {
+  --bg-deep: #000;
+  --bg-surface: #0a0a0a;
+  --bg-raised: #111;
+  --bg-input: #000;
+  --bg-hover: #1a1a1a;
+  --border: #666;
+  --border-bright: #888;
+  --text-primary: #fff;
+  --text-secondary: #ddd;
+  --text-tertiary: #aaa;
+  --accent-gold: #ffd700;
+  --accent-gold-bright: #ffe44d;
+  --accent-gold-dim: rgba(255, 215, 0, 0.15);
+  --accent-cream: #fff;
+  --accent-silver: #e0e0e0;
+}
+
+.high-contrast[data-theme='sepia'] {
+  --bg-deep: #0f0c06;
+  --bg-surface: #1a1508;
+  --bg-raised: #251e0e;
+  --bg-input: #0f0c06;
+  --bg-hover: #2a2210;
+  --border: #7a6a4a;
+  --border-bright: #9a8a6a;
+  --text-primary: #fff;
+  --text-secondary: #e8d8b8;
+  --text-tertiary: #bba878;
+  --accent-gold: #ffd700;
+  --accent-cream: #fff;
+}
+
+.high-contrast :focus-visible {
+  outline: 3px solid #ffd700 !important;
+  outline-offset: 3px !important;
+}
+
+/* Reduced motion — user preference (class-based override) */
+.reduced-motion,
+.reduced-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+.reduced-motion body::after { display: none !important; }
+.reduced-motion ::view-transition-old(root),
+.reduced-motion ::view-transition-new(root) { animation: none !important; }
+
+/* Wide letter/word spacing for readability */
+.wide-spacing {
+  letter-spacing: 0.05em;
+  word-spacing: 0.12em;
+}
+.wide-spacing h1, .wide-spacing h2, .wide-spacing h3 {
+  letter-spacing: 0.02em;
+  word-spacing: 0.08em;
+}
+
 *,
 *::before,
 *::after {
@@ -165,8 +226,9 @@ a:hover {
 
 /* Focus styles — accessibility */
 :focus-visible {
-  outline: 2px solid var(--accent-gold);
-  outline-offset: 2px;
+  outline: 3px solid var(--accent-gold);
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 
 /* Buttons */
@@ -176,8 +238,8 @@ button, .btn {
   cursor: pointer;
   border: none;
   border-radius: var(--radius);
-  min-height: 44px;
-  min-width: 44px;
+  min-height: 48px;
+  min-width: 48px;
   padding: var(--space-sm) var(--space-lg);
   transition: all 0.2s ease;
   letter-spacing: 0.01em;
@@ -230,7 +292,7 @@ input, select, textarea {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: var(--space-sm) var(--space-md);
-  min-height: 44px;
+  min-height: 48px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -305,4 +367,64 @@ img {
   h1 { font-size: 1.8rem; }
   h2 { font-size: 1.3rem; }
   h3 { font-size: 1.1rem; }
+}
+
+/* Print */
+@media print {
+  :root {
+    --bg-deep: #fff;
+    --bg-surface: #fff;
+    --bg-raised: #f5f5f5;
+    --bg-input: #fff;
+    --bg-hover: #f0f0f0;
+    --border: #ddd;
+    --border-bright: #ccc;
+    --text-primary: #111;
+    --text-secondary: #444;
+    --text-tertiary: #888;
+    --accent-gold: #8b6914;
+    --accent-cream: #444;
+  }
+
+  body::after { display: none !important; }
+
+  .header, .skip-link, app-footer, app-back-to-top,
+  app-toast-container, .shortcuts-overlay,
+  .btn-primary, .btn-secondary, .btn-ghost,
+  .browse__sidebar, .browse__search, .browse__sort,
+  .browse__load-more, .hero__search, .hero__surprise {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  main { min-height: auto !important; }
+  .container { max-width: 100%; padding: 0; }
+
+  a { color: #111 !important; text-decoration: underline; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #666; }
+  a[routerLink]::after { display: none; }
+
+  img { max-width: 200px !important; }
+
+  .detail__hero { display: none; }
+  .detail__content { margin-top: 0; }
+  .detail__layout { grid-template-columns: 180px 1fr; }
+  .detail__poster img { max-width: 180px !important; }
+  .detail__actions { display: none; }
+  .detail__share-btn { display: none !important; }
+  .detail__user-rating { border: 1px solid #ddd; }
+
+  .detail__cast { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+  .cast-card img { width: 50px !important; height: 50px !important; }
+
+  .detail__similar { display: none; }
+
+  h1 { font-size: 1.6rem; }
+  h2 { font-size: 1.2rem; }
 }

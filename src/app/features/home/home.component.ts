@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/services/catalog.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { SearchBarComponent } from '../../shared/components/search-bar.component';
@@ -9,7 +9,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MovieGridComponent, SearchBarComponent, SkeletonGridComponent, KeyboardNavDirective],
+  imports: [MovieGridComponent, SearchBarComponent, SkeletonGridComponent, KeyboardNavDirective, RouterLink],
   template: `
     <section class="hero">
       <div class="hero__bg"></div>
@@ -50,6 +50,36 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         <app-skeleton-grid />
       </section>
     } @else {
+      @if (catalog.filmOfTheDay(); as fotd) {
+        <section class="section container fotd" aria-label="Film of the day">
+          <h2 class="fotd__heading">Film of the Day</h2>
+          <a class="fotd__card" [routerLink]="['/movie', fotd.id]">
+            @if (fotd.posterUrl) {
+              <img class="fotd__poster" [src]="fotd.posterUrl" [alt]="fotd.title + ' poster'" />
+            } @else {
+              <div class="fotd__poster-placeholder">
+                <span>{{ fotd.title }}</span>
+              </div>
+            }
+            <div class="fotd__info">
+              <h3 class="fotd__title">{{ fotd.title }}</h3>
+              <p class="fotd__meta">{{ fotd.year }} &middot; {{ fotd.directors.join(', ') }}</p>
+              @if (fotd.genres.length > 0) {
+                <div class="fotd__genres">
+                  @for (g of fotd.genres.slice(0, 3); track g) {
+                    <span class="fotd__genre">{{ g }}</span>
+                  }
+                </div>
+              }
+              @if (fotd.voteAverage > 0) {
+                <p class="fotd__rating">&#9733; {{ fotd.voteAverage.toFixed(1) }}</p>
+              }
+              <span class="fotd__cta">View Details &rarr;</span>
+            </div>
+          </a>
+        </section>
+      }
+
       <section class="section container" aria-label="Featured films">
         <div class="section__header">
           <h2>Featured Films</h2>
@@ -238,11 +268,91 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       color: var(--accent-gold);
       background-color: var(--accent-gold-dim);
     }
+    .fotd__heading {
+      margin-bottom: var(--space-md);
+    }
+    .fotd__card {
+      display: flex;
+      gap: var(--space-xl);
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .fotd__card:hover {
+      border-color: var(--accent-gold);
+      box-shadow: var(--shadow-md);
+      color: inherit;
+    }
+    .fotd__poster {
+      width: 140px;
+      flex-shrink: 0;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-poster);
+      object-fit: cover;
+    }
+    .fotd__poster-placeholder {
+      width: 140px;
+      aspect-ratio: 2 / 3;
+      background: var(--bg-raised);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-heading);
+      color: var(--text-tertiary);
+      text-align: center;
+      padding: var(--space-sm);
+      flex-shrink: 0;
+    }
+    .fotd__info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .fotd__title {
+      font-size: 1.5rem;
+      margin-bottom: var(--space-xs);
+    }
+    .fotd__meta {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin: 0 0 var(--space-sm);
+    }
+    .fotd__genres {
+      display: flex;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-sm);
+    }
+    .fotd__genre {
+      font-size: 0.8rem;
+      padding: 2px 10px;
+      border: 1px solid var(--border-bright);
+      border-radius: 12px;
+      color: var(--text-secondary);
+    }
+    .fotd__rating {
+      color: var(--accent-gold);
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0 0 var(--space-sm);
+    }
+    .fotd__cta {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent-gold);
+    }
     @media (max-width: 768px) {
       .hero { padding: var(--space-2xl) 0 var(--space-xl); }
       .hero__title { font-size: 2.2rem; }
       .hero__stats { gap: var(--space-xl); }
       .hero__stat-value { font-size: 1.4rem; }
+      .fotd__card { flex-direction: column; gap: var(--space-md); }
+      .fotd__poster { width: 100%; max-width: 200px; }
     }
   `],
 })

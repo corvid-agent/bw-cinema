@@ -33,7 +33,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
         <div class="watch__fallback">
           <p>Having trouble?
             <a [href]="src.externalUrl" target="_blank" rel="noopener">
-              Watch directly on {{ src.label }}
+              Watch directly on {{ src.label }} (opens in new tab)
             </a>
           </p>
         </div>

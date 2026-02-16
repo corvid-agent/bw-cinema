@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy, input, output, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, signal, computed } from '@angular/core';
+import type { DirectorCount } from '../../core/models/catalog.model';
 
 @Component({
   selector: 'app-filter-panel',
@@ -47,6 +48,39 @@ import { Component, ChangeDetectionStrategy, input, output, signal } from '@angu
                 />
                 <span>{{ genre }}</span>
               </label>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="filters__group">
+        <button class="filters__toggle" (click)="directorsOpen.set(!directorsOpen())">
+          <span>Directors</span>
+          <span class="filters__chevron" [class.open]="directorsOpen()">&#9662;</span>
+        </button>
+        @if (directorsOpen()) {
+          <div class="filters__options">
+            <input
+              type="search"
+              class="filters__director-search"
+              placeholder="Search directors..."
+              [value]="directorQuery()"
+              (input)="onDirectorSearch($event)"
+              autocomplete="off"
+            />
+            @for (dir of filteredDirectors(); track dir.name) {
+              <label class="filters__checkbox">
+                <input
+                  type="checkbox"
+                  [checked]="selectedDirectors().has(dir.name)"
+                  (change)="toggleDirector(dir.name)"
+                />
+                <span>{{ dir.name }}</span>
+                <span class="filters__director-count">{{ dir.count }}</span>
+              </label>
+            }
+            @if (filteredDirectors().length === 0 && directorQuery().length > 0) {
+              <p class="filters__empty">No directors found</p>
             }
           </div>
         }
@@ -192,23 +226,64 @@ import { Component, ChangeDetectionStrategy, input, output, signal } from '@angu
       accent-color: var(--accent-gold);
       cursor: pointer;
     }
+    .filters__director-search {
+      width: 100%;
+      font-size: 0.85rem;
+      padding: 6px 10px;
+      margin-bottom: var(--space-xs);
+      background-color: var(--bg-input);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      min-height: 32px;
+    }
+    .filters__director-search:focus {
+      border-color: var(--accent-gold);
+      outline: none;
+    }
+    .filters__director-count {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      background-color: var(--bg-raised);
+      padding: 1px 6px;
+      border-radius: 8px;
+    }
+    .filters__empty {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      padding: var(--space-sm) 0;
+      margin: 0;
+    }
   `],
 })
 export class FilterPanelComponent {
   readonly availableDecades = input<number[]>([]);
   readonly availableGenres = input<string[]>([]);
+  readonly availableDirectors = input<DirectorCount[]>([]);
 
   readonly selectedDecades = signal(new Set<number>());
   readonly selectedGenres = signal(new Set<string>());
+  readonly selectedDirectors = signal(new Set<string>());
   readonly streamableOnly = signal(false);
   readonly minRating = signal(0);
+  readonly directorQuery = signal('');
 
   readonly decadesOpen = signal(false);
   readonly genresOpen = signal(false);
+  readonly directorsOpen = signal(false);
+
+  readonly filteredDirectors = computed(() => {
+    const q = this.directorQuery().toLowerCase();
+    const dirs = this.availableDirectors();
+    if (!q) return dirs.slice(0, 20);
+    return dirs.filter((d) => d.name.toLowerCase().includes(q)).slice(0, 20);
+  });
 
   readonly filterChanged = output<{
     decades: number[];
     genres: string[];
+    directors: string[];
     streamableOnly: boolean;
     minRating: number;
   }>();
@@ -238,11 +313,27 @@ export class FilterPanelComponent {
     this.emitFilter();
   }
 
+  toggleDirector(name: string): void {
+    this.selectedDirectors.update((set) => {
+      const next = new Set(set);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+    this.emitFilter();
+  }
+
+  onDirectorSearch(event: Event): void {
+    this.directorQuery.set((event.target as HTMLInputElement).value);
+  }
+
   clearFilters(): void {
     this.selectedDecades.set(new Set());
     this.selectedGenres.set(new Set());
+    this.selectedDirectors.set(new Set());
     this.streamableOnly.set(false);
     this.minRating.set(0);
+    this.directorQuery.set('');
     this.emitFilter();
   }
 
@@ -250,6 +341,7 @@ export class FilterPanelComponent {
     this.filterChanged.emit({
       decades: [...this.selectedDecades()],
       genres: [...this.selectedGenres()],
+      directors: [...this.selectedDirectors()],
       streamableOnly: this.streamableOnly(),
       minRating: this.minRating(),
     });

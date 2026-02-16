@@ -8,7 +8,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, LazyImageDirective],
   template: `
-    <a class="card" [routerLink]="['/movie', movie().id]" [attr.aria-label]="movie().title + ' (' + movie().year + ')'">
+    <a class="card" [routerLink]="['/movie', movie().id]" [attr.aria-label]="movie().title + ', ' + movie().year + (movie().voteAverage > 0 ? ', rated ' + movie().voteAverage.toFixed(1) + ' out of 10' : '') + (movie().isStreamable ? ', free to watch' : '')">
       <div class="card__poster">
         @if (movie().posterUrl && !imgFailed()) {
           <img appLazyImage [src]="movie().posterUrl" [alt]="movie().title + ' poster'" (error)="imgFailed.set(true)" />
@@ -21,7 +21,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
             }
           </div>
         }
-        <div class="card__overlay">
+        <div class="card__overlay" aria-hidden="true">
           @if (movie().voteAverage > 0) {
             <span class="card__rating">{{ movie().voteAverage.toFixed(1) }}</span>
           }

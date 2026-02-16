@@ -27,6 +27,7 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
             <app-filter-panel
               [availableDecades]="catalog.meta()?.decades ?? []"
               [availableGenres]="catalog.meta()?.genres ?? []"
+              [availableDirectors]="catalog.meta()?.topDirectors ?? []"
               (filterChanged)="onFilterChange($event)"
             />
           </aside>
@@ -146,6 +147,7 @@ export class BrowseComponent implements OnInit {
     query: '',
     decades: [],
     genres: [],
+    directors: [],
     streamableOnly: false,
     minRating: 0,
     sortBy: 'rating',
@@ -175,7 +177,7 @@ export class BrowseComponent implements OnInit {
     this.page.set(1);
   }
 
-  onFilterChange(filters: { decades: number[]; genres: string[]; streamableOnly: boolean; minRating: number }): void {
+  onFilterChange(filters: { decades: number[]; genres: string[]; directors: string[]; streamableOnly: boolean; minRating: number }): void {
     this.filter.update((f) => ({ ...f, ...filters }));
     this.page.set(1);
   }
