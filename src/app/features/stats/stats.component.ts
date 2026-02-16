@@ -311,6 +311,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">rated 7.0 or higher</span>
               </div>
             }
+            @if (medianRating()) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ medianRating() }}</span>
+                <span class="stats__fact-text">median film rating</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -819,6 +825,19 @@ export class StatsComponent implements OnInit {
     if (rated.length === 0) return 0;
     const high = rated.filter((m) => m.voteAverage >= 7.0).length;
     return Math.round((high / rated.length) * 100);
+  });
+
+  readonly medianRating = computed(() => {
+    const rated = this.catalog.movies()
+      .filter((m) => m.voteAverage > 0)
+      .map((m) => m.voteAverage)
+      .sort((a, b) => a - b);
+    if (rated.length === 0) return null;
+    const mid = Math.floor(rated.length / 2);
+    const median = rated.length % 2 === 0
+      ? (rated[mid - 1] + rated[mid]) / 2
+      : rated[mid];
+    return median.toFixed(1);
   });
 
   readonly mostVersatileDirector = computed(() => {

@@ -1941,6 +1941,16 @@ export class CollectionComponent implements OnInit {
       insights.push({ label: 'Avg Film Year', value: `${Math.round(yearSum / matchedCount)}` });
     }
 
+    // Newest film watched (by release year)
+    let newestYear = 0;
+    for (const w of watched) {
+      const m = movieMap.get(w.movieId);
+      if (m && m.year > newestYear) newestYear = m.year;
+    }
+    if (newestYear > 0) {
+      insights.push({ label: 'Newest Film', value: `${newestYear}` });
+    }
+
     // Highest rated film
     const ratedItems = watched.filter((w) => w.userRating != null).sort((a, b) => (b.userRating ?? 0) - (a.userRating ?? 0));
     if (ratedItems.length > 0) {

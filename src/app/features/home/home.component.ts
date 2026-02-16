@@ -56,8 +56,8 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             <span class="hero__stat-label">Genres</span>
           </div>
         </div>
-        @if (catalogAvgRating(); as avg) {
-          <p class="hero__avg-rating">Average catalog rating: {{ avg }}/10</p>
+        @if (silentEraCount() > 0) {
+          <p class="hero__avg-rating">Including {{ silentEraCount() }} silent-era films (pre-1930)</p>
         }
       </div>
     </section>
@@ -1201,11 +1201,9 @@ export class HomeComponent implements OnInit {
     return genres.size;
   });
 
-  readonly catalogAvgRating = computed(() => {
-    const rated = this.catalog.movies().filter((m) => m.voteAverage > 0);
-    if (rated.length < 10) return null;
-    return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
-  });
+  readonly silentEraCount = computed(() =>
+    this.catalog.movies().filter((m) => m.year < 1930).length
+  );
 
   readonly decadeSpan = computed(() => {
     const d = this.decades();
