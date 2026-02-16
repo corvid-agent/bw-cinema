@@ -29,6 +29,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (movie.directors.length > 0) {
                 &middot; {{ movie.directors.join(', ') }}
               }
+              @if (movie.language && movie.language !== 'English') {
+                &middot; <span class="list-item__lang">{{ movie.language }}</span>
+              }
             </p>
             @if (movie.genres.length > 0) {
               <div class="list-item__genres">
@@ -132,6 +135,11 @@ import type { MovieSummary } from '../../core/models/movie.model';
       font-size: 0.85rem;
       color: var(--text-secondary);
       margin: 0 0 4px;
+    }
+    .list-item__lang {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      font-style: italic;
     }
     .list-item__genres {
       display: flex;

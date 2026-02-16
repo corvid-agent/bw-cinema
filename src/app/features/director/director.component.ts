@@ -45,6 +45,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
               <span class="director__stat-value">{{ decadesActive() }}</span>
               <span class="director__stat-label">Decades</span>
             </div>
+            @if (languageCount() > 1) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ languageCount() }}</span>
+                <span class="director__stat-label">Languages</span>
+              </div>
+            }
           </div>
 
           @if (bestFilm(); as best) {
@@ -539,6 +545,14 @@ export class DirectorComponent implements OnInit {
   readonly decadesActive = computed(() => {
     const decades = new Set(this.films().map((m) => Math.floor(m.year / 10) * 10));
     return decades.size;
+  });
+
+  readonly languageCount = computed(() => {
+    const langs = new Set<string>();
+    for (const m of this.films()) {
+      if (m.language) langs.add(m.language);
+    }
+    return langs.size;
   });
 
   readonly bestFilm = computed(() => {

@@ -108,6 +108,20 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             </div>
           }
 
+          @if (relatedGenres().length > 0) {
+            <div class="genre__related">
+              <h2 class="genre__section-title">Related Genres</h2>
+              <div class="genre__related-chips">
+                @for (g of relatedGenres(); track g.name) {
+                  <a class="genre__related-chip" [routerLink]="['/genre', g.name]">
+                    {{ g.name }}
+                    <span class="genre__related-pct">{{ g.pct }}%</span>
+                  </a>
+                }
+              </div>
+            </div>
+          }
+
           @if (decadeBreakdown().length > 0) {
             <div class="genre__decades">
               <h2 class="genre__section-title">By Decade</h2>
@@ -375,6 +389,41 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       color: var(--accent-gold);
       margin-top: var(--space-xs);
     }
+    .genre__related {
+      margin-top: var(--space-xl);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--border);
+    }
+    .genre__related-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+    .genre__related-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: 6px 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .genre__related-chip:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .genre__related-pct {
+      font-size: 0.7rem;
+      background: var(--bg-raised);
+      padding: 1px 6px;
+      border-radius: 8px;
+      color: var(--text-tertiary);
+    }
     .genre__decades {
       margin-top: var(--space-xl);
       padding-top: var(--space-lg);
@@ -497,6 +546,25 @@ export class GenreComponent implements OnInit {
         count: v.count,
         avgRating: (v.totalRating / v.count).toFixed(1),
       }));
+  });
+
+  readonly relatedGenres = computed(() => {
+    const thisGenre = this.name().toLowerCase();
+    const coOccur = new Map<string, number>();
+    const films = this.films();
+    for (const m of films) {
+      for (const g of m.genres) {
+        if (g.toLowerCase() !== thisGenre) {
+          coOccur.set(g, (coOccur.get(g) ?? 0) + 1);
+        }
+      }
+    }
+    const total = films.length;
+    return [...coOccur.entries()]
+      .filter(([, count]) => count >= 3)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name, count]) => ({ name, pct: Math.round((count / total) * 100) }));
   });
 
   readonly decadeBreakdown = computed(() => {
