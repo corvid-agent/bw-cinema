@@ -154,6 +154,20 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
               </div>
             </div>
           }
+          @if (relatedDirectors().length > 0) {
+            <div class="director__related">
+              <h2 class="director__section-title">Similar Directors</h2>
+              <p class="director__related-desc">Directors who work in similar genres</p>
+              <div class="director__collab-list">
+                @for (r of relatedDirectors(); track r.name) {
+                  <a class="director__collab-card" [routerLink]="['/director', r.name]">
+                    <span class="director__collab-name">{{ r.name }}</span>
+                    <span class="director__collab-count">{{ r.sharedGenres }} shared genres &middot; {{ r.count }} films</span>
+                  </a>
+                }
+              </div>
+            </div>
+          }
         } @else {
           <div class="director__empty">
             <p>No films found for this director.</p>
@@ -469,6 +483,16 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       color: var(--text-secondary);
       margin-top: var(--space-sm);
     }
+    .director__related {
+      border-top: 1px solid var(--border);
+      padding-top: var(--space-lg);
+      margin-top: var(--space-xl);
+    }
+    .director__related-desc {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      margin: 0 0 var(--space-md);
+    }
     .director__empty {
       text-align: center;
       padding: var(--space-3xl);
@@ -626,6 +650,31 @@ export class DirectorComponent implements OnInit {
     if (timeline.length < 2) return null;
     const best = timeline.reduce((a, b) => (b.avgRating > a.avgRating ? b : a));
     return best.decade;
+  });
+
+  readonly relatedDirectors = computed(() => {
+    const myGenres = new Set(this.films().flatMap((m) => m.genres));
+    if (myGenres.size === 0) return [];
+    const collaboratorNames = new Set(this.collaborators().map((c) => c.name));
+    const dirGenres = new Map<string, { genres: Set<string>; count: number }>();
+    for (const m of this.catalog.movies()) {
+      for (const d of m.directors) {
+        if (d === this.name() || collaboratorNames.has(d)) continue;
+        const entry = dirGenres.get(d) ?? { genres: new Set(), count: 0 };
+        for (const g of m.genres) entry.genres.add(g);
+        entry.count++;
+        dirGenres.set(d, entry);
+      }
+    }
+    return [...dirGenres.entries()]
+      .filter(([, v]) => v.count >= 3)
+      .map(([name, v]) => {
+        const shared = [...v.genres].filter((g) => myGenres.has(g)).length;
+        return { name, sharedGenres: shared, count: v.count };
+      })
+      .filter((d) => d.sharedGenres >= 2)
+      .sort((a, b) => b.sharedGenres - a.sharedGenres || b.count - a.count)
+      .slice(0, 6);
   });
 
   readonly watchedCount = computed(() => {

@@ -226,6 +226,31 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         </section>
       }
 
+      @if (decadeSpotlight(); as dSpot) {
+        <section class="section container" aria-label="Decade spotlight">
+          <div class="section__header">
+            <div>
+              <h2>Decade Spotlight: {{ dSpot.decade }}s</h2>
+              <p class="section__desc">{{ dSpot.count }} films from this era</p>
+            </div>
+            <a class="section__link" [routerLink]="['/decade', dSpot.decade]">See all &rarr;</a>
+          </div>
+          <div class="gems__scroll">
+            @for (film of dSpot.films; track film.id) {
+              <a class="gems__card" [routerLink]="['/movie', film.id]">
+                @if (film.posterUrl) {
+                  <img [src]="film.posterUrl" [alt]="film.title" loading="lazy" />
+                } @else {
+                  <div class="gems__placeholder">{{ film.title }}</div>
+                }
+                <p class="gems__title">{{ film.title }}</p>
+                <p class="gems__meta">{{ film.year }} &middot; &#9733; {{ film.voteAverage.toFixed(1) }}</p>
+              </a>
+            }
+          </div>
+        </section>
+      }
+
       @if (genreSpotlight(); as gSpot) {
         <section class="section container" aria-label="Genre spotlight">
           <div class="section__header">
@@ -1071,6 +1096,21 @@ export class HomeComponent implements OnInit {
       .slice(0, 10)
       .map(([name, count]) => ({ name, count }));
   });
+  readonly decadeSpotlight = computed(() => {
+    const seed = this.gemSeed();
+    const decades = this.decades();
+    if (decades.length === 0) return null;
+    const idx = Math.abs(seed + 13) % decades.length;
+    const decade = decades[idx];
+    const films = this.catalog.movies()
+      .filter((m) => m.year >= decade && m.year < decade + 10 && m.isStreamable && m.posterUrl)
+      .sort((a, b) => b.voteAverage - a.voteAverage)
+      .slice(0, 10);
+    if (films.length < 3) return null;
+    const count = this.catalog.movies().filter((m) => m.year >= decade && m.year < decade + 10).length;
+    return { decade, count, films };
+  });
+
   readonly genreSpotlight = computed(() => {
     const seed = this.gemSeed();
     const genreMap = new Map<string, import('../../core/models/movie.model').MovieSummary[]>();

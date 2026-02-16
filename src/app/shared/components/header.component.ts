@@ -46,7 +46,7 @@ import { CatalogService } from '../../core/services/catalog.service';
               #searchInput
               class="header__search-input"
               type="search"
-              placeholder="Search films..."
+              [placeholder]="searchPlaceholder()"
               [(ngModel)]="searchQuery"
               name="q"
               aria-label="Search films (press / to focus)"
@@ -424,6 +424,15 @@ export class HeaderComponent implements OnInit {
   readonly searchFocused = signal(false);
   readonly activeResultIndex = signal(-1);
   readonly watchlistCount = computed(() => this.collection.watchlistIds().size);
+
+  readonly searchPlaceholder = computed(() => {
+    try {
+      const isMobile = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
+      return isMobile ? 'Search films...' : 'Search films... (/ to focus)';
+    } catch {
+      return 'Search films...';
+    }
+  });
 
   readonly searchResults = computed(() => {
     const q = this.searchQuery().trim().toLowerCase();
