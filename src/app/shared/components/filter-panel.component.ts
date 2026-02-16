@@ -123,15 +123,27 @@ import type { DirectorCount } from '../../core/models/catalog.model';
           </button>
           @if (languagesOpen()) {
             <div class="filters__options">
-              @for (lang of availableLanguages(); track lang) {
+              <input
+                type="search"
+                class="filters__director-search"
+                placeholder="Search languages..."
+                [value]="languageQuery()"
+                (input)="onLanguageSearch($event)"
+                autocomplete="off"
+              />
+              @for (lang of filteredLanguages(); track lang.name) {
                 <label class="filters__checkbox">
                   <input
                     type="checkbox"
-                    [checked]="selectedLanguages().has(lang)"
-                    (change)="toggleLanguage(lang)"
+                    [checked]="selectedLanguages().has(lang.name)"
+                    (change)="toggleLanguage(lang.name)"
                   />
-                  <span>{{ lang }}</span>
+                  <span>{{ lang.name }}</span>
+                  <span class="filters__director-count">{{ lang.count }}</span>
                 </label>
+              }
+              @if (filteredLanguages().length === 0 && languageQuery().length > 0) {
+                <p class="filters__empty">No languages found</p>
               }
             </div>
           }
@@ -319,6 +331,7 @@ export class FilterPanelComponent {
   readonly availableGenres = input<string[]>([]);
   readonly availableDirectors = input<DirectorCount[]>([]);
   readonly availableLanguages = input<string[]>([]);
+  readonly languageCountsInput = input<{ name: string; count: number }[]>([], { alias: 'languageCounts' });
 
   readonly selectedDecades = signal(new Set<number>());
   readonly selectedGenres = signal(new Set<string>());
@@ -327,6 +340,7 @@ export class FilterPanelComponent {
   readonly streamableOnly = signal(true);
   readonly minRating = signal(0);
   readonly directorQuery = signal('');
+  readonly languageQuery = signal('');
 
   readonly yearMin = signal(1890);
   readonly yearMax = signal(1970);
@@ -365,6 +379,19 @@ export class FilterPanelComponent {
     const dirs = this.availableDirectors();
     if (!q) return dirs.slice(0, 20);
     return dirs.filter((d) => d.name.toLowerCase().includes(q)).slice(0, 20);
+  });
+
+  readonly filteredLanguages = computed(() => {
+    const q = this.languageQuery().toLowerCase();
+    const langs = this.languageCountsInput();
+    if (langs.length === 0) {
+      // Fallback: use availableLanguages without counts
+      const names = this.availableLanguages();
+      const filtered = q ? names.filter((n) => n.toLowerCase().includes(q)) : names;
+      return filtered.slice(0, 30).map((name) => ({ name, count: 0 }));
+    }
+    if (!q) return langs.slice(0, 30);
+    return langs.filter((l) => l.name.toLowerCase().includes(q)).slice(0, 30);
   });
 
   readonly filterChanged = output<{
@@ -437,6 +464,10 @@ export class FilterPanelComponent {
 
   onDirectorSearch(event: Event): void {
     this.directorQuery.set((event.target as HTMLInputElement).value);
+  }
+
+  onLanguageSearch(event: Event): void {
+    this.languageQuery.set((event.target as HTMLInputElement).value);
   }
 
   clearFilters(): void {

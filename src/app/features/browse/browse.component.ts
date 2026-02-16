@@ -38,6 +38,7 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
               [availableGenres]="catalog.meta()?.genres ?? []"
               [availableDirectors]="catalog.meta()?.topDirectors ?? []"
               [availableLanguages]="catalog.availableLanguages()"
+              [languageCounts]="catalog.languageCounts()"
               (filterChanged)="onFilterChange($event)"
             />
           </aside>

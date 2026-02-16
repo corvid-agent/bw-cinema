@@ -132,6 +132,37 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
             </div>
           </section>
         </div>
+        <div class="stats__sections">
+          <section class="stats__section">
+            <h2>Top Languages</h2>
+            <div class="stats__bars">
+              @for (l of languageStats(); track l.name) {
+                <a class="stats__bar-row stats__bar-row--link" [routerLink]="['/browse']" [queryParams]="{ languages: l.name, streamable: '0' }">
+                  <span class="stats__bar-label">{{ l.name }}</span>
+                  <div class="stats__bar-track">
+                    <div class="stats__bar-fill" [style.width.%]="l.pct"></div>
+                  </div>
+                  <span class="stats__bar-count">{{ l.count }}</span>
+                </a>
+              }
+            </div>
+          </section>
+
+          <section class="stats__section">
+            <h2>Language Diversity</h2>
+            <div class="stats__lang-summary">
+              <div class="stats__card">
+                <span class="stats__card-value">{{ uniqueLanguages() }}</span>
+                <span class="stats__card-label">Languages</span>
+              </div>
+              <div class="stats__card">
+                <span class="stats__card-value">{{ nonEnglishPct() }}%</span>
+                <span class="stats__card-label">Non-English</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
         <div class="stats__highlights">
           @if (oldestFilm(); as film) {
             <a class="stats__highlight" [routerLink]="['/movie', film.id]">
@@ -331,6 +362,11 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
     .stats__highlight:hover .stats__highlight-value {
       color: var(--accent-gold);
     }
+    .stats__lang-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+    }
     @media (max-width: 768px) {
       .stats__sections { grid-template-columns: 1fr; }
     }
@@ -429,6 +465,29 @@ export class StatsComponent implements OnInit {
     const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
     const max = sorted[0]?.[1] ?? 1;
     return sorted.map(([name, count]) => ({ name, count, pct: (count / max) * 100 }));
+  });
+
+  readonly languageStats = computed(() => {
+    const counts = new Map<string, number>();
+    for (const m of this.catalog.movies()) {
+      if (m.language) counts.set(m.language, (counts.get(m.language) ?? 0) + 1);
+    }
+    const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const max = sorted[0]?.[1] ?? 1;
+    return sorted.map(([name, count]) => ({ name, count, pct: (count / max) * 100 }));
+  });
+
+  readonly uniqueLanguages = computed(() => {
+    const langs = new Set<string>();
+    for (const m of this.catalog.movies()) if (m.language) langs.add(m.language);
+    return langs.size;
+  });
+
+  readonly nonEnglishPct = computed(() => {
+    const withLang = this.catalog.movies().filter((m) => m.language);
+    if (withLang.length === 0) return 0;
+    const nonEn = withLang.filter((m) => m.language !== 'English').length;
+    return Math.round((nonEn / withLang.length) * 100);
   });
 
   readonly ratingDistribution = computed(() => {
