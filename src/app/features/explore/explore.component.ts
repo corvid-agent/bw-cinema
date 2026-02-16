@@ -17,13 +17,14 @@ interface Mood {
 }
 
 const MOODS: Mood[] = [
-  { id: 'noir', name: 'Dark & Moody', description: 'Shadowy crime, mystery, and suspense', icon: '🌑', genres: ['Crime', 'Mystery', 'Film Noir', 'Thriller'] },
-  { id: 'fun', name: 'Light & Fun', description: 'Comedies, musicals, and feel-good films', icon: '☀️', genres: ['Comedy', 'Musical', 'Music', 'Family'] },
-  { id: 'deep', name: 'Thought-Provoking', description: 'Dramas that stay with you', icon: '🎭', genres: ['Drama'] },
-  { id: 'thrills', name: 'Edge of Your Seat', description: 'Horror, thriller, and sci-fi', icon: '⚡', genres: ['Horror', 'Thriller', 'Science Fiction'] },
-  { id: 'romance', name: 'Romantic', description: 'Love stories across the decades', icon: '💫', genres: ['Romance'] },
-  { id: 'adventure', name: 'Adventure & Action', description: 'Swashbucklers, westerns, and epic journeys', icon: '🗺️', genres: ['Adventure', 'Action', 'Western', 'War'] },
-  { id: 'silent', name: 'Silent Cinema', description: 'Pioneering films from the silent era', icon: '🎞️', genres: [], yearRange: [1890, 1929] },
+  { id: 'noir', name: 'Dark & Moody', description: 'Shadowy crime, mystery, and suspense', icon: '🌑', genres: ['crime film', 'mystery film', 'film noir', 'thriller', 'thriller film', 'crime thriller film'] },
+  { id: 'fun', name: 'Light & Fun', description: 'Comedies, musicals, and feel-good films', icon: '☀️', genres: ['comedy film', 'musical film', 'romantic comedy', 'comedy drama', 'children\'s film'] },
+  { id: 'deep', name: 'Thought-Provoking', description: 'Dramas that stay with you', icon: '🎭', genres: ['drama film', 'melodrama', 'biographical film', 'historical film', 'film based on a novel', 'film based on literature', 'LGBT-related film'] },
+  { id: 'thrills', name: 'Edge of Your Seat', description: 'Horror, sci-fi, and monsters', icon: '⚡', genres: ['horror film', 'science fiction film', 'monster film', 'fantasy film'] },
+  { id: 'romance', name: 'Romantic', description: 'Love stories across the decades', icon: '💫', genres: ['romance film', 'romantic comedy'] },
+  { id: 'adventure', name: 'Adventure & Action', description: 'Swashbucklers, westerns, and epic journeys', icon: '🗺️', genres: ['adventure film', 'action film', 'Western film', 'war film', 'spy film'] },
+  { id: 'docs', name: 'Documentaries', description: 'Real stories, real people, real history', icon: '📽️', genres: ['documentary film', 'propaganda film'] },
+  { id: 'silent', name: 'Silent Cinema', description: 'Pioneering films from the silent era', icon: '🎞️', genres: ['silent film'], yearRange: [1890, 1929] },
   { id: 'foreign', name: 'World Cinema', description: 'International masterpieces beyond English', icon: '🌍', genres: [] },
 ];
 
@@ -780,20 +781,10 @@ export class ExploreComponent implements OnInit {
   readonly moodFilms = computed(() => {
     const mood = this.activeMood();
     if (!mood) return [];
-    let films = this.catalog.movies().filter((m) => m.isStreamable);
-
-    if (mood.id === 'foreign') {
-      films = films.filter((m) => m.language && m.language !== 'English');
-    } else if (mood.yearRange) {
-      films = films.filter((m) => m.year >= mood.yearRange![0] && m.year <= mood.yearRange![1]);
-    } else if (mood.genres.length > 0) {
-      const genreSet = new Set(mood.genres.map((g) => g.toLowerCase()));
-      films = films.filter((m) => m.genres.some((g) => genreSet.has(g.toLowerCase())));
-    }
-
-    // Shuffle with seed for consistent but reshuffleable order
+    const films = this.catalog.movies().filter((m) => m.isStreamable);
+    const filtered = films.filter((m) => this.matchesMood(m, mood));
     const seed = this.shuffleSeed();
-    return this.seededShuffle([...films], seed);
+    return this.seededShuffle([...filtered], seed);
   });
 
   readonly moodFilmsPage = computed(() =>
@@ -1033,29 +1024,19 @@ export class ExploreComponent implements OnInit {
   moodWatchedCount(mood: Mood): number {
     const watchedIds = this.collection.watchedIds();
     if (watchedIds.size === 0) return 0;
-    const films = this.catalog.movies().filter((m) => watchedIds.has(m.id));
-    if (mood.id === 'foreign') return films.filter((m) => m.language && m.language !== 'English').length;
-    if (mood.yearRange) return films.filter((m) => m.year >= mood.yearRange![0] && m.year <= mood.yearRange![1]).length;
-    if (mood.genres.length > 0) {
-      const genreSet = new Set(mood.genres.map((g) => g.toLowerCase()));
-      return films.filter((m) => m.genres.some((g) => genreSet.has(g.toLowerCase()))).length;
-    }
-    return 0;
+    return this.catalog.movies().filter((m) => watchedIds.has(m.id) && this.matchesMood(m, mood)).length;
   }
 
   moodCount(mood: Mood): number {
-    const films = this.catalog.movies().filter((m) => m.isStreamable);
-    if (mood.id === 'foreign') {
-      return films.filter((m) => m.language && m.language !== 'English').length;
-    }
-    if (mood.yearRange) {
-      return films.filter((m) => m.year >= mood.yearRange![0] && m.year <= mood.yearRange![1]).length;
-    }
-    if (mood.genres.length > 0) {
-      const genreSet = new Set(mood.genres.map((g) => g.toLowerCase()));
-      return films.filter((m) => m.genres.some((g) => genreSet.has(g.toLowerCase()))).length;
-    }
-    return 0;
+    return this.catalog.movies().filter((m) => m.isStreamable && this.matchesMood(m, mood)).length;
+  }
+
+  private matchesMood(m: MovieSummary, mood: Mood): boolean {
+    if (mood.id === 'foreign') return !!(m.language && m.language !== 'English');
+    const genreSet = mood.genres.length > 0 ? new Set(mood.genres.map((g) => g.toLowerCase())) : null;
+    const genreMatch = genreSet ? m.genres.some((g) => genreSet.has(g.toLowerCase())) : false;
+    const yearMatch = mood.yearRange ? m.year >= mood.yearRange[0] && m.year <= mood.yearRange[1] : false;
+    return genreMatch || yearMatch;
   }
 
   ngOnInit(): void {
