@@ -333,6 +333,10 @@ interface WrappedStats {
             }
           </div>
 
+          @if (avgWatchedYear(); as awy) {
+            <p class="wrapped__decade-range">Average release year of your picks: {{ awy }}</p>
+          }
+
           @if (yearFilms().length > 0) {
             <section class="wrapped__films">
               <h2>All Films Watched in {{ selectedYear() }}</h2>
@@ -998,6 +1002,13 @@ export class WrappedComponent implements OnInit {
       );
     }
   }
+
+  readonly avgWatchedYear = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 3) return null;
+    const avg = Math.round(films.reduce((s, m) => s + m.year, 0) / films.length);
+    return avg;
+  });
 
   private emptyMonths(): { month: string; count: number }[] {
     const names = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
