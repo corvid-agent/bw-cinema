@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, signal, input, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
@@ -7,14 +7,15 @@ import { CollectionService } from '../../core/services/collection.service';
 import { StreamingService } from '../../core/services/streaming.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { RatingStarsComponent } from '../../shared/components/rating-stars.component';
+import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
 import { RuntimePipe } from '../../shared/pipes/runtime.pipe';
-import type { MovieDetail } from '../../core/models/movie.model';
+import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
 
 @Component({
   selector: 'app-movie',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RatingStarsComponent, LoadingSpinnerComponent, RuntimePipe],
+  imports: [RouterLink, RatingStarsComponent, MovieGridComponent, LoadingSpinnerComponent, RuntimePipe],
   template: `
     @if (loading()) {
       <app-loading-spinner />
@@ -99,7 +100,22 @@ import type { MovieDetail } from '../../core/models/movie.model';
                 @if (!collection.isWatched(m.id)) {
                   <button class="btn-secondary" (click)="markWatched(m.id)">Mark Watched</button>
                 }
+                <button class="btn-ghost detail__share-btn" (click)="share(m)" aria-label="Share this film">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                  Share
+                </button>
               </div>
+
+              @if (collection.isWatched(m.id)) {
+                <div class="detail__user-rating">
+                  <span class="detail__user-rating-label">Your Rating</span>
+                  <app-rating-stars
+                    [rating]="getUserRating(m.id)"
+                    [interactive]="true"
+                    (rated)="onRate(m.id, $event)"
+                  />
+                </div>
+              }
 
               @if (m.directors.length > 0 || m.genres.length > 0) {
                 <div class="detail__details">
@@ -153,6 +169,13 @@ import type { MovieDetail } from '../../core/models/movie.model';
                   </div>
                 }
               </div>
+            </section>
+          }
+
+          @if (similarFilms().length > 0) {
+            <section class="detail__similar" aria-label="Similar films">
+              <h2>You Might Also Like</h2>
+              <app-movie-grid [movies]="similarFilms()" />
             </section>
           }
         </div>
@@ -379,6 +402,34 @@ import type { MovieDetail } from '../../core/models/movie.model';
       color: var(--text-tertiary);
       margin: 0;
     }
+    .detail__share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+    }
+    .detail__user-rating {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+      padding: var(--space-md) var(--space-lg);
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .detail__user-rating-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+      font-weight: 600;
+    }
+    .detail__similar {
+      margin-top: var(--space-2xl);
+      padding-top: var(--space-xl);
+      border-top: 1px solid var(--border);
+    }
     .detail__not-found {
       padding: var(--space-3xl) 0;
       text-align: center;
@@ -411,6 +462,11 @@ export class MovieComponent implements OnInit {
   readonly movie = signal<MovieDetail | null>(null);
   readonly loading = signal(true);
   readonly streamingUrl = signal<string | null>(null);
+  private readonly summary = signal<MovieSummary | null>(null);
+  readonly similarFilms = computed(() => {
+    const s = this.summary();
+    return s ? this.catalogService.getSimilar(s) : [];
+  });
 
   async ngOnInit(): Promise<void> {
     await this.catalogService.load();
@@ -421,6 +477,7 @@ export class MovieComponent implements OnInit {
       return;
     }
     this.titleService.setTitle(`${summary.title} (${summary.year}) — BW Cinema`);
+    this.summary.set(summary);
     const source = this.streaming.getSource(summary.internetArchiveId, summary.youtubeId);
     this.streamingUrl.set(source?.embedUrl ?? null);
 
@@ -461,5 +518,31 @@ export class MovieComponent implements OnInit {
   markWatched(id: string): void {
     this.collection.markWatched(id);
     this.notifications.show('Marked as watched', 'success');
+  }
+
+  onRate(movieId: string, rating: number): void {
+    this.collection.setRating(movieId, rating);
+    this.notifications.show(`Rated ${rating} star${rating !== 1 ? 's' : ''}`, 'success');
+  }
+
+  getUserRating(movieId: string): number {
+    const item = this.collection.watched().find((w) => w.movieId === movieId);
+    return item?.userRating ?? 0;
+  }
+
+  async share(movie: MovieDetail): Promise<void> {
+    const url = window.location.href;
+    const text = `${movie.title} (${movie.year}) — Watch classic B&W cinema`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: movie.title, text, url });
+      } catch {
+        // User cancelled
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      this.notifications.show('Link copied to clipboard', 'info');
+    }
   }
 }

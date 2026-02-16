@@ -87,4 +87,25 @@ export class CatalogService {
 
     return results;
   }
+
+  getSimilar(movie: MovieSummary, limit = 8): MovieSummary[] {
+    const decade = Math.floor(movie.year / 10) * 10;
+    const genreSet = new Set(movie.genres);
+
+    return this.movies()
+      .filter((m) => m.id !== movie.id)
+      .map((m) => {
+        let score = 0;
+        const sharedGenres = m.genres.filter((g) => genreSet.has(g)).length;
+        score += sharedGenres * 3;
+        if (Math.floor(m.year / 10) * 10 === decade) score += 2;
+        if (m.directors.some((d) => movie.directors.includes(d))) score += 4;
+        if (m.voteAverage >= 7) score += 1;
+        return { movie: m, score };
+      })
+      .filter((r) => r.score > 0)
+      .sort((a, b) => b.score - a.score || b.movie.voteAverage - a.movie.voteAverage)
+      .slice(0, limit)
+      .map((r) => r.movie);
+  }
 }
