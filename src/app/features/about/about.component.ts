@@ -27,12 +27,8 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
           </li>
           <li>
             <strong>The Movie Database (TMDb)</strong> &mdash; Provides poster images, cast information,
-            synopses, and community ratings. This product uses the TMDb API but is not endorsed
-            or certified by TMDb.
-          </li>
-          <li>
-            <strong>OMDb API</strong> &mdash; Provides additional ratings from IMDb, Rotten Tomatoes,
-            and Metacritic.
+            synopses, and community ratings for movie detail pages. This product uses the TMDb API
+            but is not endorsed or certified by TMDb.
           </li>
           <li>
             <strong>Internet Archive</strong> &mdash; Hosts public domain films that you can watch

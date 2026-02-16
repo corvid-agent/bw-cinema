@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { MovieSummary } from '../../core/models/movie.model';
 
@@ -9,8 +9,8 @@ import type { MovieSummary } from '../../core/models/movie.model';
   template: `
     <a class="card" [routerLink]="['/movie', movie().id]" [attr.aria-label]="movie().title + ' (' + movie().year + ')'">
       <div class="card__poster">
-        @if (movie().posterUrl) {
-          <img [src]="movie().posterUrl" [alt]="movie().title + ' poster'" loading="lazy" />
+        @if (movie().posterUrl && !imgFailed()) {
+          <img [src]="movie().posterUrl" [alt]="movie().title + ' poster'" loading="lazy" (error)="imgFailed.set(true)" />
         } @else {
           <div class="card__poster-placeholder">
             <span class="card__film-icon">&#127902;</span>
@@ -152,4 +152,5 @@ import type { MovieSummary } from '../../core/models/movie.model';
 })
 export class MovieCardComponent {
   readonly movie = input.required<MovieSummary>();
+  readonly imgFailed = signal(false);
 }
