@@ -189,6 +189,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
           @if (eraLabel(); as era) {
             <p class="compare__double-feature-note">{{ era }}</p>
           }
+          @if (midpointYear(); as mpy) {
+            <p class="compare__double-feature-note">Midpoint: {{ mpy }}</p>
+          }
           @if (combinedAvgRating(); as avg) {
             <div class="compare__combined-avg">
               Combined Avg: {{ avg }}/10
@@ -743,6 +746,15 @@ export class CompareComponent implements OnInit {
     const b = this.filmB();
     if (!a || !b) return 0;
     return new Set([...a.genres, ...b.genres]).size;
+  });
+
+  readonly midpointYear = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return null;
+    const gap = Math.abs(a.year - b.year);
+    if (gap < 5) return null;
+    return Math.round((a.year + b.year) / 2);
   });
 
   readonly combinedAvgRating = computed(() => {

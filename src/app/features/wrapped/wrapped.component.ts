@@ -154,6 +154,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Silent Era Films</span>
               </div>
             }
+            @if (mostWatchedGenreName(); as mwg) {
+              <div class="wrapped__hero-stat wrapped__hero-stat--text">
+                <span class="wrapped__hero-value">{{ mwg }}</span>
+                <span class="wrapped__hero-label">Top Genre</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -813,6 +819,18 @@ export class WrappedComponent implements OnInit {
     const rated = films.filter((m) => m.voteAverage > 0);
     if (rated.length < 3) return null;
     return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
+  });
+
+  readonly mostWatchedGenreName = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 3) return null;
+    const counts = new Map<string, number>();
+    for (const m of films) {
+      for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
+    }
+    const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (!best || best[1] < 2) return null;
+    return best[0];
   });
 
   readonly silentEraWatched = computed(() => {

@@ -2007,6 +2007,13 @@ export class CollectionComponent implements OnInit {
       insights.push({ label: 'Genres Explored', value: `${uniqueGenres.size}` });
     }
 
+    // Average user rating
+    const userRated = watched.filter((w) => w.userRating != null && w.userRating > 0);
+    if (userRated.length >= 3) {
+      const avgUserRating = userRated.reduce((s, w) => s + (w.userRating ?? 0), 0) / userRated.length;
+      insights.push({ label: 'Avg Your Rating', value: avgUserRating.toFixed(1) });
+    }
+
     // Rating bias vs TMDb
     if (ratedItems.length >= 3) {
       let userTotal = 0;
