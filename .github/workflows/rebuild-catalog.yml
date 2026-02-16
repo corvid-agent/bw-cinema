@@ -2,7 +2,7 @@ name: Rebuild Catalog
 
 on:
   schedule:
-    - cron: '0 6 * * 0'
+    - cron: '0 6 * * 0'  # Every Sunday at 6 AM UTC
   workflow_dispatch:
 
 permissions:
@@ -11,6 +11,7 @@ permissions:
 jobs:
   rebuild:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -20,9 +21,13 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - run: bun run scripts/build-catalog.ts
+      - name: Build catalog from Wikidata
+        run: bun run scripts/build-catalog-wikidata-only.ts
+
+      - name: Enrich with TMDb posters and ratings
+        run: bun run scripts/enrich-posters.ts
         env:
-          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_TOKEN: ${{ secrets.TMDB_TOKEN }}
 
       - name: Commit updated catalog
         run: |
