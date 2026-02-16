@@ -146,6 +146,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (shortestTitle(); as st) {
             <p class="genre__fact">Shortest title: "{{ st }}"</p>
           }
+          @if (highlyRatedCount() > 0) {
+            <p class="genre__fact">{{ highlyRatedCount() }} films rated 8.0+</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -889,6 +892,10 @@ export class GenreComponent implements OnInit {
     const mid = Math.floor(sorted.length / 2);
     const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
     return median.toFixed(1);
+  });
+
+  readonly highlyRatedCount = computed(() => {
+    return this.films().filter((m) => m.voteAverage >= 8.0).length;
   });
 
   readonly shortestTitle = computed(() => {

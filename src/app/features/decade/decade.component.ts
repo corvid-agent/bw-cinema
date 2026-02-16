@@ -144,8 +144,8 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (avgTitleLength(); as atl) {
             <p class="decade__fact">Avg title length: {{ atl }} characters</p>
           }
-          @if (longestTitle(); as lt) {
-            <p class="decade__fact">Longest title: "{{ lt }}"</p>
+          @if (highlyRatedCount() > 0) {
+            <p class="decade__fact">{{ highlyRatedCount() }} films rated 8.0+</p>
           }
 
           @if (bestFilm(); as best) {
@@ -914,6 +914,10 @@ export class DecadeComponent implements OnInit {
     const count = f.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
     const pct = Math.round((count / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly highlyRatedCount = computed(() => {
+    return this.films().filter((m) => m.voteAverage >= 8.0).length;
   });
 
   readonly avgTitleLength = computed(() => {

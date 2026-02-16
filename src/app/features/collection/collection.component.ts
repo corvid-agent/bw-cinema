@@ -396,6 +396,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Shortest Title</span>
                   </div>
                 }
+                @if (watchedHighlyRatedCount() > 0) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ watchedHighlyRatedCount() }}</span>
+                    <span class="stats__card-label">Rated 8.0+</span>
+                  </div>
+                }
               </div>
 
               @if (nextMilestone(); as milestone) {
@@ -1711,6 +1717,10 @@ export class CollectionComponent implements OnInit {
     const films = this.watchedMovies();
     if (films.length < 5) return null;
     return Math.round(films.reduce((s, m) => s + m.title.length, 0) / films.length);
+  });
+
+  readonly watchedHighlyRatedCount = computed(() => {
+    return this.watchedMovies().filter((m) => m.voteAverage >= 8.0).length;
   });
 
   readonly watchedShortestTitle = computed(() => {
