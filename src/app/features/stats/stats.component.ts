@@ -383,6 +383,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">co-directed films</span>
               </div>
             }
+            @if (avgGenresPerDirector(); as agpd) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ agpd }}</span>
+                <span class="stats__fact-text">avg genres per director</span>
+              </div>
+            }
             @if (avgDirectorCareer(); as adc) {
               <div class="stats__fact-card">
                 <span class="stats__fact-number">{{ adc }}yr</span>
@@ -1005,6 +1011,21 @@ export class StatsComponent implements OnInit {
     const pct = Math.round((multi / movies.length) * 100);
     if (pct === 0) return null;
     return pct;
+  });
+
+  readonly avgGenresPerDirector = computed(() => {
+    const dirGenres = new Map<string, Set<string>>();
+    for (const m of this.catalog.movies()) {
+      for (const d of m.directors) {
+        const set = dirGenres.get(d) ?? new Set();
+        for (const g of m.genres) set.add(g);
+        dirGenres.set(d, set);
+      }
+    }
+    const eligible = [...dirGenres.values()].filter((s) => s.size > 0);
+    if (eligible.length < 10) return null;
+    const avg = eligible.reduce((s, v) => s + v.size, 0) / eligible.length;
+    return avg >= 1.1 ? avg.toFixed(1) : null;
   });
 
   readonly avgDirectorCareer = computed(() => {

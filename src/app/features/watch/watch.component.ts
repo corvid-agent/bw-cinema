@@ -38,6 +38,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (movieLanguage()) {
               <span class="watch__header-rating">&middot; {{ movieLanguage() }}</span>
             }
+            @if (decadeLabel()) {
+              <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
+            }
           </p>
         </div>
 
@@ -572,6 +575,8 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly filmAge = signal('');
   readonly directorTotalFilms = signal(0);
   readonly movieLanguage = signal('');
+  readonly decadeLabel = signal('');
+  readonly decadeValue = signal('');
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -595,6 +600,9 @@ export class WatchComponent implements OnInit, OnDestroy {
       if (movie.voteAverage > 0) this.movieRating.set(movie.voteAverage.toFixed(1));
       this.movieYear.set(String(movie.year));
       if (movie.language && movie.language !== 'English') this.movieLanguage.set(movie.language);
+      const decade = Math.floor(movie.year / 10) * 10;
+      this.decadeLabel.set(`${decade}s`);
+      this.decadeValue.set(String(decade));
       const age = new Date().getFullYear() - movie.year;
       if (age >= 50) this.filmAge.set(`${age} years old`);
       this.titleService.setTitle(`Watch ${movie.title} — BW Cinema`);

@@ -66,6 +66,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultHighRatedCount(); as rhrc) {
           <p class="browse__watched-note">{{ rhrc }} rated 7.0+</p>
         }
+        @if (resultDecadeCount(); as rdc) {
+          <p class="browse__watched-note">Spanning {{ rdc }} decades</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -684,6 +687,13 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     const pct = Math.round((films.filter((m) => m.isStreamable).length / films.length) * 100);
     if (pct === 0 || pct === 100) return null;
     return pct;
+  });
+
+  readonly resultDecadeCount = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const decades = new Set(films.map((m) => Math.floor(m.year / 10) * 10));
+    return decades.size > 1 ? decades.size : null;
   });
 
   readonly resultHighRatedCount = computed(() => {
