@@ -2014,6 +2014,17 @@ export class CollectionComponent implements OnInit {
       insights.push({ label: 'Avg Your Rating', value: avgUserRating.toFixed(1) });
     }
 
+    // Decade span
+    const watchedDecades = new Set<number>();
+    for (const w of watched) {
+      const m = movieMap.get(w.movieId);
+      if (m) watchedDecades.add(Math.floor(m.year / 10) * 10);
+    }
+    if (watchedDecades.size >= 3) {
+      const sorted = [...watchedDecades].sort((a, b) => a - b);
+      insights.push({ label: 'Decade Span', value: `${sorted[0]}s–${sorted[sorted.length - 1]}s` });
+    }
+
     // Rating bias vs TMDb
     if (ratedItems.length >= 3) {
       let userTotal = 0;

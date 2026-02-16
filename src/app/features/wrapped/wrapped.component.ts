@@ -160,6 +160,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Top Genre</span>
               </div>
             }
+            @if (oldestFilmAge(); as ofa) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ ofa }}</span>
+                <span class="wrapped__hero-label">Oldest Film (yrs)</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -819,6 +825,15 @@ export class WrappedComponent implements OnInit {
     const rated = films.filter((m) => m.voteAverage > 0);
     if (rated.length < 3) return null;
     return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
+  });
+
+  readonly oldestFilmAge = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 2) return null;
+    const year = this.selectedYear();
+    const oldest = Math.min(...films.map((m) => m.year));
+    const age = year - oldest;
+    return age >= 50 ? age : null;
   });
 
   readonly mostWatchedGenreName = computed(() => {
