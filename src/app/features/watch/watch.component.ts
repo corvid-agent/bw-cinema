@@ -24,7 +24,12 @@ import type { MovieSummary } from '../../core/models/movie.model';
           @if (movieGenres()) {
             <p class="watch__genres">{{ movieGenres() }}</p>
           }
-          <p class="text-secondary">Streaming via {{ src.label }}</p>
+          <p class="text-secondary">
+            Streaming via {{ src.label }}
+            @if (movieRating()) {
+              <span class="watch__header-rating">&middot; &#9733; {{ movieRating() }}</span>
+            }
+          </p>
         </div>
 
         <div class="watch__player" #playerContainer>
@@ -170,6 +175,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
       font-size: 0.85rem;
       color: var(--accent-gold);
       margin: 0 0 var(--space-xs);
+    }
+    .watch__header-rating {
+      color: var(--accent-gold);
+      font-weight: 600;
     }
     .watch__back {
       display: inline-block;
@@ -537,6 +546,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly directorName = signal('');
   readonly watchedAgo = signal('');
   readonly movieGenres = signal('');
+  readonly movieRating = signal('');
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -557,6 +567,7 @@ export class WatchComponent implements OnInit, OnDestroy {
       this.movieImdbId.set(movie.imdbId);
       this.encodedTitle.set(encodeURIComponent(movie.title));
       if (movie.genres.length > 0) this.movieGenres.set(movie.genres.slice(0, 3).join(' / '));
+      if (movie.voteAverage > 0) this.movieRating.set(movie.voteAverage.toFixed(1));
       this.titleService.setTitle(`Watch ${movie.title} — BW Cinema`);
       const src = this.streamingService.getSource(movie.internetArchiveId, movie.youtubeId);
       this.source.set(src);

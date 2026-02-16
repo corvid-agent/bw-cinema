@@ -57,6 +57,9 @@ interface QuizStep {
               }
             </p>
           }
+          @if (resultDecadeRange(); as dr) {
+            <p class="quiz__decade-range">Spanning {{ dr }}</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -324,6 +327,11 @@ interface QuizStep {
       color: var(--text-tertiary);
       margin: -var(--space-md) 0 var(--space-lg);
     }
+    .quiz__decade-range {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      margin: 0 0 var(--space-sm);
+    }
     @media (max-width: 480px) {
       .quiz__result-grid { grid-template-columns: repeat(2, 1fr); }
     }
@@ -405,6 +413,15 @@ export class QuizComponent implements OnInit {
       }
     }
     return bestScore > 50 ? bestId : null;
+  });
+
+  readonly resultDecadeRange = computed(() => {
+    const films = this.results();
+    if (films.length < 2) return null;
+    const decades = new Set(films.map((m) => Math.floor(m.year / 10) * 10));
+    if (decades.size < 2) return null;
+    const sorted = [...decades].sort((a, b) => a - b);
+    return `${sorted[0]}s–${sorted[sorted.length - 1]}s`;
   });
 
   readonly avgMatchScore = computed(() => {

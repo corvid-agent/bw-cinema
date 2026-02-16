@@ -42,6 +42,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
             }
           </p>
         }
+        @if (watchedInResults() > 0) {
+          <p class="browse__watched-note">{{ watchedInResults() }} already watched</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -210,6 +213,11 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
     .browse__results-sep {
       color: var(--border-bright);
       margin: 0 2px;
+    }
+    .browse__watched-note {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      margin: var(--space-xs) 0 0;
     }
     .browse__layout {
       display: grid;
@@ -610,6 +618,11 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     for (const m of films) for (const d of m.directors) dirs.add(d);
     const dirCount = dirs.size > 1 ? dirs.size : null;
     return { avgRating, minYear, maxYear, topGenre, langCount, dirCount };
+  });
+  readonly watchedInResults = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    if (watchedIds.size === 0) return 0;
+    return this.filteredMovies().filter((m) => watchedIds.has(m.id)).length;
   });
   readonly streamableResultCount = computed(() =>
     this.filteredMovies().filter((m) => m.isStreamable).length
