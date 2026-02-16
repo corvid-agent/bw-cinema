@@ -378,6 +378,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Co-directed</span>
                   </div>
                 }
+                @if (watchedAvgTitleLength(); as watl) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ watl }}</span>
+                    <span class="stats__card-label">Avg Title Length</span>
+                  </div>
+                }
               </div>
 
               @if (nextMilestone(); as milestone) {
@@ -1687,6 +1693,12 @@ export class CollectionComponent implements OnInit {
     const films = this.watchedMovies();
     if (films.length < 2) return 0;
     return films.filter((m) => m.directors.length > 1).length;
+  });
+
+  readonly watchedAvgTitleLength = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 5) return null;
+    return Math.round(films.reduce((s, m) => s + m.title.length, 0) / films.length);
   });
 
   private computeStreaks(): { current: number; longest: number } {

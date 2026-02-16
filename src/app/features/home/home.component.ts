@@ -92,6 +92,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (medianYear() > 0) {
           <p class="hero__avg-rating">Median film year: {{ medianYear() }}</p>
         }
+        @if (avgTitleLength() > 0) {
+          <p class="hero__avg-rating">Avg title length: {{ avgTitleLength() }} characters</p>
+        }
       </div>
     </section>
 
@@ -1334,6 +1337,12 @@ export class HomeComponent implements OnInit {
     const years = movies.map((m) => m.year).sort((a, b) => a - b);
     const mid = Math.floor(years.length / 2);
     return years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
+  });
+
+  readonly avgTitleLength = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return 0;
+    return Math.round(movies.reduce((s, m) => s + m.title.length, 0) / movies.length);
   });
 
   readonly decadeSpan = computed(() => {
