@@ -186,6 +186,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (mostCommonLanguage(); as mcl) {
             <p class="decade__fact">Top non-English: {{ mcl.name }} ({{ mcl.count }})</p>
           }
+          @if (posterCoveragePct(); as pcp) {
+            <p class="decade__fact">{{ pcp }}% have poster images</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -991,6 +994,13 @@ export class DecadeComponent implements OnInit {
     const f = this.films();
     if (f.length < 10) return null;
     const pct = Math.round((f.filter((m) => m.imdbId).length / f.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly posterCoveragePct = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const pct = Math.round((f.filter((m) => m.posterUrl).length / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
