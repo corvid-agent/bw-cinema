@@ -497,6 +497,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">top genre ({{ tg.count }} films)</span>
               </div>
             }
+            @if (topDecadeByStreamable(); as tdbs) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ tdbs.decade }}s</span>
+                <span class="stats__fact-text">most streamable ({{ tdbs.count }})</span>
+              </div>
+            }
             @if (mostCommonTitleWord(); as mctw) {
               <div class="stats__fact-card">
                 <span class="stats__fact-number" style="font-size: 0.85em">"{{ mctw.word }}"</span>
@@ -1347,6 +1353,19 @@ export class StatsComponent implements OnInit {
       .filter(([, v]) => v.count >= 10)
       .map(([decade, v]) => ({ decade, avg: Math.round(v.total / v.count) }))
       .sort((a, b) => b.avg - a.avg);
+  });
+
+  readonly topDecadeByStreamable = computed(() => {
+    const movies = this.catalog.movies().filter((m) => m.isStreamable);
+    if (movies.length < 10) return null;
+    const counts = new Map<number, number>();
+    for (const m of movies) {
+      const d = Math.floor(m.year / 10) * 10;
+      counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    if (counts.size < 2) return null;
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return { decade: top[0], count: top[1] };
   });
 
   readonly ytStreamablePct = computed(() => {

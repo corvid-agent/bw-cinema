@@ -254,6 +254,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (sameDecade()) {
                 <span class="compare__overlap"> &middot; same decade</span>
               }
+              @if (bothCoDirected()) {
+                <span class="compare__overlap"> &middot; both co-directed</span>
+              }
               @if (ratingGap(); as rg) {
                 <span class="compare__overlap"> &middot; {{ rg }} rating gap</span>
               }
@@ -928,6 +931,12 @@ export class CompareComponent implements OnInit {
     const a = this.filmA();
     const b = this.filmB();
     return !!(a && b && a.year < 1930 && b.year < 1930);
+  });
+
+  readonly bothCoDirected = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    return !!(a && b && a.directors.length > 1 && b.directors.length > 1);
   });
 
   readonly bothPreWar = computed(() => {

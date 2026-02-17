@@ -420,6 +420,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Rated 8.0+</span>
                   </div>
                 }
+                @if (watchedAvgDirectorCount(); as wadc) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ wadc }}</span>
+                    <span class="stats__card-label">Avg Directors/Film</span>
+                  </div>
+                }
                 @if (watchedOldestYear()) {
                   <div class="stats__card">
                     <span class="stats__card-value">{{ watchedOldestYear() }}</span>
@@ -1827,6 +1833,13 @@ export class CollectionComponent implements OnInit {
     if (films.length < 3) return null;
     const longest = films.reduce((a, b) => a.title.length >= b.title.length ? a : b);
     return longest.title.length >= 15 ? longest.title : null;
+  });
+
+  readonly watchedAvgDirectorCount = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 5) return null;
+    const avg = films.reduce((s, m) => s + m.directors.length, 0) / films.length;
+    return avg >= 1.05 ? avg.toFixed(2) : null;
   });
 
   readonly watchedOldestYear = computed(() => {
