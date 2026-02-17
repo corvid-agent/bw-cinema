@@ -194,6 +194,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (posterCoveragePct(); as pcp) {
             <p class="genre__fact">{{ pcp }}% have poster art</p>
           }
+          @if (avgDirectorCareer(); as adc) {
+            <p class="genre__fact">Avg director career: {{ adc }} years</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -1082,6 +1085,27 @@ export class GenreComponent implements OnInit {
     if (f.length < 10) return null;
     const pct = Math.round((f.filter((m) => m.posterUrl).length / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly avgDirectorCareer = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const dirYears = new Map<string, { min: number; max: number }>();
+    for (const m of f) {
+      for (const d of m.directors) {
+        const entry = dirYears.get(d);
+        if (entry) {
+          if (m.year < entry.min) entry.min = m.year;
+          if (m.year > entry.max) entry.max = m.year;
+        } else {
+          dirYears.set(d, { min: m.year, max: m.year });
+        }
+      }
+    }
+    const spans = [...dirYears.values()].map((e) => e.max - e.min).filter((s) => s >= 1);
+    if (spans.length < 3) return null;
+    const avg = Math.round(spans.reduce((s, v) => s + v, 0) / spans.length);
+    return avg >= 3 ? avg : null;
   });
 
   readonly decadeBreakdown = computed(() => {

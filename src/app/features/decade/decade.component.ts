@@ -162,6 +162,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (streamableImdbLinkedCount(); as silc) {
             <p class="decade__fact">{{ silc }} streamable with IMDb link</p>
           }
+          @if (ytStreamableCount(); as ysc) {
+            <p class="decade__fact">{{ ysc }} streamable via YouTube</p>
+          }
           @if (coDirectedPct(); as cdp) {
             <p class="decade__fact">{{ cdp }}% co-directed</p>
           }
@@ -1086,6 +1089,13 @@ export class DecadeComponent implements OnInit {
     const f = this.films();
     if (f.length < 5) return null;
     const count = f.filter((m) => m.isStreamable && m.imdbId).length;
+    return count > 0 ? count : null;
+  });
+
+  readonly ytStreamableCount = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const count = f.filter((m) => m.youtubeId).length;
     return count > 0 ? count : null;
   });
 

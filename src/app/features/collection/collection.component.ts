@@ -444,6 +444,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Have Poster</span>
                   </div>
                 }
+                @if (favoritesStreamablePct(); as fsp) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ fsp }}%</span>
+                    <span class="stats__card-label">Favorites Free</span>
+                  </div>
+                }
                 @if (watchedShortestTitle(); as wst) {
                   <div class="stats__card">
                     <span class="stats__card-value" style="font-size: 0.85em">{{ wst }}</span>
@@ -1949,6 +1955,13 @@ export class CollectionComponent implements OnInit {
     const films = this.watchedMovies();
     if (films.length < 3) return null;
     const pct = Math.round((films.filter((m) => m.posterUrl).length / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly favoritesStreamablePct = computed(() => {
+    const films = this.favoriteMovies();
+    if (films.length < 3) return null;
+    const pct = Math.round((films.filter((m) => m.isStreamable).length / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
