@@ -485,6 +485,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">best rated decade (avg &#9733; {{ brd.avg }})</span>
               </div>
             }
+            @if (decadeWithMostDirectors(); as dwmd) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ dwmd.decade }}s</span>
+                <span class="stats__fact-text">most directors ({{ dwmd.count }})</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1285,6 +1291,21 @@ export class StatsComponent implements OnInit {
       .map(([decade, v]) => ({ decade, avg: (v.total / v.count).toFixed(1) }))
       .sort((a, b) => parseFloat(b.avg) - parseFloat(a.avg));
     return best[0] ?? null;
+  });
+
+  readonly decadeWithMostDirectors = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    const decDirs = new Map<number, Set<string>>();
+    for (const m of movies) {
+      const d = Math.floor(m.year / 10) * 10;
+      if (!decDirs.has(d)) decDirs.set(d, new Set());
+      for (const dir of m.directors) decDirs.get(d)!.add(dir);
+    }
+    const best = [...decDirs.entries()]
+      .filter(([, dirs]) => dirs.size >= 10)
+      .sort((a, b) => b[1].size - a[1].size)[0];
+    return best ? { decade: best[0], count: best[1].size } : null;
   });
 
   readonly avgTitleLengthByDecade = computed(() => {

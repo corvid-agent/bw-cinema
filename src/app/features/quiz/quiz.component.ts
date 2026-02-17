@@ -117,6 +117,9 @@ interface QuizStep {
           @if (resultShortestTitle(); as rst) {
             <p class="quiz__decade-range">Shortest: "{{ rst }}"</p>
           }
+          @if (resultTopDirector(); as rtd) {
+            <p class="quiz__decade-range">Top director: {{ rtd }}</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -615,6 +618,17 @@ export class QuizComponent implements OnInit {
     if (films.length < 3) return null;
     const shortest = films.reduce((a, b) => a.title.length <= b.title.length ? a : b);
     return shortest.title.length <= 10 ? shortest.title : null;
+  });
+
+  readonly resultTopDirector = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const counts = new Map<string, number>();
+    for (const m of films) {
+      for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return top && top[1] >= 2 ? top[0] : null;
   });
 
   readonly avgMatchScore = computed(() => {
