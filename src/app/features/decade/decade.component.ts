@@ -695,61 +695,112 @@ export class DecadeComponent implements OnInit {
     }
   });
 
-  readonly avgRating = computed(() => {
-    const rated = this.films().filter((m) => m.voteAverage > 0);
-    if (rated.length === 0) return '—';
-    return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
-  });
+  // ── Single-pass decade index ──────────────────────────────────────
+  private readonly decIdx = computed(() => {
+    const f = this.films();
+    const n = f.length;
+    const now = new Date().getFullYear();
+    const y = parseInt(this.year(), 10);
 
-  readonly streamableCount = computed(() =>
-    this.films().filter((m) => m.isStreamable).length
-  );
+    let ratingSum = 0, ratedCount = 0, ageSum = 0, genreLenSum = 0;
+    let streamable = 0, coDirected = 0, nonEnglish = 0, silentEra = 0;
+    let highlyRated8 = 0, highlyRated7 = 0, multiGenre = 0;
+    let yt = 0, ia = 0, poster = 0, imdb = 0;
+    let bestFilm: typeof f[0] | null = null;
+    const genreCounts = new Map<string, number>();
+    const dirMap = new Map<string, { count: number; totalRating: number }>();
+    const yearCounts = new Map<number, number>();
+    const langSet = new Set<string>();
+    const ratings: number[] = [];
 
-  readonly bestFilm = computed(() => {
-    const rated = this.films().filter((m) => m.voteAverage > 0);
-    if (rated.length === 0) return null;
-    return rated.reduce((best, m) => m.voteAverage > best.voteAverage ? m : best);
-  });
-
-  readonly languageCount = computed(() => {
-    const langs = new Set<string>();
-    for (const m of this.films()) {
-      if (m.language) langs.add(m.language);
+    for (const m of f) {
+      ageSum += now - m.year;
+      genreLenSum += m.genres.length;
+      if (m.isStreamable) streamable++;
+      if (m.directors.length > 1) coDirected++;
+      if (m.language && m.language !== 'English' && m.language !== 'en') nonEnglish++;
+      if (m.year < 1930) silentEra++;
+      if (m.genres.length >= 2) multiGenre++;
+      if (m.youtubeId) yt++;
+      if (m.internetArchiveId) ia++;
+      if (m.posterUrl) poster++;
+      if (m.imdbId) imdb++;
+      if (m.language) langSet.add(m.language);
+      yearCounts.set(m.year, (yearCounts.get(m.year) ?? 0) + 1);
+      for (const g of m.genres) genreCounts.set(g, (genreCounts.get(g) ?? 0) + 1);
+      for (const d of m.directors) {
+        const entry = dirMap.get(d) ?? { count: 0, totalRating: 0 };
+        entry.count++;
+        entry.totalRating += m.voteAverage;
+        dirMap.set(d, entry);
+      }
+      if (m.voteAverage > 0) {
+        ratingSum += m.voteAverage;
+        ratedCount++;
+        ratings.push(m.voteAverage);
+        if (m.voteAverage >= 8.0) highlyRated8++;
+        if (m.voteAverage >= 7.0) highlyRated7++;
+        if (!bestFilm || m.voteAverage > bestFilm.voteAverage) bestFilm = m;
+      }
     }
-    return langs.size;
+
+    ratings.sort((a, b) => a - b);
+    const sortedGenres = [...genreCounts.entries()].sort((a, b) => b[1] - a[1]);
+    const sortedDirs = [...dirMap.entries()].sort((a, b) => b[1].count - a[1].count);
+    const sortedYears = [...yearCounts.entries()].sort((a, b) => b[1] - a[1]);
+
+    // Year-by-year chart data
+    const yearChart: { year: number; count: number; heightPct: number }[] = [];
+    for (let yr = y; yr < y + 10; yr++) {
+      yearChart.push({ year: yr, count: yearCounts.get(yr) ?? 0, heightPct: 0 });
+    }
+    const maxYearCount = Math.max(...yearChart.map((e) => e.count));
+    for (const e of yearChart) {
+      e.heightPct = maxYearCount > 0 ? Math.round((e.count / maxYearCount) * 100) : 0;
+    }
+
+    return {
+      n, now, y, ratingSum, ratedCount, ageSum, genreLenSum,
+      streamable, coDirected, nonEnglish, silentEra,
+      highlyRated8, highlyRated7, multiGenre,
+      yt, ia, poster, imdb, bestFilm,
+      genreCounts, sortedGenres, dirMap, sortedDirs,
+      yearCounts, sortedYears, yearChart,
+      langSet, ratings,
+    };
   });
+
+  readonly avgRating = computed(() => {
+    const { ratedCount, ratingSum } = this.decIdx();
+    if (ratedCount === 0) return '—';
+    return (ratingSum / ratedCount).toFixed(1);
+  });
+
+  readonly streamableCount = computed(() => this.decIdx().streamable);
+
+  readonly bestFilm = computed(() => this.decIdx().bestFilm);
+
+  readonly languageCount = computed(() => this.decIdx().langSet.size);
 
   readonly topGenre = computed(() => {
-    const counts = new Map<string, number>();
-    for (const m of this.films()) {
-      for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
-    }
-    const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-    return sorted[0]?.[0] ?? '—';
+    const { sortedGenres } = this.decIdx();
+    return sortedGenres[0]?.[0] ?? '—';
   });
 
-  readonly directorCount = computed(() => {
-    const dirs = new Set<string>();
-    for (const m of this.films()) {
-      for (const d of m.directors) dirs.add(d);
-    }
-    return dirs.size;
-  });
+  readonly directorCount = computed(() => this.decIdx().dirMap.size);
 
   readonly peakYear = computed(() => {
-    const f = this.films();
-    if (f.length < 5) return null;
-    const counts = new Map<number, number>();
-    for (const m of f) counts.set(m.year, (counts.get(m.year) ?? 0) + 1);
-    const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    const { n, sortedYears } = this.decIdx();
+    if (n < 5) return null;
+    const best = sortedYears[0];
     if (!best || best[1] < 2) return null;
     return { year: best[0], count: best[1] };
   });
 
   readonly ratingVsCatalog = computed(() => {
-    const rated = this.films().filter((m) => m.voteAverage > 0);
-    if (rated.length < 5) return null;
-    const decAvg = rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length;
+    const { ratedCount, ratingSum } = this.decIdx();
+    if (ratedCount < 5) return null;
+    const decAvg = ratingSum / ratedCount;
     const allRated = this.catalog.movies().filter((m) => m.voteAverage > 0);
     if (allRated.length === 0) return null;
     const catAvg = allRated.reduce((s, m) => s + m.voteAverage, 0) / allRated.length;
@@ -759,265 +810,186 @@ export class DecadeComponent implements OnInit {
   });
 
   readonly streamablePct = computed(() => {
-    const f = this.films();
-    if (f.length === 0) return 0;
-    return Math.round((f.filter((m) => m.isStreamable).length / f.length) * 100);
+    const { n, streamable } = this.decIdx();
+    if (n === 0) return 0;
+    return Math.round((streamable / n) * 100);
   });
 
   readonly highRatedPct = computed(() => {
-    const rated = this.films().filter((m) => m.voteAverage > 0);
-    if (rated.length < 10) return null;
-    const high = rated.filter((m) => m.voteAverage >= 7.0).length;
-    const pct = Math.round((high / rated.length) * 100);
+    const { ratedCount, highlyRated7 } = this.decIdx();
+    if (ratedCount < 10) return null;
+    const pct = Math.round((highlyRated7 / ratedCount) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly medianRating = computed(() => {
-    const rated = this.films()
-      .filter((m) => m.voteAverage > 0)
-      .map((m) => m.voteAverage)
-      .sort((a, b) => a - b);
-    if (rated.length < 10) return null;
-    const mid = Math.floor(rated.length / 2);
-    const median = rated.length % 2 === 0
-      ? (rated[mid - 1] + rated[mid]) / 2
-      : rated[mid];
+    const { ratings } = this.decIdx();
+    if (ratings.length < 10) return null;
+    const mid = Math.floor(ratings.length / 2);
+    const median = ratings.length % 2 === 0
+      ? (ratings[mid - 1] + ratings[mid]) / 2
+      : ratings[mid];
     return median.toFixed(1);
   });
 
   readonly avgFilmAge = computed(() => {
-    const f = this.films();
-    if (f.length < 2) return 0;
-    const now = new Date().getFullYear();
-    return Math.round(f.reduce((s, m) => s + (now - m.year), 0) / f.length);
+    const { n, ageSum } = this.decIdx();
+    if (n < 2) return 0;
+    return Math.round(ageSum / n);
   });
 
-  readonly coDirectedCount = computed(() =>
-    this.films().filter((m) => m.directors.length > 1).length
-  );
+  readonly coDirectedCount = computed(() => this.decIdx().coDirected);
 
   readonly nonEnglishCount = computed(() => {
-    const f = this.films();
-    if (f.length < 5) return 0;
-    return f.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
+    const { n, nonEnglish } = this.decIdx();
+    return n < 5 ? 0 : nonEnglish;
   });
 
-  readonly uniqueGenreCount = computed(() => {
-    const genres = new Set<string>();
-    for (const m of this.films()) {
-      for (const g of m.genres) genres.add(g);
-    }
-    return genres.size;
-  });
+  readonly uniqueGenreCount = computed(() => this.decIdx().genreCounts.size);
 
   readonly mostProlificDirector = computed(() => {
-    const f = this.films();
-    if (f.length < 5) return null;
-    const counts = new Map<string, number>();
-    for (const m of f) {
-      for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
-    }
-    const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
-    if (!best || best[1] < 3) return null;
-    return { name: best[0], count: best[1] };
+    const { n, sortedDirs } = this.decIdx();
+    if (n < 5) return null;
+    const best = sortedDirs[0];
+    if (!best || best[1].count < 3) return null;
+    return { name: best[0], count: best[1].count };
   });
 
-
   readonly avgFilmsPerDirector = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const dirs = new Set<string>();
-    for (const m of f) for (const d of m.directors) dirs.add(d);
-    if (dirs.size === 0) return null;
-    const avg = f.length / dirs.size;
-    if (avg < 1.2) return null;
-    return avg.toFixed(1);
+    const { n, dirMap } = this.decIdx();
+    if (n < 10 || dirMap.size === 0) return null;
+    const avg = n / dirMap.size;
+    return avg >= 1.2 ? avg.toFixed(1) : null;
   });
 
   readonly silentEraFilmCount = computed(() => {
-    const y = parseInt(this.year(), 10);
-    if (y >= 1930) return 0;
-    return this.films().filter((m) => m.year < 1930).length;
+    const { y, silentEra } = this.decIdx();
+    return y >= 1930 ? 0 : silentEra;
   });
 
   readonly decadeFact = computed(() => {
-    const f = this.films();
-    if (f.length < 5) return null;
-    const streamable = f.filter((m) => m.isStreamable);
-    const directors = new Set(f.flatMap((m) => m.directors));
-    const langs = new Set(f.map((m) => m.language).filter(Boolean));
-    const rated = f.filter((m) => m.voteAverage > 0);
-    const avg = rated.length > 0 ? rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length : 0;
-
-    if (streamable.length === f.length) return `Every film from the ${this.decadeLabel()} is free to watch.`;
-    if (avg >= 7.5 && rated.length >= 10) return `An exceptional decade — ${avg.toFixed(1)} average rating across ${rated.length} rated films.`;
-    if (langs.size >= 8) return `A truly global decade with films in ${langs.size} languages.`;
-    if (directors.size >= f.length * 0.85 && f.length >= 20) return `Remarkably diverse — ${directors.size} directors across ${f.length} films.`;
-    if (streamable.length >= 100) return `${streamable.length} films from this decade available to watch for free.`;
+    const { n, streamable, dirMap, langSet, ratedCount, ratingSum } = this.decIdx();
+    if (n < 5) return null;
+    const avg = ratedCount > 0 ? ratingSum / ratedCount : 0;
+    if (streamable === n) return `Every film from the ${this.decadeLabel()} is free to watch.`;
+    if (avg >= 7.5 && ratedCount >= 10) return `An exceptional decade — ${avg.toFixed(1)} average rating across ${ratedCount} rated films.`;
+    if (langSet.size >= 8) return `A truly global decade with films in ${langSet.size} languages.`;
+    if (dirMap.size >= n * 0.85 && n >= 20) return `Remarkably diverse — ${dirMap.size} directors across ${n} films.`;
+    if (streamable >= 100) return `${streamable} films from this decade available to watch for free.`;
     return null;
   });
 
-  readonly genreBreakdown = computed(() => {
-    const counts = new Map<string, number>();
-    for (const m of this.films()) {
-      for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
-    }
-    return [...counts.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
-      .map(([name, count]) => ({ name, count }));
-  });
+  readonly genreBreakdown = computed(() =>
+    this.decIdx().sortedGenres.slice(0, 10).map(([name, count]) => ({ name, count }))
+  );
 
-  readonly topDirectors = computed(() => {
-    const dirMap = new Map<string, { count: number; totalRating: number }>();
-    for (const m of this.films()) {
-      for (const d of m.directors) {
-        const entry = dirMap.get(d) ?? { count: 0, totalRating: 0 };
-        entry.count++;
-        entry.totalRating += m.voteAverage;
-        dirMap.set(d, entry);
-      }
-    }
-    return [...dirMap.entries()]
+  readonly topDirectors = computed(() =>
+    this.decIdx().sortedDirs
       .filter(([, v]) => v.count >= 2)
-      .sort((a, b) => b[1].count - a[1].count)
       .slice(0, 8)
       .map(([name, v]) => ({
         name,
         count: v.count,
         avgRating: (v.totalRating / v.count).toFixed(1),
-      }));
-  });
+      }))
+  );
 
-  readonly yearByYear = computed(() => {
-    const y = parseInt(this.year(), 10);
-    const counts = new Map<number, number>();
-    for (const m of this.films()) {
-      counts.set(m.year, (counts.get(m.year) ?? 0) + 1);
-    }
-    const entries: { year: number; count: number; heightPct: number }[] = [];
-    for (let yr = y; yr < y + 10; yr++) {
-      entries.push({ year: yr, count: counts.get(yr) ?? 0, heightPct: 0 });
-    }
-    const max = Math.max(...entries.map((e) => e.count));
-    for (const e of entries) {
-      e.heightPct = max > 0 ? Math.round((e.count / max) * 100) : 0;
-    }
-    return entries;
-  });
+  readonly yearByYear = computed(() => this.decIdx().yearChart);
 
   readonly prevDecade = computed(() => {
-    const y = parseInt(this.year(), 10);
+    const y = this.decIdx().y;
     const prev = y - 10;
-    const hasFilms = this.catalog.movies().some((m) => m.year >= prev && m.year < prev + 10);
-    return hasFilms ? prev : null;
+    return this.catalog.movies().some((m) => m.year >= prev && m.year < prev + 10) ? prev : null;
   });
 
   readonly nextDecade = computed(() => {
-    const y = parseInt(this.year(), 10);
+    const y = this.decIdx().y;
     const next = y + 10;
-    const hasFilms = this.catalog.movies().some((m) => m.year >= next && m.year < next + 10);
-    return hasFilms ? next : null;
+    return this.catalog.movies().some((m) => m.year >= next && m.year < next + 10) ? next : null;
   });
 
   readonly nonEnglishPct = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const count = f.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
-    const pct = Math.round((count / f.length) * 100);
+    const { n, nonEnglish } = this.decIdx();
+    if (n < 10) return null;
+    const pct = Math.round((nonEnglish / n) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
-  readonly highlyRatedCount = computed(() => {
-    return this.films().filter((m) => m.voteAverage >= 8.0).length;
-  });
+  readonly highlyRatedCount = computed(() => this.decIdx().highlyRated8);
 
-  readonly topDirectorFilmCount = computed(() => {
-    const f = this.films();
-    if (f.length < 5) return null;
-    const counts = new Map<string, number>();
-    for (const m of f) for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
-    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
-    return top && top[1] >= 3 ? { name: top[0], count: top[1] } : null;
-  });
+  // topDirectorFilmCount duplicates mostProlificDirector — reuse it
+  readonly topDirectorFilmCount = computed(() => this.mostProlificDirector());
 
+  // decadeTopGenre duplicates topGenre — reuse it
   readonly decadeTopGenre = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const counts = new Map<string, number>();
-    for (const m of f) for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
-    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
-    return top ? top[0] : null;
+    const { n, sortedGenres } = this.decIdx();
+    if (n < 10) return null;
+    return sortedGenres[0]?.[0] ?? null;
   });
 
   readonly decadeImdbLinkedPct = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const pct = Math.round((f.filter((m) => m.imdbId).length / f.length) * 100);
+    const { n, imdb } = this.decIdx();
+    if (n < 10) return null;
+    const pct = Math.round((imdb / n) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly posterCoveragePct = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const pct = Math.round((f.filter((m) => m.posterUrl).length / f.length) * 100);
+    const { n, poster } = this.decIdx();
+    if (n < 10) return null;
+    const pct = Math.round((poster / n) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
+  // decadeDirectorCount duplicates directorCount — reuse with threshold
   readonly decadeDirectorCount = computed(() => {
-    const f = this.films();
-    if (f.length < 5) return null;
-    const dirs = new Set<string>();
-    for (const m of f) for (const d of m.directors) dirs.add(d);
-    return dirs.size >= 5 ? dirs.size : null;
+    const { n, dirMap } = this.decIdx();
+    if (n < 5) return null;
+    return dirMap.size >= 5 ? dirMap.size : null;
   });
 
   readonly bestRatedTitle = computed(() => {
-    const rated = this.films().filter((m) => m.voteAverage > 0);
-    if (rated.length < 5) return null;
-    const best = rated.reduce((a, b) => a.voteAverage >= b.voteAverage ? a : b);
-    return best.title;
+    const { ratedCount, bestFilm } = this.decIdx();
+    if (ratedCount < 5 || !bestFilm) return null;
+    return bestFilm.title;
   });
 
   readonly uniqueLanguageCount = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const langs = new Set(f.filter((m) => m.language).map((m) => m.language));
-    return langs.size >= 3 ? langs.size : null;
+    const { n, langSet } = this.decIdx();
+    if (n < 10) return null;
+    return langSet.size >= 3 ? langSet.size : null;
   });
 
   readonly coDirectedPct = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const pct = Math.round((f.filter((m) => m.directors.length > 1).length / f.length) * 100);
+    const { n, coDirected } = this.decIdx();
+    if (n < 10) return null;
+    const pct = Math.round((coDirected / n) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly ytStreamableCount = computed(() => {
-    const f = this.films();
-    if (f.length < 5) return null;
-    const count = f.filter((m) => m.youtubeId).length;
-    return count > 0 ? count : null;
+    const { n, yt } = this.decIdx();
+    if (n < 5) return null;
+    return yt > 0 ? yt : null;
   });
 
   readonly iaStreamableCount = computed(() => {
-    const f = this.films();
-    if (f.length < 5) return null;
-    const count = f.filter((m) => m.internetArchiveId).length;
-    return count > 0 ? count : null;
+    const { n, ia } = this.decIdx();
+    if (n < 5) return null;
+    return ia > 0 ? ia : null;
   });
 
   readonly avgGenresPerFilm = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const avg = f.reduce((s, m) => s + m.genres.length, 0) / f.length;
+    const { n, genreLenSum } = this.decIdx();
+    if (n < 10) return null;
+    const avg = genreLenSum / n;
     return avg >= 1.3 ? avg.toFixed(1) : null;
   });
 
   readonly multiGenrePct = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const pct = Math.round((f.filter((m) => m.genres.length >= 2).length / f.length) * 100);
+    const { n, multiGenre } = this.decIdx();
+    if (n < 10) return null;
+    const pct = Math.round((multiGenre / n) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
