@@ -185,6 +185,7 @@ import { RouterLink } from '@angular/router';
       margin: 0;
       opacity: 0.7;
     }
+    @media (max-width: 768px) { .footer { padding-bottom: 100px; } }
   `],
 })
 export class FooterComponent {
