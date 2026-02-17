@@ -116,6 +116,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (topDirectorByStreamable(); as tdbs) {
           <p class="hero__avg-rating">Most streamable director: {{ tdbs.name }} ({{ tdbs.count }})</p>
         }
+        @if (oldestStreamableYear()) {
+          <p class="hero__avg-rating">Oldest free film from {{ oldestStreamableYear() }}</p>
+        }
       </div>
     </section>
 
@@ -1396,6 +1399,13 @@ export class HomeComponent implements OnInit {
     if (streamable.length === 0) return null;
     const newest = streamable.reduce((a, b) => a.year >= b.year ? a : b);
     return newest.title;
+  });
+
+  readonly oldestStreamableYear = computed(() => {
+    const streamable = this.catalog.movies().filter((m) => m.isStreamable);
+    if (streamable.length === 0) return null;
+    const oldest = streamable.reduce((a, b) => a.year <= b.year ? a : b);
+    return oldest.year;
   });
 
   readonly topDirectorByStreamable = computed(() => {

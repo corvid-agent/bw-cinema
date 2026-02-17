@@ -239,6 +239,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (genreCountDiff(); as gcd) {
                 <span class="compare__overlap"> &middot; {{ gcd }} genre difference</span>
               }
+              @if (directorCountDiff(); as dcd) {
+                <span class="compare__overlap"> &middot; {{ dcd }} director difference</span>
+              }
               @if (bothHighlyRated()) {
                 <span class="compare__overlap"> &middot; both rated 8+</span>
               }
@@ -919,6 +922,14 @@ export class CompareComponent implements OnInit {
     const a = this.filmA();
     const b = this.filmB();
     return !!(a && b && a.year < 1930 && b.year < 1930);
+  });
+
+  readonly directorCountDiff = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return null;
+    const diff = Math.abs(a.directors.length - b.directors.length);
+    return diff >= 1 ? diff : null;
   });
 
   readonly genreCountDiff = computed(() => {
