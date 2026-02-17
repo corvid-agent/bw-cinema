@@ -540,6 +540,19 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       .browse__lang { flex: 1; }
       .browse__lang select { width: 100%; }
     }
+    @media (max-width: 768px) {
+      .browse__surprise { min-height: 44px; min-width: 44px; }
+      .browse__streamable-toggle { min-height: 44px; }
+      .browse__chip { min-height: 44px; }
+      .browse__toolbar { gap: var(--space-sm); }
+    }
+    @media (max-width: 480px) {
+      .browse__toolbar { flex-direction: column; align-items: stretch; }
+      .browse__sort { flex: 1 1 100%; }
+      .browse__sort select { width: 100%; }
+      .browse__lang { flex: 1 1 100%; }
+      .browse__lang select { width: 100%; }
+    }
   `],
 })
 export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {

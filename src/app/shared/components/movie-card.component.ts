@@ -363,6 +363,17 @@ import type { MovieSummary } from '../../core/models/movie.model';
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    @media (max-width: 768px) {
+      .card__title { font-size: 0.95rem; }
+      .card__year { font-size: 0.85rem; }
+      .card__co-dir { font-size: 0.7rem; }
+    }
+    @media (max-width: 480px) {
+      .card__title { -webkit-line-clamp: 1; }
+      .card__badge { font-size: 0.65rem; padding: 2px 6px; }
+      .card__rating { font-size: 0.75rem; }
+      .card__user-rating { font-size: 0.7rem; }
+    }
   `],
 })
 export class MovieCardComponent {

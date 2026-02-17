@@ -782,6 +782,12 @@ const MOODS: Mood[] = [
       color: var(--accent-gold);
       flex-shrink: 0;
     }
+    @media (max-width: 768px) {
+      .explore__random { flex-wrap: wrap; }
+      .explore__moods { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+      .explore__progress-grid { grid-template-columns: 1fr; }
+      .explore__double-card img { width: 120px; }
+    }
     @media (max-width: 480px) {
       .explore__double-pair { grid-template-columns: 1fr; gap: var(--space-lg); }
       .explore__festival-trio { grid-template-columns: 1fr; gap: var(--space-lg); }

@@ -54,7 +54,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
       padding: 6px 12px;
       color: var(--text-tertiary);
       text-decoration: none;
-      font-size: 0.65rem;
+      font-size: 0.7rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.04em;
@@ -72,6 +72,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
     }
     .bottom-nav__item.active svg {
       filter: drop-shadow(0 0 4px var(--accent-gold-dim));
+    }
+    @media (max-width: 480px) {
+      .bottom-nav__item svg { width: 20px; height: 20px; }
+      .bottom-nav__item { padding: 6px 8px; }
     }
   `],
 })

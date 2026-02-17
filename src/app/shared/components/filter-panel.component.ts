@@ -354,6 +354,19 @@ import type { DirectorCount } from '../../core/models/catalog.model';
       flex-direction: column;
       gap: var(--space-xs);
     }
+    @media (max-width: 768px) {
+      .filters__checkbox input[type="checkbox"] { width: 20px; height: 20px; }
+      .filters__toggle { min-height: 44px; }
+      .filters__checkbox { min-height: 44px; }
+      .filters__director-search { min-height: 44px; font-size: 1rem; }
+      .filters__range { height: 24px; }
+      .filters__options { max-height: 260px; }
+    }
+    @media (max-width: 480px) {
+      .filters__checkbox input[type="checkbox"] { width: 22px; height: 22px; }
+      .filters__checkbox { gap: var(--space-md); }
+      .filters__group { padding: var(--space-sm) 0; }
+    }
   `],
 })
 export class FilterPanelComponent {

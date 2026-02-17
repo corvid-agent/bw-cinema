@@ -151,6 +151,11 @@ import type { MovieSummary } from '../../core/models/movie.model';
           } @else {
             <app-movie-list [movies]="sortedFilms()" />
           }
+        } @else if (searching()) {
+          <div class="actor__searching">
+            <app-loading-spinner />
+            <p class="actor__searching-text">Searching filmography...</p>
+          </div>
         } @else {
           <div class="actor__empty">
             <p>No films found for this actor in our catalog.</p>
@@ -491,6 +496,15 @@ import type { MovieSummary } from '../../core/models/movie.model';
       .actor__profile { flex-direction: column; text-align: center; }
       .actor__stats { grid-template-columns: 1fr; }
     }
+    .actor__searching {
+      text-align: center;
+      padding: var(--space-2xl) var(--space-lg);
+    }
+    .actor__searching-text {
+      color: var(--text-tertiary);
+      font-size: 0.9rem;
+      margin-top: var(--space-md);
+    }
   `],
 })
 export class ActorComponent implements OnInit {
@@ -505,6 +519,7 @@ export class ActorComponent implements OnInit {
   readonly viewMode = signal<ViewMode>('grid');
   readonly sortMode = signal<'rating' | 'chronological'>('rating');
   readonly photoUrl = signal<string | null>(null);
+  readonly searching = signal(true);
 
   /** Films this actor appears in — resolved by loading details for catalog films */
   private readonly actorFilmIds = signal<Set<string>>(new Set());
@@ -639,13 +654,12 @@ export class ActorComponent implements OnInit {
     this.metaService.updateTag({ name: 'twitter:description', content: actorDesc });
 
     // Search for films containing this actor by loading details
-    // First, do a quick scan — load detail for a batch of films to find cast matches
     const actorName = this.name().toLowerCase();
     const movies = this.catalog.movies();
     const matchIds = new Set<string>();
 
-    // Load details in batches to find films with this actor
-    const batchSize = 50;
+    // Load details in small batches with delays to respect TMDB rate limits
+    const batchSize = 8;
     for (let i = 0; i < movies.length; i += batchSize) {
       const batch = movies.slice(i, i + batchSize);
       const results = await Promise.allSettled(
@@ -668,8 +682,13 @@ export class ActorComponent implements OnInit {
       if (matchIds.size > 0) {
         this.actorFilmIds.set(new Set(matchIds));
       }
+      // Small delay between batches to avoid TMDB rate limiting
+      if (i + batchSize < movies.length) {
+        await new Promise((r) => setTimeout(r, 300));
+      }
     }
     this.actorFilmIds.set(new Set(matchIds));
+    this.searching.set(false);
   }
 
   addUnwatchedToWatchlist(): void {

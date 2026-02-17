@@ -64,6 +64,10 @@ import { Component, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewIni
     @media (hover: none) {
       .scroll-arrow { display: none; }
     }
+    @media (max-width: 768px) {
+      .scroll-row::-webkit-scrollbar { height: 3px; }
+      .scroll-row { padding-bottom: var(--space-xs); }
+    }
   `],
 })
 export class ScrollRowComponent implements AfterViewInit, OnDestroy {

@@ -868,7 +868,7 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       display: flex;
       align-items: center;
       gap: var(--space-sm);
-      min-height: 40px;
+      min-height: 44px;
     }
     .collection__tab:hover { color: var(--text-primary); }
     .collection__tab--active { color: var(--accent-gold); background: var(--bg-raised); }
@@ -1250,6 +1250,10 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
         scrollbar-width: none;
       }
       .collection__tabs::-webkit-scrollbar { display: none; }
+      .collection__tabs {
+        mask-image: linear-gradient(to right, transparent 0, #000 8px, #000 calc(100% - 24px), transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8px, #000 calc(100% - 24px), transparent 100%);
+      }
       .collection__tab {
         flex-shrink: 0;
         padding: var(--space-sm) var(--space-md);

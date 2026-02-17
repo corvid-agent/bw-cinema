@@ -453,8 +453,16 @@ interface QuizStep {
       opacity: 0.7;
       &:hover { opacity: 1; }
     }
+    @media (max-width: 768px) {
+      .quiz__result-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+      .quiz__option { min-height: 48px; }
+    }
     @media (max-width: 480px) {
       .quiz__result-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 360px) {
+      .quiz__result-actions { flex-direction: column; align-items: stretch; }
+      .quiz__add-all, .quiz__share-btn { width: 100%; justify-content: center; }
     }
   `],
 })

@@ -454,6 +454,16 @@ img {
   h3 { font-size: 1rem; }
 }
 
+@media (max-width: 360px) {
+  :root {
+    --font-size-base: 14px;
+  }
+
+  .container {
+    padding: 0 8px;
+  }
+}
+
 /* Safe area for bottom nav on notched devices */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   body {

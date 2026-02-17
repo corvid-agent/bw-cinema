@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal, input, computed, HostListener } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, signal, input, computed, HostListener, effect, untracked } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
@@ -1027,8 +1027,20 @@ export class MovieComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
 
+  private initialId: string | null = null;
+
   readonly movie = signal<MovieDetail | null>(null);
   readonly loading = signal(true);
+
+  constructor() {
+    effect(() => {
+      const movieId = this.id();
+      // Skip the initial load — ngOnInit handles it
+      if (this.initialId !== null && movieId !== this.initialId) {
+        untracked(() => this.loadMovie(movieId));
+      }
+    });
+  }
   readonly streamingUrl = signal<string | null>(null);
   readonly shareMenuOpen = signal(false);
   readonly playlistMenuOpen = signal(false);
@@ -1287,8 +1299,20 @@ export class MovieComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.initialId = this.id();
+    await this.loadMovie(this.initialId);
+  }
+
+  private async loadMovie(movieId: string): Promise<void> {
+    this.loading.set(true);
+    this.movie.set(null);
+    this.summary.set(null);
+    this.shareMenuOpen.set(false);
+    this.playlistMenuOpen.set(false);
+    this.reviewEditing.set(false);
+
     await this.catalogService.load();
-    const summary = this.catalogService.movies().find((m) => m.id === this.id());
+    const summary = this.catalogService.movies().find((m) => m.id === movieId);
     if (!summary) {
       this.loading.set(false);
       this.titleService.setTitle('Film Not Found — BW Cinema');
@@ -1324,6 +1348,7 @@ export class MovieComponent implements OnInit {
       });
     }
     this.loading.set(false);
+    window.scrollTo(0, 0);
   }
 
   addToWatchlist(id: string): void {

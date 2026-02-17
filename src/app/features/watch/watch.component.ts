@@ -541,6 +541,22 @@ import type { MovieSummary } from '../../core/models/movie.model';
     @media (hover: none) {
       .watch__shortcuts { display: none; }
     }
+    @media (max-width: 768px) {
+      .watch__player {
+        margin-left: calc(-1 * var(--space-md));
+        margin-right: calc(-1 * var(--space-md));
+        border-radius: 0;
+        max-width: none;
+      }
+      .watch__actions { flex-direction: column; align-items: stretch; text-align: center; }
+      .watch__header h1 { font-size: 1.3rem; }
+      .watch__mark-btn, .watch__share-btn, .watch__external-link { justify-content: center; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .watch__header h1 { font-size: 1.1rem; }
+      .watch__fallback-actions { flex-direction: column; align-items: stretch; }
+      .watch__fallback-btn { text-align: center; justify-content: center; }
+    }
   `],
 })
 export class WatchComponent implements OnInit, OnDestroy {

@@ -514,6 +514,7 @@ import { CatalogService } from '../../core/services/catalog.service';
         align-self: flex-start;
         margin: var(--space-sm) 0 var(--space-sm) var(--space-md);
       }
+      .header__autocomplete { min-width: auto; }
     }
   `],
 })

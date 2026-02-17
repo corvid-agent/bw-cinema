@@ -871,9 +871,14 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
     }
     @media (max-width: 768px) {
       .stats__sections { grid-template-columns: 1fr; }
+      .stats__overview { grid-template-columns: repeat(3, 1fr); }
+      .stats__card-value { font-size: 1.6rem; }
     }
     @media (max-width: 480px) {
       .stats__overview { grid-template-columns: repeat(2, 1fr); }
+      .stats__card-value { font-size: 1.3rem; }
+      .stats__card-label { font-size: 0.7rem; }
+      .stats__card { padding: var(--space-sm); }
       .stats__bar-label { min-width: 70px; font-size: 0.8rem; }
       .stats__avail-label { min-width: 80px; font-size: 0.8rem; }
       .stats__highlights { grid-template-columns: repeat(2, 1fr); }

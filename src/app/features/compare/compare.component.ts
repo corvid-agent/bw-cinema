@@ -583,6 +583,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
       .compare__pickers { flex-direction: column; }
       .compare__vs { padding-top: 0; text-align: center; }
       .compare__row { grid-template-columns: 80px 1fr 1fr; }
+      .compare__cell { font-size: 0.85rem; }
+      .compare__cell--label { word-break: break-word; }
+      .compare__poster { width: 60px; }
     }
     @media (max-width: 480px) {
       .compare__row { grid-template-columns: 1fr; }
@@ -597,6 +600,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
       }
       .compare__poster { width: 120px; }
       .compare__cell { padding: var(--space-sm) var(--space-md); font-size: 0.9rem; }
+      .compare__cell a { padding: var(--space-xs) 0; display: inline-block; }
     }
   `],
 })

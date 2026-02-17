@@ -39,10 +39,22 @@ import type { MovieSummary } from '../../core/models/movie.model';
         grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
       }
     }
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: var(--space-md) var(--space-sm);
+      }
+    }
     @media (max-width: 480px) {
       .grid {
         grid-template-columns: repeat(2, 1fr);
         gap: var(--space-md) var(--space-sm);
+      }
+    }
+    @media (max-width: 360px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-sm) var(--space-xs);
       }
     }
   `],
