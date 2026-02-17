@@ -17,13 +17,20 @@ import { NotificationService } from '../../core/services/notification.service';
   styles: [`
     .toasts {
       position: fixed;
-      bottom: var(--space-lg);
-      right: var(--space-lg);
+      bottom: max(var(--space-lg), env(safe-area-inset-bottom));
+      right: max(var(--space-lg), env(safe-area-inset-right));
       z-index: 1000;
       display: flex;
       flex-direction: column;
       gap: var(--space-sm);
       max-width: 360px;
+    }
+    @media (max-width: 480px) {
+      .toasts {
+        left: var(--space-md);
+        right: var(--space-md);
+        max-width: none;
+      }
     }
     .toast {
       display: flex;

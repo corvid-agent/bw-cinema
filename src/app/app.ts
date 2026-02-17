@@ -163,7 +163,16 @@ const ONBOARDING_KEY = 'bw-cinema-onboarded';
       padding: var(--space-xl);
       min-width: 340px;
       max-width: 420px;
+      width: 100%;
       box-shadow: var(--shadow-lg);
+    }
+    @media (max-width: 480px) {
+      .shortcuts-panel {
+        min-width: 0;
+        max-width: none;
+        width: calc(100% - var(--space-lg) * 2);
+        padding: var(--space-lg);
+      }
     }
     .shortcuts-header {
       display: flex;
@@ -299,6 +308,7 @@ const ONBOARDING_KEY = 'bw-cinema-onboarded';
       max-width: 90vw;
       height: 100%;
       padding: var(--space-xl);
+      padding-right: max(var(--space-xl), env(safe-area-inset-right));
       overflow-y: auto;
       box-shadow: var(--shadow-lg);
     }
