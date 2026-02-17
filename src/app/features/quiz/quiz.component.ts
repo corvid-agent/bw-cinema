@@ -799,14 +799,17 @@ export class QuizComponent implements OnInit {
       films = films.filter((m) => m.genres.some((g) => g.toLowerCase().includes(genre.toLowerCase())));
     }
 
-    // Mood filter
+    // Mood filter (genres are Wikidata-style, e.g. "comedy film", "drama film")
     const mood = a[2];
     if (mood === 'light') {
-      films = films.filter((m) => m.genres.some((g) => ['Comedy', 'Musical', 'Romance', 'Animation'].includes(g)));
+      const lightTerms = ['comedy', 'musical', 'romance', 'animation'];
+      films = films.filter((m) => m.genres.some((g) => lightTerms.some((t) => g.toLowerCase().includes(t))));
     } else if (mood === 'dark') {
-      films = films.filter((m) => m.genres.some((g) => ['Horror', 'Thriller', 'Crime', 'War', 'Mystery'].includes(g)));
+      const darkTerms = ['horror', 'thriller', 'crime', 'war', 'mystery', 'noir'];
+      films = films.filter((m) => m.genres.some((g) => darkTerms.some((t) => g.toLowerCase().includes(t))));
     } else if (mood === 'deep') {
-      films = films.filter((m) => m.genres.some((g) => ['Drama', 'History', 'Documentary'].includes(g)));
+      const deepTerms = ['drama', 'history', 'documentary'];
+      films = films.filter((m) => m.genres.some((g) => deepTerms.some((t) => g.toLowerCase().includes(t))));
     }
 
     // Rating filter
