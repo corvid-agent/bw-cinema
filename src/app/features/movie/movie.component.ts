@@ -1378,6 +1378,7 @@ export class MovieComponent implements OnInit {
     this.metaService.updateTag({ name: 'twitter:title', content: `${movie.title} (${movie.year}) — BW Cinema` });
     this.metaService.updateTag({ name: 'twitter:description', content: desc });
     this.metaService.updateTag({ name: 'description', content: desc });
+    this.metaService.updateTag({ property: 'og:url', content: window.location.href });
     if (movie.posterUrl) {
       this.metaService.updateTag({ property: 'og:image', content: movie.posterUrl });
       this.metaService.updateTag({ name: 'twitter:image', content: movie.posterUrl });

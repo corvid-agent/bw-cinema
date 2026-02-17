@@ -96,7 +96,15 @@ import { RevealDirective } from '../../shared/directives/reveal.directive';
       </div>
     </section>
 
-    @if (catalog.loading()) {
+    @if (catalog.error(); as err) {
+      <section class="section container">
+        <div class="home__error" role="alert">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p>{{ err }}</p>
+          <button class="home__error-retry" (click)="catalog.retry()">Try Again</button>
+        </div>
+      </section>
+    } @else if (catalog.loading()) {
       <section class="section container">
         <h2>Featured Films</h2>
         <app-skeleton-grid />
@@ -503,6 +511,29 @@ import { RevealDirective } from '../../shared/directives/reveal.directive';
     .hero__content {
       position: relative;
     }
+    .home__error {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-xl);
+      text-align: center;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--bg-surface);
+    }
+    .home__error svg { color: var(--accent-gold); }
+    .home__error-retry {
+      padding: 8px 20px;
+      background: var(--accent-gold);
+      color: var(--bg-deep);
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .home__error-retry:hover { opacity: 0.9; }
     .hero__eyebrow {
       text-transform: uppercase;
       letter-spacing: 0.2em;

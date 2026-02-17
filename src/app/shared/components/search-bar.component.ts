@@ -7,7 +7,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
   template: `
-    <div class="search" role="combobox" aria-expanded="false" aria-haspopup="listbox">
+    <div class="search" role="combobox" [attr.aria-expanded]="showSuggestions() && suggestions().length > 0" aria-haspopup="listbox">
       <label for="search-input" class="sr-only">Search films</label>
       <svg class="search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <circle cx="11" cy="11" r="8"/>
@@ -25,6 +25,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
         aria-label="Search films"
         aria-autocomplete="list"
         [attr.aria-activedescendant]="activeIndex() >= 0 ? 'suggestion-' + activeIndex() : null"
+        aria-controls="search-suggestions"
         autocomplete="off"
       />
       @if (speechSupported) {

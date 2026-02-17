@@ -12,6 +12,7 @@ export class CatalogService {
   readonly meta = signal<CatalogMeta | null>(null);
   readonly loading = signal(false);
   readonly loaded = signal(false);
+  readonly error = signal<string | null>(null);
 
   readonly featured = computed(() => {
     const streamable = this.movies().filter((m) => m.isStreamable);
@@ -53,6 +54,7 @@ export class CatalogService {
   async load(): Promise<void> {
     if (this.loaded()) return;
     this.loading.set(true);
+    this.error.set(null);
     try {
       const catalog = await firstValueFrom(
         this.http.get<Catalog>('assets/data/catalog.json')
@@ -62,9 +64,16 @@ export class CatalogService {
       this.movies.set(movies);
       this.meta.set(catalog.meta);
       this.loaded.set(true);
+    } catch {
+      this.error.set('Failed to load film catalog. Please check your connection and try again.');
     } finally {
       this.loading.set(false);
     }
+  }
+
+  async retry(): Promise<void> {
+    this.loaded.set(false);
+    await this.load();
   }
 
   search(filter: CatalogFilter): MovieSummary[] {

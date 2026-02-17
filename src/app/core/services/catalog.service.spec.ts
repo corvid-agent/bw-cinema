@@ -280,4 +280,46 @@ describe('CatalogService', () => {
     expect(fotd).not.toBeNull();
     expect(fotd!.isStreamable).toBe(true);
   });
+
+  it('should set error signal on fetch failure', async () => {
+    const loadPromise = service.load();
+    httpTesting.expectOne('assets/data/catalog.json').error(new ProgressEvent('error'));
+    await loadPromise;
+
+    expect(service.error()).toBeTruthy();
+    expect(service.loaded()).toBe(false);
+    expect(service.loading()).toBe(false);
+  });
+
+  it('should clear error and retry on retry()', async () => {
+    // First load fails
+    const loadPromise = service.load();
+    httpTesting.expectOne('assets/data/catalog.json').error(new ProgressEvent('error'));
+    await loadPromise;
+    expect(service.error()).toBeTruthy();
+
+    // Retry succeeds
+    const retryPromise = service.retry();
+    httpTesting.expectOne('assets/data/catalog.json').flush(mockCatalog);
+    await retryPromise;
+
+    expect(service.error()).toBeNull();
+    expect(service.loaded()).toBe(true);
+    expect(service.movies().length).toBe(3);
+  });
+
+  it('should compute language counts', async () => {
+    const catWithLangs = {
+      ...mockCatalog,
+      movies: mockCatalog.movies.map((m, i) => ({ ...m, language: i === 0 ? 'English' : 'French' })),
+    };
+    const loadPromise = service.load();
+    httpTesting.expectOne('assets/data/catalog.json').flush(catWithLangs);
+    await loadPromise;
+
+    const counts = service.languageCounts();
+    expect(counts.length).toBe(2);
+    expect(counts[0].name).toBe('French');
+    expect(counts[0].count).toBe(2);
+  });
 });
