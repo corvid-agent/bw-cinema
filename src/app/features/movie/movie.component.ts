@@ -259,7 +259,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                           <a class="detail__tag" [routerLink]="['/genre', genre]">{{ genre }}</a>
                         }
                         @if (genreSiblingCount(); as gsc) {
-                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (directorAvgTitleLength(); as datl) {, avg title {{ datl }} chars}@if (decadeAvgRating(); as dar) {, decade avg &#9733; {{ dar }}}@if (genreHighlyRatedCount(); as ghrc) {, {{ ghrc }} rated 8+}@if (genreStreamablePct(); as gsp) {, {{ gsp }}% streamable}@if (decadeStreamablePct(); as dsp) {, {{ dsp }}% of decade streamable}@if (genreAvgYear(); as gay) {, avg year {{ gay }}}@if (genreAvgFilmAge(); as gafa) {, avg age {{ gafa }}yr}@if (genreDirectorCount(); as gdc) {, {{ gdc }} directors})</span>
+                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (directorAvgTitleLength(); as datl) {, avg title {{ datl }} chars}@if (decadeAvgRating(); as dar) {, decade avg &#9733; {{ dar }}}@if (genreHighlyRatedCount(); as ghrc) {, {{ ghrc }} rated 8+}@if (genreStreamablePct(); as gsp) {, {{ gsp }}% streamable}@if (decadeStreamablePct(); as dsp) {, {{ dsp }}% of decade streamable}@if (genreAvgYear(); as gay) {, avg year {{ gay }}}@if (genreAvgFilmAge(); as gafa) {, avg age {{ gafa }}yr}@if (genreDirectorCount(); as gdc) {, {{ gdc }} directors}@if (languageRankLabel(); as lrl) {, {{ lrl }}})</span>
                         }
                       </div>
                     </div>
@@ -1414,6 +1414,18 @@ export class MovieComponent implements OnInit {
       .filter((m) => m.id !== s.id && m.directors.includes(dir))
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(0, 8);
+  });
+
+  readonly languageRankLabel = computed(() => {
+    const s = this.summary();
+    if (!s || !s.language || s.voteAverage === 0) return null;
+    const langFilms = this.catalogService.movies()
+      .filter((m) => m.language === s.language && m.voteAverage > 0)
+      .sort((a, b) => b.voteAverage - a.voteAverage);
+    if (langFilms.length < 10) return null;
+    const rank = langFilms.findIndex((m) => m.id === s.id);
+    if (rank >= 0 && rank < 20) return `#${rank + 1} in ${s.language}`;
+    return null;
   });
 
   readonly genreDirectorCount = computed(() => {
