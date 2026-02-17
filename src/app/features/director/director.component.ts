@@ -79,7 +79,7 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">vs Catalog Avg</span>
               </div>
             }
-            <button class="director__more-toggle" (click)="showMoreStats.set(!showMoreStats())">{{ showMoreStats() ? 'Less' : 'More stats' }}</button>
+            <button class="director__more-toggle" (click)="showMoreStats.set(!showMoreStats())" [attr.aria-expanded]="showMoreStats()" aria-label="Toggle additional statistics">{{ showMoreStats() ? 'Less' : 'More stats' }}</button>
             @if (showMoreStats()) {
             @if (avgYear()) {
               <div class="director__stat">

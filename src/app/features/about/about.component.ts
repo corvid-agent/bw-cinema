@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 
 @Component({
@@ -496,6 +497,8 @@ import { CatalogService } from '../../core/services/catalog.service';
 })
 export class AboutComponent implements OnInit {
   private readonly catalog = inject(CatalogService);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   readonly catalogStats = computed(() => {
     const movies = this.catalog.movies();
@@ -547,5 +550,10 @@ export class AboutComponent implements OnInit {
 
   ngOnInit(): void {
     this.catalog.load();
+    this.titleService.setTitle('About — BW Cinema');
+    const aboutDesc = 'About BW Cinema — a curated collection of classic black-and-white films, free to stream and explore.';
+    this.metaService.updateTag({ name: 'description', content: aboutDesc });
+    this.metaService.updateTag({ property: 'og:description', content: aboutDesc });
+    this.metaService.updateTag({ name: 'twitter:description', content: aboutDesc });
   }
 }

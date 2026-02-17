@@ -144,20 +144,20 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                   }
                 </button>
                 @if (!collection.isInWatchlist(m.id) && !collection.isWatched(m.id)) {
-                  <button class="btn-secondary" (click)="addToWatchlist(m.id)">+ Watchlist</button>
+                  <button class="btn-secondary" (click)="addToWatchlist(m.id)" aria-label="Add to watchlist">+ Watchlist</button>
                 } @else if (collection.isInWatchlist(m.id)) {
-                  <button class="btn-secondary detail__active-btn" (click)="removeFromWatchlist(m.id)">In Watchlist</button>
+                  <button class="btn-secondary detail__active-btn" (click)="removeFromWatchlist(m.id)" aria-label="Remove from watchlist">In Watchlist</button>
                 }
                 @if (!collection.isWatched(m.id)) {
-                  <button class="btn-secondary" (click)="markWatched(m.id)">Mark Watched</button>
+                  <button class="btn-secondary" (click)="markWatched(m.id)" aria-label="Mark as watched">Mark Watched</button>
                 }
                 @if (collection.playlists().length > 0) {
                   <div class="detail__playlist-wrap">
-                    <button class="btn-ghost detail__playlist-btn" (click)="playlistMenuOpen.set(!playlistMenuOpen())">+ Playlist</button>
+                    <button class="btn-ghost detail__playlist-btn" (click)="playlistMenuOpen.set(!playlistMenuOpen())" [attr.aria-expanded]="playlistMenuOpen()" aria-label="Add to playlist">+ Playlist</button>
                     @if (playlistMenuOpen()) {
                       <div class="detail__share-menu">
                         @for (pl of collection.playlists(); track pl.id) {
-                          <button class="detail__share-option" (click)="addToPlaylist(pl.id, m.id)">{{ pl.name }}</button>
+                          <button class="detail__share-option" (click)="addToPlaylist(pl.id, m.id)" [attr.aria-label]="'Add to playlist: ' + pl.name">{{ pl.name }}</button>
                         }
                       </div>
                     }
@@ -219,10 +219,10 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                     @if (collection.getReview(m.id)) {
                       <div class="detail__review-display">
                         <p class="detail__review-text">{{ collection.getReview(m.id) }}</p>
-                        <button class="btn-ghost detail__review-edit" (click)="reviewEditing.set(true)">Edit</button>
+                        <button class="btn-ghost detail__review-edit" (click)="reviewEditing.set(true)" aria-label="Edit your review">Edit</button>
                       </div>
                     } @else {
-                      <button class="btn-secondary detail__review-start" (click)="reviewEditing.set(true)">Write a Review</button>
+                      <button class="btn-secondary detail__review-start" (click)="reviewEditing.set(true)" aria-label="Write a review">Write a Review</button>
                     }
                   } @else {
                     <textarea

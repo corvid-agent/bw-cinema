@@ -53,7 +53,7 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (topResultDirector(); as trd) {
           <p class="browse__watched-note">Top director: <a [routerLink]="['/director', trd.name]">{{ trd.name }}</a> ({{ trd.count }})</p>
         }
-        <button class="browse__more-toggle" (click)="showMoreStats.set(!showMoreStats())">
+        <button class="browse__more-toggle" (click)="showMoreStats.set(!showMoreStats())" [attr.aria-expanded]="showMoreStats()" aria-label="Toggle additional statistics">
           {{ showMoreStats() ? 'Less' : 'More stats' }}
         </button>
         @if (showMoreStats()) {
