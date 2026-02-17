@@ -497,6 +497,7 @@ import { RevealDirective } from '../../shared/directives/reveal.directive';
     }
   `,
   styles: [`
+    :host { display: block; overflow-x: hidden; }
     .hero {
       position: relative;
       padding: var(--space-3xl) 0 var(--space-2xl);

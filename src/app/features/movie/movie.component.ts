@@ -412,6 +412,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
     }
   `,
   styles: [`
+    :host { display: block; overflow-x: hidden; }
     .detail__back {
       display: inline-flex;
       align-items: center;

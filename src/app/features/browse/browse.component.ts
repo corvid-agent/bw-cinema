@@ -219,7 +219,11 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
     </div>
   `,
   styles: [`
-    .browse { padding: var(--space-xl) 0; }
+    :host {
+      display: block;
+      overflow-x: hidden;
+    }
+    .browse { padding: var(--space-xl) 0; min-width: 0; }
     .browse__top {
       margin-bottom: var(--space-lg);
     }
@@ -263,6 +267,10 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       display: grid;
       grid-template-columns: 260px 1fr;
       gap: var(--space-xl);
+      min-width: 0;
+    }
+    .browse__main {
+      min-width: 0;
     }
     .browse__sidebar {
       position: sticky;
@@ -549,9 +557,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
     @media (max-width: 480px) {
       .browse__toolbar { flex-direction: column; align-items: stretch; }
       .browse__sort { flex: 1 1 100%; }
-      .browse__sort select { width: 100%; }
+      .browse__sort select { width: 100%; min-width: 0; }
       .browse__lang { flex: 1 1 100%; }
-      .browse__lang select { width: 100%; }
+      .browse__lang select { width: 100%; min-width: 0; }
       .browse__chip { font-size: 0.8rem; padding: 4px 10px; }
     }
     @media (max-width: 360px) {

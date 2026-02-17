@@ -833,6 +833,7 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
     </div>
   `,
   styles: [`
+    :host { display: block; overflow-x: hidden; }
     .collection { padding: var(--space-xl) 0; }
     .collection__shared-info {
       color: var(--text-secondary);
