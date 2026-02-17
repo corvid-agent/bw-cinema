@@ -150,6 +150,9 @@ interface QuizStep {
           @if (resultPosterCoveragePct(); as rpcp) {
             <p class="quiz__decade-range">{{ rpcp }}% have poster art</p>
           }
+          @if (resultImdbLinkedPct(); as rilp) {
+            <p class="quiz__decade-range">{{ rilp }}% linked to IMDb</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -680,6 +683,13 @@ export class QuizComponent implements OnInit {
     const films = this.results();
     if (films.length < 3) return null;
     const pct = Math.round((films.filter((m) => m.posterUrl).length / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly resultImdbLinkedPct = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const pct = Math.round((films.filter((m) => m.imdbId).length / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
