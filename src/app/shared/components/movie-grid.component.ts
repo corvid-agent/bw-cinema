@@ -25,6 +25,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
       grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
       gap: var(--space-lg) var(--space-md);
     }
+    .grid > * {
+      min-width: 0;
+    }
     .grid__empty {
       grid-column: 1 / -1;
       text-align: center;

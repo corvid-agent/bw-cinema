@@ -88,6 +88,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
     </a>
   `,
   styles: [`
+    :host {
+      display: block;
+      min-width: 0;
+    }
     .card {
       display: block;
       text-decoration: none;
@@ -369,10 +373,35 @@ import type { MovieSummary } from '../../core/models/movie.model';
       .card__co-dir { font-size: 0.7rem; }
     }
     @media (max-width: 480px) {
-      .card__title { -webkit-line-clamp: 1; }
+      .card__title { -webkit-line-clamp: 1; font-size: 0.8rem; }
       .card__badge { font-size: 0.65rem; padding: 2px 6px; }
-      .card__rating { font-size: 0.75rem; }
+      .card__rating { font-size: 0.75rem; padding: 2px 6px; }
       .card__user-rating { font-size: 0.7rem; }
+      .card__action {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+      }
+      .card__info { padding: 6px 2px 2px; }
+      .card__year { font-size: 0.7rem; }
+      .card__genre { font-size: 0.7rem; }
+      .card__placeholder-title { font-size: 0.8rem; }
+      .card__placeholder-year { font-size: 1.1rem; }
+    }
+    @media (max-width: 360px) {
+      .card__title { font-size: 0.75rem; }
+      .card__overlay { top: var(--space-xs); left: var(--space-xs); right: var(--space-xs); }
+      .card__rating { font-size: 0.65rem; padding: 2px 4px; }
+      .card__badge { font-size: 0.6rem; padding: 1px 4px; }
+      .card__action {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        min-height: 28px;
+      }
+      .card__action svg { width: 12px; height: 12px; }
+      .card__heart svg { width: 12px; height: 12px; }
     }
   `],
 })
