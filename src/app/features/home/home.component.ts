@@ -107,6 +107,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (streamableHighRatedCount() > 0) {
           <p class="hero__avg-rating">{{ streamableHighRatedCount() }} highly-rated free to watch</p>
         }
+        @if (topGenreLabel(); as tgl) {
+          <p class="hero__avg-rating">Most common genre: {{ tgl }}</p>
+        }
       </div>
     </section>
 
@@ -1373,6 +1376,13 @@ export class HomeComponent implements OnInit {
 
   readonly streamableHighRatedCount = computed(() => {
     return this.catalog.movies().filter((m) => m.isStreamable && m.voteAverage >= 7.0).length;
+  });
+
+  readonly topGenreLabel = computed(() => {
+    const counts = new Map<string, number>();
+    for (const m of this.catalog.movies()) for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return top ? top[0] : null;
   });
 
   readonly decadeSpan = computed(() => {

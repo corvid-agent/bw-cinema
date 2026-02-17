@@ -256,6 +256,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Non-English</span>
               </div>
             }
+            @if (streamableWatchedPct(); as swp) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ swp }}%</span>
+                <span class="wrapped__hero-label">Free to Watch</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -1123,6 +1129,13 @@ export class WrappedComponent implements OnInit {
     if (films.length < 5) return null;
     const count = films.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
     const pct = Math.round((count / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly streamableWatchedPct = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 5) return null;
+    const pct = Math.round((films.filter((m) => m.isStreamable).length / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
