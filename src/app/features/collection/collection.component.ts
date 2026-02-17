@@ -402,6 +402,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Oldest in Watchlist</span>
                   </div>
                 }
+                @if (watchlistIaStreamableCount(); as wiasc) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ wiasc }}</span>
+                    <span class="stats__card-label">Watchlist on IA</span>
+                  </div>
+                }
                 @if (favoritesAvgRating(); as far) {
                   <div class="stats__card">
                     <span class="stats__card-value">{{ far }}</span>
@@ -2021,6 +2027,13 @@ export class CollectionComponent implements OnInit {
     if (films.length < 5) return null;
     const pct = Math.round((films.filter((m) => m.directors.length > 1).length / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly watchlistIaStreamableCount = computed(() => {
+    const films = this.watchlistMovies();
+    if (films.length < 3) return null;
+    const count = films.filter((m) => m.internetArchiveId).length;
+    return count > 0 ? count : null;
   });
 
   private computeStreaks(): { current: number; longest: number } {
