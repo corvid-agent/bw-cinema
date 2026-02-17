@@ -252,6 +252,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">IMDb Linked</span>
               </div>
             }
+            @if (directorMedianRating(); as dmr) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ dmr }}</span>
+                <span class="director__stat-label">Median &#9733;</span>
+              </div>
+            }
           </div>
 
           @if (bestFilm(); as best) {
@@ -1118,6 +1124,15 @@ export class DirectorComponent implements OnInit {
     if (f.length < 2) return null;
     const latest = f.reduce((a, b) => a.year >= b.year ? a : b);
     return latest.title;
+  });
+
+  readonly directorMedianRating = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length < 3) return null;
+    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    return median.toFixed(1);
   });
 
   readonly imdbLinkedCount = computed(() => {

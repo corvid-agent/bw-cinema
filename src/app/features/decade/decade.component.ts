@@ -183,6 +183,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (decadeAvgTitleLength(); as datl) {
             <p class="decade__fact">Avg title: {{ datl }} characters</p>
           }
+          @if (mostCommonLanguage(); as mcl) {
+            <p class="decade__fact">Top non-English: {{ mcl.name }} ({{ mcl.count }})</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -989,6 +992,19 @@ export class DecadeComponent implements OnInit {
     if (f.length < 10) return null;
     const pct = Math.round((f.filter((m) => m.imdbId).length / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly mostCommonLanguage = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const counts = new Map<string, number>();
+    for (const m of f) {
+      if (m.language && m.language !== 'English' && m.language !== 'en') {
+        counts.set(m.language, (counts.get(m.language) ?? 0) + 1);
+      }
+    }
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return top && top[1] >= 3 ? { name: top[0], count: top[1] } : null;
   });
 
   readonly decadeAvgTitleLength = computed(() => {

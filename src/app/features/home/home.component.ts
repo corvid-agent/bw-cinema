@@ -140,6 +140,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (streamableAvgRating(); as sar) {
           <p class="hero__avg-rating">Free film avg &#9733; {{ sar }}</p>
         }
+        @if (catalogCoDirectedPct(); as ccdp) {
+          <p class="hero__avg-rating">{{ ccdp }}% co-directed</p>
+        }
       </div>
     </section>
 
@@ -1440,6 +1443,13 @@ export class HomeComponent implements OnInit {
     if (movies.length < 10) return null;
     const langs = new Set(movies.filter((m) => m.language).map((m) => m.language));
     return langs.size >= 3 ? langs.size : null;
+  });
+
+  readonly catalogCoDirectedPct = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const pct = Math.round((movies.filter((m) => m.directors.length > 1).length / movies.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly streamableAvgRating = computed(() => {
