@@ -174,6 +174,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Rated 7.0+</span>
               </div>
             }
+            @if (shortestTitle(); as st) {
+              <div class="director__stat">
+                <span class="director__stat-value" style="font-size: 0.7em">{{ st }}</span>
+                <span class="director__stat-label">Shortest Title</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -1013,6 +1019,13 @@ export class DirectorComponent implements OnInit {
     if (f.length < 3) return null;
     const count = f.filter((m) => m.voteAverage >= 7.0).length;
     return count > 0 && count < f.length ? count : null;
+  });
+
+  readonly shortestTitle = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const shortest = f.reduce((a, b) => a.title.length <= b.title.length ? a : b);
+    return shortest.title.length <= 15 ? shortest.title : null;
   });
 
   ngOnInit(): void {

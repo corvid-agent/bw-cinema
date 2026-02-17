@@ -408,6 +408,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Streamable</span>
                   </div>
                 }
+                @if (watchedMedianRating(); as wmr) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ wmr }}</span>
+                    <span class="stats__card-label">Median Rating</span>
+                  </div>
+                }
               </div>
 
               @if (nextMilestone(); as milestone) {
@@ -1741,6 +1747,15 @@ export class CollectionComponent implements OnInit {
     if (films.length < 3) return null;
     const pct = Math.round((films.filter((m) => m.isStreamable).length / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly watchedMedianRating = computed(() => {
+    const rated = this.watchedMovies().filter((m) => m.voteAverage > 0);
+    if (rated.length < 3) return null;
+    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    return median.toFixed(1);
   });
 
   readonly watchedLongestTitle = computed(() => {
