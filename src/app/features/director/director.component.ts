@@ -210,6 +210,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">IMDb Linked</span>
               </div>
             }
+            @if (ytStreamableCount(); as ysc) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ ysc }}</span>
+                <span class="director__stat-label">On YouTube</span>
+              </div>
+            }
             @if (streamableNewestYear(); as sny) {
               <div class="director__stat">
                 <span class="director__stat-value">{{ sny }}</span>
@@ -1216,6 +1222,13 @@ export class DirectorComponent implements OnInit {
     if (f.length < 3) return null;
     const pct = Math.round((f.filter((m) => m.imdbId).length / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly ytStreamableCount = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const count = f.filter((m) => m.youtubeId).length;
+    return count > 0 ? count : null;
   });
 
   readonly genreConsistencyPct = computed(() => {

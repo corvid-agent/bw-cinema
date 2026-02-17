@@ -197,6 +197,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (avgDirectorCareer(); as adc) {
             <p class="genre__fact">Avg director career: {{ adc }} years</p>
           }
+          @if (ytStreamableCount(); as ysc) {
+            <p class="genre__fact">{{ ysc }} available on YouTube</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -1085,6 +1088,13 @@ export class GenreComponent implements OnInit {
     if (f.length < 10) return null;
     const pct = Math.round((f.filter((m) => m.posterUrl).length / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly ytStreamableCount = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const count = f.filter((m) => m.youtubeId).length;
+    return count > 0 ? count : null;
   });
 
   readonly avgDirectorCareer = computed(() => {
