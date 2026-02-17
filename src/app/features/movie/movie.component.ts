@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal, input, computed, HostListener, effect, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, input, computed, HostListener, effect, untracked } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
@@ -1013,7 +1013,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
     }
   `],
 })
-export class MovieComponent implements OnInit {
+export class MovieComponent {
   readonly id = input.required<string>();
 
   private readonly location = inject(Location);
@@ -1027,18 +1027,13 @@ export class MovieComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
 
-  private initialId: string | null = null;
-
   readonly movie = signal<MovieDetail | null>(null);
   readonly loading = signal(true);
 
   constructor() {
     effect(() => {
       const movieId = this.id();
-      // Skip the initial load — ngOnInit handles it
-      if (this.initialId !== null && movieId !== this.initialId) {
-        untracked(() => this.loadMovie(movieId));
-      }
+      untracked(() => this.loadMovie(movieId));
     });
   }
   readonly streamingUrl = signal<string | null>(null);
@@ -1296,11 +1291,6 @@ export class MovieComponent implements OnInit {
         this.router.navigate(['/movie', movies[next].id]);
       }
     }
-  }
-
-  async ngOnInit(): Promise<void> {
-    this.initialId = this.id();
-    await this.loadMovie(this.initialId);
   }
 
   private async loadMovie(movieId: string): Promise<void> {
