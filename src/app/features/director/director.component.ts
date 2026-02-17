@@ -291,7 +291,7 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">IMDb Linked</span>
               </div>
             }
-            @if (directorMedianRating(); as dmr) {
+            @if (medianRating(); as dmr) {
               <div class="director__stat">
                 <span class="director__stat-value">{{ dmr }}</span>
                 <span class="director__stat-label">Median &#9733;</span>
@@ -1204,15 +1204,6 @@ export class DirectorComponent implements OnInit {
     if (f.length < 3) return null;
     const pct = Math.round((f.filter((m) => m.posterUrl).length / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
-  });
-
-  readonly directorMedianRating = computed(() => {
-    const rated = this.films().filter((m) => m.voteAverage > 0);
-    if (rated.length < 3) return null;
-    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-    return median.toFixed(1);
   });
 
   readonly imdbLinkedCount = computed(() => {
