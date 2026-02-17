@@ -147,6 +147,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (highlyRatedCount() > 0) {
             <p class="decade__fact">{{ highlyRatedCount() }} films rated 8.0+</p>
           }
+          @if (streamableHighRatedCount() > 0) {
+            <p class="decade__fact">{{ streamableHighRatedCount() }} highly-rated free to watch</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -924,6 +927,10 @@ export class DecadeComponent implements OnInit {
     const f = this.films();
     if (f.length < 5) return null;
     return Math.round(f.reduce((s, m) => s + m.title.length, 0) / f.length);
+  });
+
+  readonly streamableHighRatedCount = computed(() => {
+    return this.films().filter((m) => m.isStreamable && m.voteAverage >= 7.0).length;
   });
 
   ngOnInit(): void {

@@ -443,6 +443,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">avg title length (chars)</span>
               </div>
             }
+            @if (avgTitleLengthByDecade().length > 0) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ avgTitleLengthByDecade()[0].decade }}s</span>
+                <span class="stats__fact-text">longest titles (avg {{ avgTitleLengthByDecade()[0].avg }} chars)</span>
+              </div>
+            }
             @if (multiLanguageDirectorCount(); as mldc) {
               <div class="stats__fact-card">
                 <span class="stats__fact-number">{{ mldc }}</span>
@@ -1235,6 +1241,23 @@ export class StatsComponent implements OnInit {
     const movies = this.catalog.movies();
     if (movies.length === 0) return 0;
     return Math.round(movies.reduce((s, m) => s + m.title.length, 0) / movies.length);
+  });
+
+  readonly avgTitleLengthByDecade = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return [];
+    const decMap = new Map<number, { total: number; count: number }>();
+    for (const m of movies) {
+      const d = Math.floor(m.year / 10) * 10;
+      const e = decMap.get(d) ?? { total: 0, count: 0 };
+      e.total += m.title.length;
+      e.count++;
+      decMap.set(d, e);
+    }
+    return [...decMap.entries()]
+      .filter(([, v]) => v.count >= 10)
+      .map(([decade, v]) => ({ decade, avg: Math.round(v.total / v.count) }))
+      .sort((a, b) => b.avg - a.avg);
   });
 
   ngOnInit(): void {

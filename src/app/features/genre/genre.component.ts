@@ -149,6 +149,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (highlyRatedCount() > 0) {
             <p class="genre__fact">{{ highlyRatedCount() }} films rated 8.0+</p>
           }
+          @if (coDirectedPct(); as cdp) {
+            <p class="genre__fact">{{ cdp }}% co-directed</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -917,6 +920,13 @@ export class GenreComponent implements OnInit {
     if (f.length < 5) return null;
     const avg = Math.round(f.reduce((s, m) => s + m.title.length, 0) / f.length);
     return avg > 0 ? avg : null;
+  });
+
+  readonly coDirectedPct = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const pct = Math.round((f.filter((m) => m.directors.length > 1).length / f.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly decadeBreakdown = computed(() => {
