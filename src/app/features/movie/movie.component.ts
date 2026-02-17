@@ -11,12 +11,13 @@ import { RecentlyViewedService } from '../../core/services/recently-viewed.servi
 import { RatingStarsComponent } from '../../shared/components/rating-stars.component';
 import { SkeletonDetailComponent } from '../../shared/components/skeleton-detail.component';
 import { RuntimePipe } from '../../shared/pipes/runtime.pipe';
+import { ScrollRowComponent } from '../../shared/components/scroll-row.component';
 import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
 
 @Component({
   selector: 'app-movie',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RatingStarsComponent, SkeletonDetailComponent, RuntimePipe],
+  imports: [RouterLink, RatingStarsComponent, SkeletonDetailComponent, RuntimePipe, ScrollRowComponent],
   template: `
     @if (loading()) {
       <app-skeleton-detail />
@@ -344,7 +345,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                 <h2>More by {{ movie()!.directors[0] }}</h2>
                 <a class="detail__section-link" [routerLink]="['/director', movie()!.directors[0]]">View all &rarr;</a>
               </div>
-              <div class="detail__carousel">
+              <app-scroll-row>
                 @for (s of directorFilms(); track s.id) {
                   <a class="detail__carousel-card" [routerLink]="['/movie', s.id]">
                     <div class="detail__carousel-poster-wrap">
@@ -365,14 +366,14 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                     <p class="detail__carousel-meta">{{ s.year }}</p>
                   </a>
                 }
-              </div>
+              </app-scroll-row>
             </section>
           }
 
           @if (similarWithReasons().length > 0) {
             <section class="detail__similar" aria-label="Similar films">
               <h2>You Might Also Like@if (similarUnwatchedCount(); as suc) { <span class="detail__section-note">({{ suc }} unwatched)</span>}@if (similarStreamableCount(); as ssc) { <span class="detail__section-note">&middot; {{ ssc }} free</span>}</h2>
-              <div class="detail__carousel">
+              <app-scroll-row>
                 @for (s of similarWithReasons(); track s.movie.id) {
                   <a class="detail__carousel-card" [routerLink]="['/movie', s.movie.id]">
                     <div class="detail__carousel-poster-wrap">
@@ -396,7 +397,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                     }
                   </a>
                 }
-              </div>
+              </app-scroll-row>
             </section>
           }
         </div>
@@ -901,25 +902,6 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       margin-top: var(--space-2xl);
       padding-top: var(--space-xl);
       border-top: 1px solid var(--border);
-    }
-    .detail__carousel {
-      display: flex;
-      gap: var(--space-md);
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      padding-bottom: var(--space-sm);
-      -webkit-overflow-scrolling: touch;
-    }
-    .detail__carousel::-webkit-scrollbar {
-      height: 6px;
-    }
-    .detail__carousel::-webkit-scrollbar-track {
-      background: var(--bg-raised);
-      border-radius: 3px;
-    }
-    .detail__carousel::-webkit-scrollbar-thumb {
-      background: var(--border-bright);
-      border-radius: 3px;
     }
     .detail__carousel-card {
       flex: 0 0 140px;

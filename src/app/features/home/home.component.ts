@@ -8,11 +8,12 @@ import { MovieGridComponent } from '../../shared/components/movie-grid.component
 import { SearchBarComponent } from '../../shared/components/search-bar.component';
 import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.component';
 import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.directive';
+import { ScrollRowComponent } from '../../shared/components/scroll-row.component';
 
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MovieGridComponent, SearchBarComponent, SkeletonGridComponent, KeyboardNavDirective, RouterLink],
+  imports: [MovieGridComponent, SearchBarComponent, SkeletonGridComponent, KeyboardNavDirective, RouterLink, ScrollRowComponent],
   template: `
     <section class="hero">
       <div class="hero__bg"></div>
@@ -162,7 +163,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             <h2>Hidden Gems</h2>
             <span class="section__desc">Highly rated films with under 1,000 votes</span>
           </div>
-          <div class="gems__scroll">
+          <app-scroll-row class="gems__scroll">
             @for (gem of hiddenGems(); track gem.id) {
               <a class="gems__card" [routerLink]="['/movie', gem.id]">
                 @if (gem.posterUrl) {
@@ -174,7 +175,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
                 <p class="gems__meta">{{ gem.year }}</p>
               </a>
             }
-          </div>
+          </app-scroll-row>
         </section>
       }
 
@@ -184,7 +185,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             <h2>Top Rated Classics</h2>
             <a class="section__link" routerLink="/browse" [queryParams]="{ sort: 'rating' }">View all &rarr;</a>
           </div>
-          <div class="gems__scroll">
+          <app-scroll-row class="gems__scroll">
             @for (film of topRated(); track film.id) {
               <a class="gems__card" [routerLink]="['/movie', film.id]">
                 @if (film.posterUrl) {
@@ -196,7 +197,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
                 <p class="gems__meta">{{ film.year }} &middot; &#9733; {{ film.voteAverage.toFixed(1) }}</p>
               </a>
             }
-          </div>
+          </app-scroll-row>
         </section>
       }
 
@@ -206,7 +207,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             <h2>World Cinema</h2>
             <a class="section__link" routerLink="/browse" [queryParams]="{ streamable: '1' }">Browse all &rarr;</a>
           </div>
-          <div class="gems__scroll">
+          <app-scroll-row class="gems__scroll">
             @for (film of worldCinema(); track film.id) {
               <a class="gems__card" [routerLink]="['/movie', film.id]">
                 @if (film.posterUrl) {
@@ -218,7 +219,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
                 <p class="gems__meta">{{ film.year }} &middot; {{ film.language }}</p>
               </a>
             }
-          </div>
+          </app-scroll-row>
         </section>
       }
 
@@ -278,7 +279,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             </div>
             <a class="section__link" [routerLink]="['/decade', dSpot.decade]">See all &rarr;</a>
           </div>
-          <div class="gems__scroll">
+          <app-scroll-row class="gems__scroll">
             @for (film of dSpot.films; track film.id) {
               <a class="gems__card" [routerLink]="['/movie', film.id]">
                 @if (film.posterUrl) {
@@ -290,7 +291,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
                 <p class="gems__meta">{{ film.year }} &middot; &#9733; {{ film.voteAverage.toFixed(1) }}</p>
               </a>
             }
-          </div>
+          </app-scroll-row>
         </section>
       }
 
@@ -303,7 +304,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             </div>
             <a class="section__link" [routerLink]="['/genre', gSpot.name]">See all &rarr;</a>
           </div>
-          <div class="gems__scroll">
+          <app-scroll-row class="gems__scroll">
             @for (film of gSpot.films; track film.id) {
               <a class="gems__card" [routerLink]="['/movie', film.id]">
                 @if (film.posterUrl) {
@@ -315,7 +316,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
                 <p class="gems__meta">{{ film.year }} &middot; &#9733; {{ film.voteAverage.toFixed(1) }}</p>
               </a>
             }
-          </div>
+          </app-scroll-row>
         </section>
       }
 
@@ -328,7 +329,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             </div>
             <a class="section__link" [routerLink]="['/director', spotlight.name]">See all &rarr;</a>
           </div>
-          <div class="gems__scroll">
+          <app-scroll-row class="gems__scroll">
             @for (film of spotlight.films.slice(0, 8); track film.id) {
               <a class="gems__card" [routerLink]="['/movie', film.id]">
                 @if (film.posterUrl) {
@@ -340,7 +341,7 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
                 <p class="gems__meta">{{ film.year }}</p>
               </a>
             }
-          </div>
+          </app-scroll-row>
         </section>
       }
 
@@ -786,17 +787,8 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       color: var(--accent-gold);
     }
     .gems__scroll {
-      display: flex;
-      gap: var(--space-md);
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      padding-bottom: var(--space-sm);
-      -webkit-overflow-scrolling: touch;
       margin-top: var(--space-md);
     }
-    .gems__scroll::-webkit-scrollbar { height: 6px; }
-    .gems__scroll::-webkit-scrollbar-track { background: var(--bg-raised); border-radius: 3px; }
-    .gems__scroll::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
     .gems__card {
       flex: 0 0 130px;
       scroll-snap-align: start;
