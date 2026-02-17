@@ -234,6 +234,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Avg Gap Between Films</span>
               </div>
             }
+            @if (uniqueLanguageCount(); as ulc) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ ulc }}</span>
+                <span class="director__stat-label">Languages</span>
+              </div>
+            }
           </div>
 
           @if (bestFilm(); as best) {
@@ -1100,6 +1106,13 @@ export class DirectorComponent implements OnInit {
     if (f.length < 2) return null;
     const latest = f.reduce((a, b) => a.year >= b.year ? a : b);
     return latest.title;
+  });
+
+  readonly uniqueLanguageCount = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const langs = new Set(f.filter((m) => m.language).map((m) => m.language));
+    return langs.size >= 2 ? langs.size : null;
   });
 
   readonly avgFilmGap = computed(() => {

@@ -179,6 +179,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (directorWithMostFilms(); as dwmf) {
             <p class="genre__fact">Top director: {{ dwmf.name }} ({{ dwmf.count }} films)</p>
           }
+          @if (avgFilmYearGap(); as afyg) {
+            <p class="genre__fact">Avg {{ afyg }} years between films</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -1010,6 +1013,16 @@ export class GenreComponent implements OnInit {
     if (f.length < 2) return null;
     const newest = f.reduce((a, b) => a.year >= b.year ? a : b);
     return newest.title;
+  });
+
+  readonly avgFilmYearGap = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const years = f.map((m) => m.year).sort((a, b) => a - b);
+    const gaps: number[] = [];
+    for (let i = 1; i < years.length; i++) gaps.push(years[i] - years[i - 1]);
+    const avg = gaps.reduce((s, g) => s + g, 0) / gaps.length;
+    return avg >= 0.5 ? avg.toFixed(1) : null;
   });
 
   readonly directorWithMostFilms = computed(() => {

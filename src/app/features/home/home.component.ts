@@ -131,6 +131,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (highRatedStreamablePct(); as hrsp) {
           <p class="hero__avg-rating">{{ hrsp }}% of free films rated 7.0+</p>
         }
+        @if (preWarStreamableCount(); as pwsc) {
+          <p class="hero__avg-rating">{{ pwsc }} free pre-1940 films</p>
+        }
       </div>
     </section>
 
@@ -1431,6 +1434,11 @@ export class HomeComponent implements OnInit {
     if (movies.length < 10) return null;
     const langs = new Set(movies.filter((m) => m.language).map((m) => m.language));
     return langs.size >= 3 ? langs.size : null;
+  });
+
+  readonly preWarStreamableCount = computed(() => {
+    const count = this.catalog.movies().filter((m) => m.isStreamable && m.year < 1940).length;
+    return count >= 10 ? count : null;
   });
 
   readonly highRatedStreamablePct = computed(() => {
