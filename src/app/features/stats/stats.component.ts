@@ -461,6 +461,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">films from before 1940</span>
               </div>
             }
+            @if (topGenreByRating(); as tgbr) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">&#9733; {{ tgbr.rating }}</span>
+                <span class="stats__fact-text">{{ tgbr.genre }} (highest rated genre)</span>
+              </div>
+            }
             @if (singleDirectorPct(); as sdp) {
               <div class="stats__fact-card">
                 <span class="stats__fact-number">{{ sdp }}%</span>
@@ -1563,6 +1569,26 @@ export class StatsComponent implements OnInit {
     if (movies.length < 10) return null;
     const pct = Math.round((movies.filter((m) => m.year < 1940).length / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly topGenreByRating = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const genreRatings = new Map<string, number[]>();
+    for (const m of movies) {
+      if (m.voteAverage > 0) {
+        for (const g of m.genres) {
+          if (!genreRatings.has(g)) genreRatings.set(g, []);
+          genreRatings.get(g)!.push(m.voteAverage);
+        }
+      }
+    }
+    const avgs = [...genreRatings.entries()]
+      .filter(([, r]) => r.length >= 20)
+      .map(([g, r]) => ({ genre: g, rating: (r.reduce((a, b) => a + b, 0) / r.length).toFixed(1) }));
+    if (avgs.length < 2) return null;
+    avgs.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
+    return avgs[0];
   });
 
   ngOnInit(): void {
