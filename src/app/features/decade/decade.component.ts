@@ -802,20 +802,6 @@ export class DecadeComponent implements OnInit {
     return genres.size;
   });
 
-  readonly longestTitle = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const longest = f.reduce((best, m) => m.title.length > best.title.length ? m : best, f[0]);
-    return longest.title.length >= 25 ? longest.title : null;
-  });
-
-  readonly shortestTitle = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const shortest = f.reduce((best, m) => m.title.length < best.title.length ? m : best, f[0]);
-    return shortest.title.length <= 10 ? shortest.title : null;
-  });
-
   readonly mostProlificDirector = computed(() => {
     const f = this.films();
     if (f.length < 5) return null;
@@ -938,16 +924,6 @@ export class DecadeComponent implements OnInit {
     return this.films().filter((m) => m.voteAverage >= 8.0).length;
   });
 
-  readonly avgTitleLength = computed(() => {
-    const f = this.films();
-    if (f.length < 5) return null;
-    return Math.round(f.reduce((s, m) => s + m.title.length, 0) / f.length);
-  });
-
-  readonly streamableHighRatedCount = computed(() => {
-    return this.films().filter((m) => m.isStreamable && m.voteAverage >= 7.0).length;
-  });
-
   readonly topDirectorFilmCount = computed(() => {
     const f = this.films();
     if (f.length < 5) return null;
@@ -980,45 +956,6 @@ export class DecadeComponent implements OnInit {
     return pct > 0 && pct < 100 ? pct : null;
   });
 
-  readonly mostCommonLanguage = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const counts = new Map<string, number>();
-    for (const m of f) {
-      if (m.language && m.language !== 'English' && m.language !== 'en') {
-        counts.set(m.language, (counts.get(m.language) ?? 0) + 1);
-      }
-    }
-    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
-    return top && top[1] >= 3 ? { name: top[0], count: top[1] } : null;
-  });
-
-  readonly decadeAvgTitleLength = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const avg = f.reduce((s, m) => s + m.title.length, 0) / f.length;
-    return avg >= 5 ? Math.round(avg) : null;
-  });
-
-  readonly decadeMedianRating = computed(() => {
-    const rated = this.films().filter((m) => m.voteAverage > 0);
-    if (rated.length < 5) return null;
-    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-    return median.toFixed(1);
-  });
-
-  readonly avgDirectorFilmCount = computed(() => {
-    const f = this.films();
-    if (f.length < 10) return null;
-    const counts = new Map<string, number>();
-    for (const m of f) for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
-    if (counts.size < 5) return null;
-    const avg = [...counts.values()].reduce((s, c) => s + c, 0) / counts.size;
-    return avg >= 1.1 ? avg.toFixed(1) : null;
-  });
-
   readonly decadeDirectorCount = computed(() => {
     const f = this.films();
     if (f.length < 5) return null;
@@ -1046,20 +983,6 @@ export class DecadeComponent implements OnInit {
     if (f.length < 10) return null;
     const pct = Math.round((f.filter((m) => m.directors.length > 1).length / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
-  });
-
-  readonly singleGenreCount = computed(() => {
-    const f = this.films();
-    if (f.length < 5) return 0;
-    const count = f.filter((m) => m.genres.length === 1).length;
-    return count >= 3 ? count : 0;
-  });
-
-  readonly streamableImdbLinkedCount = computed(() => {
-    const f = this.films();
-    if (f.length < 5) return null;
-    const count = f.filter((m) => m.isStreamable && m.imdbId).length;
-    return count > 0 ? count : null;
   });
 
   readonly ytStreamableCount = computed(() => {
