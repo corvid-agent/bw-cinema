@@ -170,6 +170,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (streamableHighRatedPct(); as shrp) {
             <p class="genre__fact">{{ shrp }}% of free films rated 7+</p>
           }
+          @if (uniqueDirectorLanguages(); as udl) {
+            <p class="genre__fact">Directors from {{ udl }} language backgrounds</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -962,6 +965,13 @@ export class GenreComponent implements OnInit {
     if (counts.size < 2) return null;
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return `${top[0]}s`;
+  });
+
+  readonly uniqueDirectorLanguages = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const langs = new Set(f.filter((m) => m.language).map((m) => m.language));
+    return langs.size >= 3 ? langs.size : null;
   });
 
   readonly streamableHighRatedPct = computed(() => {
