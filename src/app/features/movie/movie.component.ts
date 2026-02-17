@@ -38,8 +38,8 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
         <div class="detail__content container">
           <div class="detail__layout">
             <div class="detail__poster">
-              @if (m.posterUrl) {
-                <img [src]="m.posterUrl" [alt]="m.title + ' poster'" />
+              @if (m.posterUrl && !posterFailed()) {
+                <img [src]="m.posterUrl" [alt]="m.title + ' poster'" (error)="posterFailed.set(true)" />
               } @else {
                 <div class="detail__poster-placeholder">
                   <span class="detail__poster-title">{{ m.title }}</span>
@@ -1058,6 +1058,7 @@ export class MovieComponent {
     });
   }
   readonly streamingUrl = signal<string | null>(null);
+  readonly posterFailed = signal(false);
   readonly shareMenuOpen = signal(false);
   readonly playlistMenuOpen = signal(false);
   readonly reviewEditing = signal(false);
@@ -1318,6 +1319,7 @@ export class MovieComponent {
     this.loading.set(true);
     this.movie.set(null);
     this.summary.set(null);
+    this.posterFailed.set(false);
     this.shareMenuOpen.set(false);
     this.playlistMenuOpen.set(false);
     this.reviewEditing.set(false);
