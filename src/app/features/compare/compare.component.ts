@@ -260,6 +260,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (ratingGap(); as rg) {
                 <span class="compare__overlap"> &middot; {{ rg }} rating gap</span>
               }
+              @if (combinedGenreList(); as cgl) {
+                <span class="compare__overlap"> &middot; genres: {{ cgl }}</span>
+              }
               @if (combinedAvgYear(); as cay) {
                 <span class="compare__overlap"> &middot; avg year {{ cay }}</span>
               }
@@ -931,6 +934,14 @@ export class CompareComponent implements OnInit {
     const a = this.filmA();
     const b = this.filmB();
     return !!(a && b && a.year < 1930 && b.year < 1930);
+  });
+
+  readonly combinedGenreList = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return null;
+    const genres = new Set([...a.genres, ...b.genres]);
+    return genres.size >= 3 ? [...genres].slice(0, 4).join(', ') : null;
   });
 
   readonly bothCoDirected = computed(() => {

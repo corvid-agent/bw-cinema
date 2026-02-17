@@ -222,6 +222,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Best Decade ({{ bd.avg }})</span>
               </a>
             }
+            @if (highestRatedTitle(); as hrt) {
+              <div class="director__stat">
+                <span class="director__stat-value" style="font-size: 0.75em">{{ hrt }}</span>
+                <span class="director__stat-label">Highest Rated</span>
+              </div>
+            }
           </div>
 
           @if (bestFilm(); as best) {
@@ -1074,6 +1080,13 @@ export class DirectorComponent implements OnInit {
     const decades = new Set(f.map((m) => Math.floor(m.year / 10) * 10));
     if (decades.size < 2) return null;
     return (f.length / decades.size).toFixed(1);
+  });
+
+  readonly highestRatedTitle = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length < 2) return null;
+    const best = rated.reduce((a, b) => a.voteAverage >= b.voteAverage ? a : b);
+    return best.title;
   });
 
   readonly latestFilmTitle = computed(() => {

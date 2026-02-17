@@ -171,6 +171,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (decadeDirectorCount(); as ddc) {
             <p class="decade__fact">{{ ddc }} unique directors</p>
           }
+          @if (decadeImdbLinkedPct(); as dilp) {
+            <p class="decade__fact">{{ dilp }}% linked to IMDb</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -970,6 +973,13 @@ export class DecadeComponent implements OnInit {
     for (const m of f) for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return top ? top[0] : null;
+  });
+
+  readonly decadeImdbLinkedPct = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const pct = Math.round((f.filter((m) => m.imdbId).length / f.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly decadeDirectorCount = computed(() => {
