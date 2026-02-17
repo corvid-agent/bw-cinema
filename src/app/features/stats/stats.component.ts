@@ -527,6 +527,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">most directors ({{ dwmd.count }})</span>
               </div>
             }
+            @if (avgDirectorFilmCount(); as adfc) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ adfc }}</span>
+                <span class="stats__fact-text">avg films per director</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1400,6 +1406,16 @@ export class StatsComponent implements OnInit {
     if (movies.length < 10) return null;
     const pct = Math.round((movies.filter((m) => m.directors.length === 1).length / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly avgDirectorFilmCount = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 10) return null;
+    const counts = new Map<string, number>();
+    for (const m of movies) for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
+    if (counts.size < 5) return null;
+    const avg = [...counts.values()].reduce((s, c) => s + c, 0) / counts.size;
+    return avg >= 1.1 ? avg.toFixed(1) : null;
   });
 
   readonly preWarPct = computed(() => {

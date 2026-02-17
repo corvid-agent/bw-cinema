@@ -128,6 +128,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (catalogDirectorCount(); as cdc) {
           <p class="hero__avg-rating">{{ cdc }} unique directors</p>
         }
+        @if (highRatedStreamablePct(); as hrsp) {
+          <p class="hero__avg-rating">{{ hrsp }}% of free films rated 7.0+</p>
+        }
       </div>
     </section>
 
@@ -1428,6 +1431,14 @@ export class HomeComponent implements OnInit {
     if (movies.length < 10) return null;
     const langs = new Set(movies.filter((m) => m.language).map((m) => m.language));
     return langs.size >= 3 ? langs.size : null;
+  });
+
+  readonly highRatedStreamablePct = computed(() => {
+    const streamable = this.catalog.movies().filter((m) => m.isStreamable);
+    if (streamable.length < 10) return null;
+    const highRated = streamable.filter((m) => m.voteAverage >= 7.0).length;
+    const pct = Math.round((highRated / streamable.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly oldestStreamableYear = computed(() => {

@@ -269,6 +269,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (titleLengthDiff(); as tld) {
                 <span class="compare__overlap"> &middot; {{ tld }} char title difference</span>
               }
+              @if (olderFilmLabel(); as ofl) {
+                <span class="compare__overlap"> &middot; {{ ofl }}</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -974,6 +977,16 @@ export class CompareComponent implements OnInit {
     if (!a || !b) return null;
     const diff = Math.abs(a.directors.length - b.directors.length);
     return diff >= 1 ? diff : null;
+  });
+
+  readonly olderFilmLabel = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b || a.year === b.year) return null;
+    const diff = Math.abs(a.year - b.year);
+    if (diff < 5) return null;
+    const older = a.year < b.year ? a : b;
+    return `"${older.title}" is ${diff} years older`;
   });
 
   readonly genreCountDiff = computed(() => {
