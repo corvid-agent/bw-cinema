@@ -198,6 +198,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Top Genre</span>
               </div>
             }
+            @if (avgGenreCount(); as agc) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ agc }}</span>
+                <span class="director__stat-label">Avg Genres/Film</span>
+              </div>
+            }
             @if (streamableNewestYear(); as sny) {
               <div class="director__stat">
                 <span class="director__stat-value">{{ sny }}</span>
@@ -1190,6 +1196,13 @@ export class DirectorComponent implements OnInit {
     const streamable = this.films().filter((m) => m.isStreamable);
     if (streamable.length < 2) return null;
     return streamable.reduce((a, b) => a.year >= b.year ? a : b).year;
+  });
+
+  readonly avgGenreCount = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const avg = f.reduce((s, m) => s + m.genres.length, 0) / f.length;
+    return avg >= 1.3 ? avg.toFixed(1) : null;
   });
 
   readonly genreConsistencyPct = computed(() => {

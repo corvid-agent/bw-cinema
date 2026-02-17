@@ -259,7 +259,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                           <a class="detail__tag" [routerLink]="['/genre', genre]">{{ genre }}</a>
                         }
                         @if (genreSiblingCount(); as gsc) {
-                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (directorAvgTitleLength(); as datl) {, avg title {{ datl }} chars}@if (decadeAvgRating(); as dar) {, decade avg &#9733; {{ dar }}}@if (genreHighlyRatedCount(); as ghrc) {, {{ ghrc }} rated 8+}@if (genreStreamablePct(); as gsp) {, {{ gsp }}% streamable}@if (decadeStreamablePct(); as dsp) {, {{ dsp }}% of decade streamable}@if (genreAvgYear(); as gay) {, avg year {{ gay }}}@if (genreAvgFilmAge(); as gafa) {, avg age {{ gafa }}yr}@if (genreDirectorCount(); as gdc) {, {{ gdc }} directors}@if (languageRankLabel(); as lrl) {, {{ lrl }}}@if (yearRankInGenre(); as yrig) {, {{ yrig }}}@if (sameYearStreamableCount(); as sysc) {, {{ sysc }} streamable from year}@if (genrePreWarPct(); as gpwp) {, {{ gpwp }}% pre-1940}@if (directorFilmCountInDecade(); as dfcid) {, {{ dfcid }} by director in decade})</span>
+                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (directorAvgTitleLength(); as datl) {, avg title {{ datl }} chars}@if (decadeAvgRating(); as dar) {, decade avg &#9733; {{ dar }}}@if (genreHighlyRatedCount(); as ghrc) {, {{ ghrc }} rated 8+}@if (genreStreamablePct(); as gsp) {, {{ gsp }}% streamable}@if (decadeStreamablePct(); as dsp) {, {{ dsp }}% of decade streamable}@if (genreAvgYear(); as gay) {, avg year {{ gay }}}@if (genreAvgFilmAge(); as gafa) {, avg age {{ gafa }}yr}@if (genreDirectorCount(); as gdc) {, {{ gdc }} directors}@if (languageRankLabel(); as lrl) {, {{ lrl }}}@if (yearRankInGenre(); as yrig) {, {{ yrig }}}@if (sameYearStreamableCount(); as sysc) {, {{ sysc }} streamable from year}@if (genrePreWarPct(); as gpwp) {, {{ gpwp }}% pre-1940}@if (directorFilmCountInDecade(); as dfcid) {, {{ dfcid }} by director in decade}@if (genreImdbLinkedPct(); as gilp) {, {{ gilp }}% IMDb-linked})</span>
                         }
                       </div>
                     </div>
@@ -1496,6 +1496,16 @@ export class MovieComponent implements OnInit {
     if (genreFilms.length < 10) return null;
     const now = new Date().getFullYear();
     return Math.round(genreFilms.reduce((sum, m) => sum + (now - m.year), 0) / genreFilms.length);
+  });
+
+  readonly genreImdbLinkedPct = computed(() => {
+    const s = this.summary();
+    if (!s || s.genres.length === 0) return null;
+    const genre = s.genres[0];
+    const genreFilms = this.catalogService.movies().filter((m) => m.genres.includes(genre));
+    if (genreFilms.length < 10) return null;
+    const pct = Math.round((genreFilms.filter((m) => m.imdbId).length / genreFilms.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly directorPeakDecade = computed(() => {

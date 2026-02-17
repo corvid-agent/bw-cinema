@@ -159,6 +159,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (singleGenreCount()) {
             <p class="decade__fact">{{ singleGenreCount() }} single-genre films</p>
           }
+          @if (streamableImdbLinkedCount(); as silc) {
+            <p class="decade__fact">{{ silc }} streamable with IMDb link</p>
+          }
           @if (coDirectedPct(); as cdp) {
             <p class="decade__fact">{{ cdp }}% co-directed</p>
           }
@@ -1077,6 +1080,13 @@ export class DecadeComponent implements OnInit {
     if (f.length < 5) return 0;
     const count = f.filter((m) => m.genres.length === 1).length;
     return count >= 3 ? count : 0;
+  });
+
+  readonly streamableImdbLinkedCount = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const count = f.filter((m) => m.isStreamable && m.imdbId).length;
+    return count > 0 ? count : null;
   });
 
   ngOnInit(): void {
