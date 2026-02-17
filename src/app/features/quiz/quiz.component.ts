@@ -132,6 +132,9 @@ interface QuizStep {
           @if (resultNonEnglishPct(); as rnep) {
             <p class="quiz__decade-range">{{ rnep }}% non-English</p>
           }
+          @if (resultSilentEraPct(); as rsep) {
+            <p class="quiz__decade-range">{{ rsep }}% from silent era</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -641,6 +644,14 @@ export class QuizComponent implements OnInit {
     }
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return top && top[1] >= 2 ? top[0] : null;
+  });
+
+  readonly resultSilentEraPct = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const silent = films.filter((m) => m.year < 1930).length;
+    const pct = Math.round((silent / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly resultNonEnglishPct = computed(() => {

@@ -168,6 +168,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (bestRatedTitle(); as brt) {
             <p class="decade__fact">Highest rated: "{{ brt }}"</p>
           }
+          @if (decadeDirectorCount(); as ddc) {
+            <p class="decade__fact">{{ ddc }} unique directors</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -967,6 +970,14 @@ export class DecadeComponent implements OnInit {
     for (const m of f) for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return top ? top[0] : null;
+  });
+
+  readonly decadeDirectorCount = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const dirs = new Set<string>();
+    for (const m of f) for (const d of m.directors) dirs.add(d);
+    return dirs.size >= 5 ? dirs.size : null;
   });
 
   readonly bestRatedTitle = computed(() => {
