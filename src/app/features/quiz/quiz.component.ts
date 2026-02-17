@@ -141,6 +141,9 @@ interface QuizStep {
           @if (resultUniqueDirectorCount(); as rudc) {
             <p class="quiz__decade-range">{{ rudc }} unique directors</p>
           }
+          @if (resultAvgDirectorCount(); as radc) {
+            <p class="quiz__decade-range">Avg {{ radc }} directors per film</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -658,6 +661,13 @@ export class QuizComponent implements OnInit {
     const silent = films.filter((m) => m.year < 1930).length;
     const pct = Math.round((silent / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly resultAvgDirectorCount = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const avg = films.reduce((s, m) => s + m.directors.length, 0) / films.length;
+    return avg >= 1.1 ? avg.toFixed(1) : null;
   });
 
   readonly resultUniqueDirectorCount = computed(() => {

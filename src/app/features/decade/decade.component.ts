@@ -180,6 +180,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (decadeMedianRating(); as dmr) {
             <p class="decade__fact">Median rating: &#9733; {{ dmr }}</p>
           }
+          @if (decadeAvgTitleLength(); as datl) {
+            <p class="decade__fact">Avg title: {{ datl }} characters</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -986,6 +989,13 @@ export class DecadeComponent implements OnInit {
     if (f.length < 10) return null;
     const pct = Math.round((f.filter((m) => m.imdbId).length / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly decadeAvgTitleLength = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const avg = f.reduce((s, m) => s + m.title.length, 0) / f.length;
+    return avg >= 5 ? Math.round(avg) : null;
   });
 
   readonly decadeMedianRating = computed(() => {
