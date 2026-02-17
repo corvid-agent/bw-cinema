@@ -551,6 +551,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">{{ mcl.name }} films (top non-English)</span>
               </div>
             }
+            @if (filmsWithPosterPct(); as fwpp) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ fwpp }}%</span>
+                <span class="stats__fact-text">have poster images</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1423,6 +1429,13 @@ export class StatsComponent implements OnInit {
     const movies = this.catalog.movies();
     if (movies.length < 10) return null;
     const pct = Math.round((movies.filter((m) => m.directors.length === 1).length / movies.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly filmsWithPosterPct = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const pct = Math.round((movies.filter((m) => m.posterUrl).length / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
