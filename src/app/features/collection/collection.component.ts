@@ -396,6 +396,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Watchlist Avg Year</span>
                   </div>
                 }
+                @if (watchlistOldestYear(); as woy) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ woy }}</span>
+                    <span class="stats__card-label">Oldest in Watchlist</span>
+                  </div>
+                }
                 @if (favoritesAvgRating(); as far) {
                   <div class="stats__card">
                     <span class="stats__card-value">{{ far }}</span>
@@ -1887,6 +1893,12 @@ export class CollectionComponent implements OnInit {
     const rated = films.filter((m) => m.voteAverage > 0);
     if (rated.length < 2) return null;
     return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
+  });
+
+  readonly watchlistOldestYear = computed(() => {
+    const films = this.watchlistMovies();
+    if (films.length < 2) return null;
+    return films.reduce((a, b) => a.year <= b.year ? a : b).year;
   });
 
   readonly watchlistAvgYear = computed(() => {

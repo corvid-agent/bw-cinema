@@ -174,6 +174,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (decadeImdbLinkedPct(); as dilp) {
             <p class="decade__fact">{{ dilp }}% linked to IMDb</p>
           }
+          @if (avgDirectorFilmCount(); as adfc) {
+            <p class="decade__fact">Avg {{ adfc }} films per director</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -980,6 +983,16 @@ export class DecadeComponent implements OnInit {
     if (f.length < 10) return null;
     const pct = Math.round((f.filter((m) => m.imdbId).length / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly avgDirectorFilmCount = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const counts = new Map<string, number>();
+    for (const m of f) for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
+    if (counts.size < 5) return null;
+    const avg = [...counts.values()].reduce((s, c) => s + c, 0) / counts.size;
+    return avg >= 1.1 ? avg.toFixed(1) : null;
   });
 
   readonly decadeDirectorCount = computed(() => {
