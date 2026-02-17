@@ -1059,6 +1059,7 @@ export class ExploreComponent implements OnInit {
     this.activeMood.set(mood);
     this.moodPage.set(1);
     this.shuffleSeed.set(Date.now());
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
   }
 
   shuffleMood(): void {

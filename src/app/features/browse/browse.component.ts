@@ -75,7 +75,7 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         <app-skeleton-grid [count]="24" />
       } @else {
         <div class="browse__layout">
-          <button class="browse__filter-toggle" (click)="filterOpen.set(!filterOpen())">
+          <button class="browse__filter-toggle" (click)="toggleFilter()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
             Filters
             @if (activeFilterCount() > 0) {
@@ -541,6 +541,7 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly collection = inject(CollectionService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly elRef = inject(ElementRef);
 
   private static loadLangPref(): string[] {
     try {
@@ -872,6 +873,18 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
         sortBy: (p['sortBy'] as CatalogFilter['sortBy']) ?? f.sortBy,
         sortDirection: (p['sortDir'] as CatalogFilter['sortDirection']) ?? f.sortDirection,
       }));
+    }
+  }
+
+  toggleFilter(): void {
+    const opening = !this.filterOpen();
+    this.filterOpen.set(opening);
+    if (opening) {
+      setTimeout(() => {
+        const sidebar = this.elRef.nativeElement.querySelector('.browse__sidebar');
+        const focusable = sidebar?.querySelector('input, button, select, [tabindex]') as HTMLElement | null;
+        focusable?.focus();
+      });
     }
   }
 
