@@ -120,6 +120,9 @@ interface QuizStep {
           @if (resultTopDirector(); as rtd) {
             <p class="quiz__decade-range">Top director: {{ rtd }}</p>
           }
+          @if (resultNewestTitle(); as rnt) {
+            <p class="quiz__decade-range">Newest: "{{ rnt }}"</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -629,6 +632,13 @@ export class QuizComponent implements OnInit {
     }
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return top && top[1] >= 2 ? top[0] : null;
+  });
+
+  readonly resultNewestTitle = computed(() => {
+    const films = this.results();
+    if (films.length < 2) return null;
+    const newest = films.reduce((a, b) => a.year >= b.year ? a : b);
+    return newest.title;
   });
 
   readonly avgMatchScore = computed(() => {

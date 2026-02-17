@@ -113,6 +113,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (newestStreamableTitle(); as nst) {
           <p class="hero__avg-rating">Newest free film: "{{ nst }}"</p>
         }
+        @if (topDirectorByStreamable(); as tdbs) {
+          <p class="hero__avg-rating">Most streamable director: {{ tdbs.name }} ({{ tdbs.count }})</p>
+        }
       </div>
     </section>
 
@@ -1393,6 +1396,15 @@ export class HomeComponent implements OnInit {
     if (streamable.length === 0) return null;
     const newest = streamable.reduce((a, b) => a.year >= b.year ? a : b);
     return newest.title;
+  });
+
+  readonly topDirectorByStreamable = computed(() => {
+    const movies = this.catalog.movies().filter((m) => m.isStreamable);
+    if (movies.length < 10) return null;
+    const counts = new Map<string, number>();
+    for (const m of movies) for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return top && top[1] >= 5 ? { name: top[0], count: top[1] } : null;
   });
 
   readonly decadeSpan = computed(() => {
