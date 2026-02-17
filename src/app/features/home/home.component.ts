@@ -152,6 +152,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (catalogYtStreamablePct(); as cysp) {
           <p class="hero__avg-rating">{{ cysp }}% streamable via YouTube</p>
         }
+        @if (catalogIaStreamablePct(); as ciasp) {
+          <p class="hero__avg-rating">{{ ciasp }}% on Internet Archive</p>
+        }
       </div>
     </section>
 
@@ -1532,6 +1535,13 @@ export class HomeComponent implements OnInit {
     const d = this.decades();
     if (d.length < 2) return `${d.length}`;
     return `${d[0]}s–${d[d.length - 1]}s`;
+  });
+
+  readonly catalogIaStreamablePct = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const pct = Math.round((movies.filter((m) => m.internetArchiveId).length / movies.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   ngOnInit(): void {

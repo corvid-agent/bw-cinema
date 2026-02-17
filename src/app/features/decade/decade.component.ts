@@ -168,6 +168,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (iaStreamableCount(); as isc) {
             <p class="decade__fact">{{ isc }} on Internet Archive</p>
           }
+          @if (avgGenresPerFilm(); as agpf) {
+            <p class="decade__fact">Avg {{ agpf }} genres per film</p>
+          }
           @if (coDirectedPct(); as cdp) {
             <p class="decade__fact">{{ cdp }}% co-directed</p>
           }
@@ -1107,6 +1110,13 @@ export class DecadeComponent implements OnInit {
     if (f.length < 5) return null;
     const count = f.filter((m) => m.internetArchiveId).length;
     return count > 0 ? count : null;
+  });
+
+  readonly avgGenresPerFilm = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const avg = f.reduce((s, m) => s + m.genres.length, 0) / f.length;
+    return avg >= 1.3 ? avg.toFixed(1) : null;
   });
 
   ngOnInit(): void {
