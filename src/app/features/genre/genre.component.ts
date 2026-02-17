@@ -158,6 +158,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (topDecadeLabel(); as tdl) {
             <p class="genre__fact">Most films from the {{ tdl }}</p>
           }
+          @if (preWarCount()) {
+            <p class="genre__fact">{{ preWarCount() }} films from before 1940</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -950,6 +953,13 @@ export class GenreComponent implements OnInit {
     if (counts.size < 2) return null;
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return `${top[0]}s`;
+  });
+
+  readonly preWarCount = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return 0;
+    const count = f.filter((m) => m.year < 1940).length;
+    return count >= 3 ? count : 0;
   });
 
   readonly decadeBreakdown = computed(() => {

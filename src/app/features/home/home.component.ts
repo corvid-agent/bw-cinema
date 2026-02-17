@@ -110,6 +110,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (topGenreLabel(); as tgl) {
           <p class="hero__avg-rating">Most common genre: {{ tgl }}</p>
         }
+        @if (newestStreamableTitle(); as nst) {
+          <p class="hero__avg-rating">Newest free film: "{{ nst }}"</p>
+        }
       </div>
     </section>
 
@@ -1383,6 +1386,13 @@ export class HomeComponent implements OnInit {
     for (const m of this.catalog.movies()) for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return top ? top[0] : null;
+  });
+
+  readonly newestStreamableTitle = computed(() => {
+    const streamable = this.catalog.movies().filter((m) => m.isStreamable);
+    if (streamable.length === 0) return null;
+    const newest = streamable.reduce((a, b) => a.year >= b.year ? a : b);
+    return newest.title;
   });
 
   readonly decadeSpan = computed(() => {
