@@ -25,7 +25,7 @@ import { Component, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewIni
     }
     .scroll-row {
       display: flex;
-      gap: var(--space-md);
+      gap: var(--scroll-row-gap, var(--space-md));
       overflow-x: auto;
       scroll-snap-type: x mandatory;
       scroll-behavior: smooth;

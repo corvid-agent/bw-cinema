@@ -7,12 +7,13 @@ import { StreamingService, StreamingSource } from '../../core/services/streaming
 import { NotificationService } from '../../core/services/notification.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
+import { ScrollRowComponent } from '../../shared/components/scroll-row.component';
 import type { MovieSummary } from '../../core/models/movie.model';
 
 @Component({
   selector: 'app-watch',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LoadingSpinnerComponent, MovieGridComponent],
+  imports: [RouterLink, LoadingSpinnerComponent, MovieGridComponent, ScrollRowComponent],
   template: `
     @if (loading()) {
       <app-loading-spinner />
@@ -96,7 +97,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
         @if (directorFilms().length > 0) {
           <div class="watch__more-director">
             <h3 class="watch__more-director-title">More from {{ directorName() }}@if (directorTotalFilms() > 2) { <span class="watch__header-year">({{ directorTotalFilms() }} in catalog)</span>}@if (directorFilmRank()) { <span class="watch__header-year"> · {{ directorFilmRank() }}</span>}@if (directorAvgRating()) { <span class="watch__header-year"> · avg &#9733; {{ directorAvgRating() }}</span>}</h3>
-            <div class="watch__more-director-row">
+            <app-scroll-row>
               @for (m of directorFilms(); track m.id) {
                 <a class="watch__director-film" [routerLink]="m.isStreamable ? ['/watch', m.id] : ['/movie', m.id]">
                   @if (m.posterUrl) {
@@ -108,7 +109,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
                   <span class="watch__director-film-year">{{ m.year }}</span>
                 </a>
               }
-            </div>
+            </app-scroll-row>
           </div>
         }
 
@@ -330,13 +331,6 @@ import type { MovieSummary } from '../../core/models/movie.model';
       font-size: 1rem;
       margin-bottom: var(--space-md);
       color: var(--text-secondary);
-    }
-    .watch__more-director-row {
-      display: flex;
-      gap: var(--space-md);
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: var(--space-xs);
     }
     .watch__director-film {
       flex-shrink: 0;

@@ -256,7 +256,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
           <div class="section__header">
             <h2>Featured Directors</h2>
           </div>
-          <div class="directors-row">
+          <app-scroll-row class="directors-row">
             @for (d of topDirectors(); track d.name) {
               <a class="director-chip" [routerLink]="['/director', d.name]">
                 <span class="director-chip__initial">{{ d.name[0] }}</span>
@@ -266,7 +266,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
                 </div>
               </a>
             }
-          </div>
+          </app-scroll-row>
         </section>
       }
 
@@ -835,16 +835,9 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
       margin: 0;
     }
     .directors-row {
-      display: flex;
-      gap: var(--space-sm);
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: var(--space-sm);
+      --scroll-row-gap: var(--space-sm);
       margin-top: var(--space-md);
     }
-    .directors-row::-webkit-scrollbar { height: 6px; }
-    .directors-row::-webkit-scrollbar-track { background: var(--bg-raised); border-radius: 3px; }
-    .directors-row::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
     .director-chip {
       flex-shrink: 0;
       display: flex;
