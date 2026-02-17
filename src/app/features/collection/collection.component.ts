@@ -420,6 +420,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Decades</span>
                   </div>
                 }
+                @if (watchedGenreCount() > 1) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ watchedGenreCount() }}</span>
+                    <span class="stats__card-label">Genres</span>
+                  </div>
+                }
               </div>
 
               @if (nextMilestone(); as milestone) {
@@ -1767,6 +1773,12 @@ export class CollectionComponent implements OnInit {
   readonly watchedDecadeCount = computed(() => {
     const decades = new Set(this.watchedMovies().map((m) => Math.floor(m.year / 10) * 10));
     return decades.size;
+  });
+
+  readonly watchedGenreCount = computed(() => {
+    const genres = new Set<string>();
+    for (const m of this.watchedMovies()) for (const g of m.genres) genres.add(g);
+    return genres.size;
   });
 
   readonly watchedLongestTitle = computed(() => {

@@ -155,6 +155,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (streamableHighRatedCount() > 0) {
             <p class="genre__fact">{{ streamableHighRatedCount() }} highly-rated free to watch</p>
           }
+          @if (topDecadeLabel(); as tdl) {
+            <p class="genre__fact">Most films from the {{ tdl }}</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -934,6 +937,19 @@ export class GenreComponent implements OnInit {
 
   readonly streamableHighRatedCount = computed(() => {
     return this.films().filter((m) => m.isStreamable && m.voteAverage >= 7.0).length;
+  });
+
+  readonly topDecadeLabel = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const counts = new Map<number, number>();
+    for (const m of f) {
+      const d = Math.floor(m.year / 10) * 10;
+      counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    if (counts.size < 2) return null;
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return `${top[0]}s`;
   });
 
   readonly decadeBreakdown = computed(() => {

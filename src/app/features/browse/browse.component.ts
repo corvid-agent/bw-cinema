@@ -99,6 +99,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultUniqueDirectorCount(); as rudc) {
           <p class="browse__watched-note">{{ rudc }} unique directors</p>
         }
+        @if (resultGenreCount(); as rgc) {
+          <p class="browse__watched-note">{{ rgc }} genres represented</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -803,6 +806,14 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     const dirs = new Set<string>();
     for (const m of films) for (const d of m.directors) dirs.add(d);
     return dirs.size > 1 ? dirs.size : null;
+  });
+
+  readonly resultGenreCount = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const genres = new Set<string>();
+    for (const m of films) for (const g of m.genres) genres.add(g);
+    return genres.size > 1 ? genres.size : null;
   });
 
   readonly topResultDirector = computed(() => {
