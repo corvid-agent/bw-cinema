@@ -104,6 +104,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (highlyRatedCount() > 0) {
           <p class="hero__avg-rating">{{ highlyRatedCount() }} films rated 7.0+</p>
         }
+        @if (streamableHighRatedCount() > 0) {
+          <p class="hero__avg-rating">{{ streamableHighRatedCount() }} highly-rated free to watch</p>
+        }
       </div>
     </section>
 
@@ -1366,6 +1369,10 @@ export class HomeComponent implements OnInit {
   readonly highlyRatedCount = computed(() => {
     const count = this.catalog.movies().filter((m) => m.voteAverage >= 7.0).length;
     return count > 0 ? count : 0;
+  });
+
+  readonly streamableHighRatedCount = computed(() => {
+    return this.catalog.movies().filter((m) => m.isStreamable && m.voteAverage >= 7.0).length;
   });
 
   readonly decadeSpan = computed(() => {
