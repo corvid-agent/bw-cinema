@@ -563,6 +563,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">most streamable ({{ dwms.count }})</span>
               </div>
             }
+            @if (preWarStreamableCount(); as pwsc) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ pwsc }}</span>
+                <span class="stats__fact-text">pre-1940 films streamable</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1512,6 +1518,13 @@ export class StatsComponent implements OnInit {
     if (counts.size < 5) return null;
     const avg = [...counts.values()].reduce((s, c) => s + c, 0) / counts.size;
     return avg >= 1.1 ? avg.toFixed(1) : null;
+  });
+
+  readonly preWarStreamableCount = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const count = movies.filter((m) => m.year < 1940 && m.isStreamable).length;
+    return count > 0 ? count : null;
   });
 
   readonly preWarPct = computed(() => {

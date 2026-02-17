@@ -284,6 +284,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (higherRatedLabel(); as hrl) {
                 <span class="compare__overlap"> &middot; {{ hrl }}</span>
               }
+              @if (bothHavePoster()) {
+                <span class="compare__overlap"> &middot; both have posters</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -1042,6 +1045,13 @@ export class CompareComponent implements OnInit {
     if (!a || !b) return null;
     const diff = Math.abs(a.genres.length - b.genres.length);
     return diff >= 2 ? diff : null;
+  });
+
+  readonly bothHavePoster = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return false;
+    return a.posterUrl && b.posterUrl ? true : false;
   });
 
   ngOnInit(): void {
