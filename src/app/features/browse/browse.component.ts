@@ -105,6 +105,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultImdbLinkedPct(); as rilp) {
           <p class="browse__watched-note">{{ rilp }}% linked to IMDb</p>
         }
+        @if (resultPosterCoveragePct(); as rpcp) {
+          <p class="browse__watched-note">{{ rpcp }}% have poster art</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -823,6 +826,13 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     const films = this.filteredMovies();
     if (films.length < 10) return null;
     const pct = Math.round((films.filter((m) => m.imdbId).length / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly resultPosterCoveragePct = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const pct = Math.round((films.filter((m) => m.posterUrl).length / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
