@@ -324,7 +324,7 @@ import { CatalogService } from '../../core/services/catalog.service';
       box-shadow: var(--shadow-lg);
       overflow: hidden;
       z-index: 200;
-      min-width: 300px;
+      min-width: min(300px, 100%);
     }
     .header__autocomplete-item {
       display: flex;
@@ -410,8 +410,8 @@ import { CatalogService } from '../../core/services/catalog.service';
       box-shadow: var(--shadow-lg);
       padding: var(--space-lg);
       z-index: 1000;
-      min-width: 300px;
-      max-width: 400px;
+      min-width: min(300px, 90vw);
+      max-width: min(400px, 90vw);
     }
     .shortcuts__header {
       display: flex;
