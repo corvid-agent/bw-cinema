@@ -531,263 +531,232 @@ export class QuizComponent implements OnInit {
     return bestScore > 50 ? bestId : null;
   });
 
-  readonly resultDecadeRange = computed(() => {
+  // ── Single-pass result stats index ──────────────────────────────────
+  private readonly resultIdx = computed(() => {
     const films = this.results();
-    if (films.length < 2) return null;
-    const decades = new Set(films.map((m) => Math.floor(m.year / 10) * 10));
-    if (decades.size < 2) return null;
-    const sorted = [...decades].sort((a, b) => a - b);
+    const n = films.length;
+    const now = new Date().getFullYear();
+    let ratingSum = 0, ratedCount = 0, yearSum = 0, titleLenSum = 0;
+    let streamable = 0, nonEnglish = 0, silentEra = 0, preWar = 0;
+    let coDirected = 0, highlyRated8 = 0, dirLenSum = 0, genreLenSum = 0;
+    let withPoster = 0, withImdb = 0, withYt = 0, withIa = 0;
+    let minYear = Infinity, maxYear = 0;
+    let longestTitle = '', shortestTitle = films[0]?.title ?? '';
+    let bestRated: MovieSummary | null = null, oldest: MovieSummary | null = null, newest: MovieSummary | null = null;
+    const decades = new Set<number>();
+    const genres = new Set<string>();
+    const langs = new Set<string>();
+    const dirs = new Set<string>();
+    const dirCounts = new Map<string, number>();
+    const years: number[] = [];
+    const ratings: number[] = [];
+
+    for (const m of films) {
+      if (m.voteAverage > 0) { ratingSum += m.voteAverage; ratedCount++; ratings.push(m.voteAverage); }
+      if (m.voteAverage >= 8.0) highlyRated8++;
+      if (!bestRated || m.voteAverage > bestRated.voteAverage) bestRated = m;
+      yearSum += m.year; years.push(m.year);
+      if (m.year < minYear) { minYear = m.year; oldest = m; }
+      if (m.year > maxYear) { maxYear = m.year; newest = m; }
+      decades.add(Math.floor(m.year / 10) * 10);
+      titleLenSum += m.title.length;
+      if (m.title.length > longestTitle.length) longestTitle = m.title;
+      if (m.title.length < shortestTitle.length) shortestTitle = m.title;
+      if (m.isStreamable) streamable++;
+      if (m.language && m.language !== 'English' && m.language !== 'en') nonEnglish++;
+      if (m.year < 1930) silentEra++;
+      if (m.year < 1940) preWar++;
+      if (m.directors.length > 1) coDirected++;
+      dirLenSum += m.directors.length;
+      genreLenSum += m.genres.length;
+      if (m.posterUrl) withPoster++;
+      if (m.imdbId) withImdb++;
+      if (m.youtubeId) withYt++;
+      if (m.internetArchiveId) withIa++;
+      if (m.language) langs.add(m.language);
+      for (const g of m.genres) genres.add(g);
+      for (const d of m.directors) { dirs.add(d); dirCounts.set(d, (dirCounts.get(d) ?? 0) + 1); }
+    }
+    years.sort((a, b) => a - b);
+    ratings.sort((a, b) => a - b);
+    return {
+      n, now, ratingSum, ratedCount, yearSum, titleLenSum,
+      streamable, nonEnglish, silentEra, preWar, coDirected,
+      highlyRated8, dirLenSum, genreLenSum,
+      withPoster, withImdb, withYt, withIa,
+      minYear, maxYear, longestTitle, shortestTitle,
+      bestRated, oldest, newest,
+      decadeCount: decades.size, decades,
+      genreCount: genres.size, langCount: langs.size, dirCount: dirs.size,
+      dirCounts, years, ratings,
+    };
+  });
+
+  readonly resultDecadeRange = computed(() => {
+    const i = this.resultIdx();
+    if (i.n < 2 || i.decadeCount < 2) return null;
+    const sorted = [...i.decades].sort((a, b) => a - b);
     return `${sorted[0]}s–${sorted[sorted.length - 1]}s`;
   });
-
   readonly resultAvgRating = computed(() => {
-    const films = this.results();
-    const rated = films.filter((m) => m.voteAverage > 0);
-    if (rated.length === 0) return null;
-    return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
+    const i = this.resultIdx();
+    return i.ratedCount > 0 ? (i.ratingSum / i.ratedCount).toFixed(1) : null;
   });
-
-  readonly resultStreamableCount = computed(() =>
-    this.results().filter((m) => m.isStreamable).length
-  );
-
-  readonly resultUniqueDirectors = computed(() => {
-    const dirs = new Set<string>();
-    for (const m of this.results()) {
-      for (const d of m.directors) dirs.add(d);
-    }
-    return dirs.size;
-  });
-
+  readonly resultStreamableCount = computed(() => this.resultIdx().streamable);
+  readonly resultUniqueDirectors = computed(() => this.resultIdx().dirCount);
   readonly resultGenreCount = computed(() => {
-    const films = this.results();
-    if (films.length < 2) return null;
-    const genres = new Set<string>();
-    for (const m of films) for (const g of m.genres) genres.add(g);
-    return genres.size > 2 ? genres.size : null;
+    const i = this.resultIdx();
+    return i.n >= 2 && i.genreCount > 2 ? i.genreCount : null;
   });
-
   readonly resultLanguageCount = computed(() => {
-    const films = this.results();
-    if (films.length < 2) return null;
-    const langs = new Set(films.map((m) => m.language).filter(Boolean));
-    return langs.size > 1 ? langs.size : null;
+    const i = this.resultIdx();
+    return i.n >= 2 && i.langCount > 1 ? i.langCount : null;
   });
-
   readonly resultAvgYear = computed(() => {
-    const films = this.results();
-    if (films.length < 2) return null;
-    return Math.round(films.reduce((s, m) => s + m.year, 0) / films.length);
+    const i = this.resultIdx();
+    return i.n >= 2 ? Math.round(i.yearSum / i.n) : null;
   });
-
   readonly resultHighestRated = computed(() => {
-    const films = this.results();
-    if (films.length < 2) return null;
-    const rated = films.filter((m) => m.voteAverage > 0);
-    if (rated.length === 0) return null;
-    const best = rated.reduce((a, b) => b.voteAverage > a.voteAverage ? b : a);
-    const title = best.title.length > 25 ? best.title.slice(0, 23) + '...' : best.title;
-    return `${title} (${best.voteAverage.toFixed(1)})`;
+    const i = this.resultIdx();
+    if (i.n < 2 || !i.bestRated || i.bestRated.voteAverage <= 0) return null;
+    const t = i.bestRated.title.length > 25 ? i.bestRated.title.slice(0, 23) + '...' : i.bestRated.title;
+    return `${t} (${i.bestRated.voteAverage.toFixed(1)})`;
   });
-
   readonly resultAvgFilmAge = computed(() => {
-    const films = this.results();
-    if (films.length < 2) return null;
-    const now = new Date().getFullYear();
-    return Math.round(films.reduce((s, m) => s + (now - m.year), 0) / films.length);
+    const i = this.resultIdx();
+    return i.n >= 2 ? Math.round(i.years.reduce((s, y) => s + (i.now - y), 0) / i.n) : null;
   });
-
   readonly resultCoDirectedCount = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const count = films.filter((m) => m.directors.length > 1).length;
-    return count > 0 ? count : null;
+    const i = this.resultIdx();
+    return i.n >= 3 && i.coDirected > 0 ? i.coDirected : null;
   });
-
   readonly resultNonEnglishCount = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const count = films.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
-    return count > 0 ? count : null;
+    const i = this.resultIdx();
+    return i.n >= 3 && i.nonEnglish > 0 ? i.nonEnglish : null;
   });
-
   readonly resultSilentEraCount = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const count = films.filter((m) => m.year < 1930).length;
-    return count > 0 ? count : null;
+    const i = this.resultIdx();
+    return i.n >= 3 && i.silentEra > 0 ? i.silentEra : null;
   });
-
   readonly resultStreamablePct = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const pct = Math.round((films.filter((m) => m.isStreamable).length / films.length) * 100);
+    const i = this.resultIdx();
+    if (i.n < 3) return null;
+    const pct = Math.round((i.streamable / i.n) * 100);
     return pct > 0 ? pct : null;
   });
-
   readonly resultMedianYear = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const years = films.map((m) => m.year).sort((a, b) => a - b);
-    const mid = Math.floor(years.length / 2);
-    return years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
+    const i = this.resultIdx();
+    if (i.n < 3) return null;
+    const mid = Math.floor(i.years.length / 2);
+    return i.years.length % 2 === 0 ? Math.round((i.years[mid - 1] + i.years[mid]) / 2) : i.years[mid];
   });
-
   readonly resultHighlyRatedCount = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const count = films.filter((m) => m.voteAverage >= 8.0).length;
-    return count > 0 ? count : null;
+    const i = this.resultIdx();
+    return i.n >= 3 && i.highlyRated8 > 0 ? i.highlyRated8 : null;
   });
-
   readonly resultAvgTitleLength = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    return Math.round(films.reduce((s, m) => s + m.title.length, 0) / films.length);
+    const i = this.resultIdx();
+    return i.n >= 3 ? Math.round(i.titleLenSum / i.n) : null;
   });
-
   readonly resultCoDirectedPct = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const count = films.filter((m) => m.directors.length > 1).length;
-    const pct = Math.round((count / films.length) * 100);
+    const i = this.resultIdx();
+    if (i.n < 3) return null;
+    const pct = Math.round((i.coDirected / i.n) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
-
   readonly resultOldestYear = computed(() => {
-    const films = this.results();
-    if (films.length < 2) return null;
-    const oldest = Math.min(...films.map((m) => m.year));
-    const newest = Math.max(...films.map((m) => m.year));
-    return newest - oldest >= 5 ? oldest : null;
+    const i = this.resultIdx();
+    return i.n >= 2 && i.maxYear - i.minYear >= 5 ? i.minYear : null;
   });
-
   readonly resultLongestTitle = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const longest = films.reduce((a, b) => a.title.length >= b.title.length ? a : b);
-    return longest.title.length >= 20 ? longest.title : null;
+    const i = this.resultIdx();
+    return i.n >= 3 && i.longestTitle.length >= 20 ? i.longestTitle : null;
   });
-
   readonly resultShortestTitle = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const shortest = films.reduce((a, b) => a.title.length <= b.title.length ? a : b);
-    return shortest.title.length <= 10 ? shortest.title : null;
+    const i = this.resultIdx();
+    return i.n >= 3 && i.shortestTitle.length <= 10 ? i.shortestTitle : null;
   });
-
   readonly resultTopDirector = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const counts = new Map<string, number>();
-    for (const m of films) {
-      for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
-    }
-    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    const i = this.resultIdx();
+    if (i.n < 3) return null;
+    const top = [...i.dirCounts.entries()].sort((a, b) => b[1] - a[1])[0];
     return top && top[1] >= 2 ? top[0] : null;
   });
-
   readonly resultSilentEraPct = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const silent = films.filter((m) => m.year < 1930).length;
-    const pct = Math.round((silent / films.length) * 100);
+    const i = this.resultIdx();
+    if (i.n < 3) return null;
+    const pct = Math.round((i.silentEra / i.n) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
-
   readonly resultAvgGenreCount = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const avg = films.reduce((s, m) => s + m.genres.length, 0) / films.length;
+    const i = this.resultIdx();
+    if (i.n < 3) return null;
+    const avg = i.genreLenSum / i.n;
     return avg >= 1.5 ? avg.toFixed(1) : null;
   });
-
   readonly resultPosterCoveragePct = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const pct = Math.round((films.filter((m) => m.posterUrl).length / films.length) * 100);
+    const i = this.resultIdx();
+    if (i.n < 3) return null;
+    const pct = Math.round((i.withPoster / i.n) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
-
   readonly resultImdbLinkedPct = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const pct = Math.round((films.filter((m) => m.imdbId).length / films.length) * 100);
+    const i = this.resultIdx();
+    if (i.n < 3) return null;
+    const pct = Math.round((i.withImdb / i.n) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
-
   readonly resultYtStreamablePct = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const pct = Math.round((films.filter((m) => m.youtubeId).length / films.length) * 100);
+    const i = this.resultIdx();
+    if (i.n < 3) return null;
+    const pct = Math.round((i.withYt / i.n) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
-
   readonly resultAvgDirectorCount = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const avg = films.reduce((s, m) => s + m.directors.length, 0) / films.length;
+    const i = this.resultIdx();
+    if (i.n < 3) return null;
+    const avg = i.dirLenSum / i.n;
     return avg >= 1.1 ? avg.toFixed(1) : null;
   });
-
   readonly resultUniqueDirectorCount = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const dirs = new Set<string>();
-    for (const m of films) for (const d of m.directors) dirs.add(d);
-    return dirs.size >= 3 ? dirs.size : null;
+    const i = this.resultIdx();
+    return i.n >= 3 && i.dirCount >= 3 ? i.dirCount : null;
   });
-
   readonly resultPreWarPct = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const preWar = films.filter((m) => m.year < 1940).length;
-    const pct = Math.round((preWar / films.length) * 100);
+    const i = this.resultIdx();
+    if (i.n < 3) return null;
+    const pct = Math.round((i.preWar / i.n) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
-
   readonly resultNonEnglishPct = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const nonEng = films.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
-    const pct = Math.round((nonEng / films.length) * 100);
+    const i = this.resultIdx();
+    if (i.n < 3) return null;
+    const pct = Math.round((i.nonEnglish / i.n) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
-
   readonly resultMedianRating = computed(() => {
-    const rated = this.results().filter((m) => m.voteAverage > 0);
-    if (rated.length < 3) return null;
-    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    const i = this.resultIdx();
+    if (i.ratings.length < 3) return null;
+    const mid = Math.floor(i.ratings.length / 2);
+    const median = i.ratings.length % 2 === 0 ? (i.ratings[mid - 1] + i.ratings[mid]) / 2 : i.ratings[mid];
     return median.toFixed(1);
   });
-
   readonly resultOldestTitle = computed(() => {
-    const films = this.results();
-    if (films.length < 2) return null;
-    const oldest = films.reduce((a, b) => a.year <= b.year ? a : b);
-    return oldest.title;
+    const i = this.resultIdx();
+    return i.n >= 2 && i.oldest ? i.oldest.title : null;
   });
-
   readonly resultNewestTitle = computed(() => {
-    const films = this.results();
-    if (films.length < 2) return null;
-    const newest = films.reduce((a, b) => a.year >= b.year ? a : b);
-    return newest.title;
+    const i = this.resultIdx();
+    return i.n >= 2 && i.newest ? i.newest.title : null;
   });
-
   readonly resultIaStreamableCount = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const count = films.filter((m) => m.internetArchiveId).length;
-    return count > 0 ? count : null;
+    const i = this.resultIdx();
+    return i.n >= 3 && i.withIa > 0 ? i.withIa : null;
   });
-
   readonly resultIaStreamablePct = computed(() => {
-    const films = this.results();
-    if (films.length < 3) return null;
-    const pct = Math.round((films.filter((m) => m.internetArchiveId).length / films.length) * 100);
+    const i = this.resultIdx();
+    if (i.n < 3) return null;
+    const pct = Math.round((i.withIa / i.n) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
@@ -976,5 +945,6 @@ export class QuizComponent implements OnInit {
 
     this.results.set(films.slice(0, 5));
     this.showResults.set(true);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
   }
 }
