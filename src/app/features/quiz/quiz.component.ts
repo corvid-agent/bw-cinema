@@ -159,6 +159,9 @@ interface QuizStep {
           @if (resultIaStreamableCount(); as riasc) {
             <p class="quiz__decade-range">{{ riasc }} on Internet Archive</p>
           }
+          @if (resultIaStreamablePct(); as riasp) {
+            <p class="quiz__decade-range">{{ riasp }}% on IA</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -765,6 +768,13 @@ export class QuizComponent implements OnInit {
     if (films.length < 3) return null;
     const count = films.filter((m) => m.internetArchiveId).length;
     return count > 0 ? count : null;
+  });
+
+  readonly resultIaStreamablePct = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const pct = Math.round((films.filter((m) => m.internetArchiveId).length / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly avgMatchScore = computed(() => {

@@ -222,6 +222,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Non-English</span>
               </div>
             }
+            @if (iaStreamableCount(); as iasc) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ iasc }}</span>
+                <span class="director__stat-label">On IA</span>
+              </div>
+            }
             @if (streamableNewestYear(); as sny) {
               <div class="director__stat">
                 <span class="director__stat-value">{{ sny }}</span>
@@ -1242,6 +1248,13 @@ export class DirectorComponent implements OnInit {
     if (f.length < 3) return null;
     const pct = Math.round((f.filter((m) => m.language && m.language !== 'en').length / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly iaStreamableCount = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const count = f.filter((m) => m.internetArchiveId).length;
+    return count > 0 ? count : null;
   });
 
   readonly genreConsistencyPct = computed(() => {

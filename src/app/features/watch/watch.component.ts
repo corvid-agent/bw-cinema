@@ -110,6 +110,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (genreIaStreamableCount()) {
               <span class="watch__header-rating">&middot; {{ genreIaStreamableCount() }} in genre on Internet Archive</span>
             }
+            @if (decadeAvgGenreCount()) {
+              <span class="watch__header-rating">&middot; avg {{ decadeAvgGenreCount() }} genres/film in decade</span>
+            }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
             }
@@ -675,6 +678,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly genrePosterCoveragePct = signal(0);
   readonly directorImdbLinkedPct = signal(0);
   readonly genreIaStreamableCount = signal(0);
+  readonly decadeAvgGenreCount = signal(0);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -739,6 +743,8 @@ export class WatchComponent implements OnInit, OnDestroy {
       if (decadeFilms.length >= 10) {
         const imdbPct = Math.round((decadeFilms.filter((m) => m.imdbId).length / decadeFilms.length) * 100);
         if (imdbPct > 0 && imdbPct < 100) this.decadeImdbLinkedPct.set(imdbPct);
+        const avgG = decadeFilms.reduce((s, m) => s + m.genres.length, 0) / decadeFilms.length;
+        if (avgG >= 1.3) this.decadeAvgGenreCount.set(parseFloat(avgG.toFixed(1)));
       }
       const sameYear = this.catalogService.movies().filter((m) => m.year === movie.year && m.id !== movie.id).length;
       if (sameYear >= 5) this.sameYearCount.set(sameYear);
