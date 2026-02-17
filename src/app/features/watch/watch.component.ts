@@ -53,6 +53,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (decadeFilmCount()) {
               <span class="watch__header-rating">&middot; {{ decadeFilmCount() }} films from this decade</span>
             }
+            @if (movieDecadeRank()) {
+              <span class="watch__header-rating">&middot; {{ movieDecadeRank() }}</span>
+            }
             @if (genreLabel()) {
               <span class="watch__header-rating">&middot; {{ genreLabel() }}</span>
             }
@@ -603,6 +606,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly isHighlyRated = signal(false);
   readonly genreLabel = signal('');
   readonly directorAvgRating = signal('');
+  readonly movieDecadeRank = signal('');
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -634,8 +638,13 @@ export class WatchComponent implements OnInit, OnDestroy {
       const decade = Math.floor(movie.year / 10) * 10;
       this.decadeLabel.set(`${decade}s`);
       this.decadeValue.set(String(decade));
-      const decadeCount = this.catalogService.movies().filter((m) => Math.floor(m.year / 10) * 10 === decade).length;
-      if (decadeCount >= 10) this.decadeFilmCount.set(decadeCount);
+      const decadeFilms = this.catalogService.movies().filter((m) => Math.floor(m.year / 10) * 10 === decade);
+      if (decadeFilms.length >= 10) this.decadeFilmCount.set(decadeFilms.length);
+      const ratedInDecade = decadeFilms.filter((m) => m.voteAverage > 0).sort((a, b) => b.voteAverage - a.voteAverage);
+      if (ratedInDecade.length >= 10 && movie.voteAverage > 0) {
+        const rank = ratedInDecade.findIndex((m) => m.id === movie.id);
+        if (rank >= 0 && rank < 10) this.movieDecadeRank.set(`#${rank + 1} in ${decade}s`);
+      }
       const age = new Date().getFullYear() - movie.year;
       if (age >= 50) this.filmAge.set(`${age} years old`);
       this.titleService.setTitle(`Watch ${movie.title} — BW Cinema`);

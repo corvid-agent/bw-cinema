@@ -180,6 +180,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Shortest Title</span>
               </div>
             }
+            @if (streamableHighRatedCount() > 0) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ streamableHighRatedCount() }}</span>
+                <span class="director__stat-label">Free &amp; Rated 7+</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -1026,6 +1032,10 @@ export class DirectorComponent implements OnInit {
     if (f.length < 3) return null;
     const shortest = f.reduce((a, b) => a.title.length <= b.title.length ? a : b);
     return shortest.title.length <= 15 ? shortest.title : null;
+  });
+
+  readonly streamableHighRatedCount = computed(() => {
+    return this.films().filter((m) => m.isStreamable && m.voteAverage >= 7.0).length;
   });
 
   ngOnInit(): void {

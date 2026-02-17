@@ -414,6 +414,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Median Rating</span>
                   </div>
                 }
+                @if (watchedDecadeCount() > 1) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ watchedDecadeCount() }}</span>
+                    <span class="stats__card-label">Decades</span>
+                  </div>
+                }
               </div>
 
               @if (nextMilestone(); as milestone) {
@@ -1756,6 +1762,11 @@ export class CollectionComponent implements OnInit {
     const mid = Math.floor(sorted.length / 2);
     const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
     return median.toFixed(1);
+  });
+
+  readonly watchedDecadeCount = computed(() => {
+    const decades = new Set(this.watchedMovies().map((m) => Math.floor(m.year / 10) * 10));
+    return decades.size;
   });
 
   readonly watchedLongestTitle = computed(() => {
