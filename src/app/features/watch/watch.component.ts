@@ -221,6 +221,12 @@ import type { MovieSummary } from '../../core/models/movie.model';
       overflow: hidden;
       box-shadow: var(--shadow-lg);
     }
+    @media (max-height: 500px) {
+      .watch__player {
+        aspect-ratio: 16 / 9;
+        max-height: 60vh;
+      }
+    }
     .watch__player iframe {
       position: absolute;
       inset: 0;

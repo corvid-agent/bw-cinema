@@ -1158,7 +1158,7 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
     .film-tl__scroll { padding-bottom: var(--space-md); }
     .film-tl__track {
       position: relative;
-      min-width: 600px;
+      min-width: min(600px, 100%);
       height: 80px;
       margin: 0 var(--space-md);
     }
@@ -1266,9 +1266,6 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       }
       .stats__overview .stats__card {
         padding: var(--space-md);
-      }
-      .film-tl__track {
-        min-width: 400px;
       }
       .collection__actions {
         flex-wrap: wrap;

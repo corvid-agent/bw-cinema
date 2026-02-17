@@ -151,7 +151,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
       border: 1px solid var(--border-bright);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-lg);
-      z-index: 50;
+      z-index: 110;
       max-height: 320px;
       overflow-y: auto;
     }
@@ -204,7 +204,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
       border: 1px solid var(--border-bright);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-lg);
-      z-index: 50;
+      z-index: 110;
     }
     .search__history-header {
       display: flex;

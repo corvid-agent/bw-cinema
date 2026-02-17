@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, input, signal, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { LazyImageDirective } from '../directives/lazy-image.directive';
 import { CollectionService } from '../../core/services/collection.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -8,9 +8,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
 @Component({
   selector: 'app-movie-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LazyImageDirective],
+  imports: [LazyImageDirective, RouterLink],
   template: `
-    <div class="card" (click)="navigateToMovie()">
+    <a class="card" [routerLink]="['/movie', movie().id]">
       <div class="card__poster">
         @if (movie().posterUrl && !imgFailed()) {
           <img appLazyImage [src]="movie().posterUrl" [alt]="movie().title + ' poster'" [class.loaded]="imgLoaded()" (load)="onImageLoad()" (error)="imgFailed.set(true)" />
@@ -85,7 +85,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
           }
         </div>
       </div>
-    </div>
+    </a>
   `,
   styles: [`
     .card {
@@ -288,10 +288,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
       .card__actions { opacity: 1; }
     }
     .card__action {
-      width: 28px;
-      height: 28px;
-      min-width: 28px;
-      min-height: 28px;
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      min-height: 36px;
       padding: 0;
       display: flex;
       align-items: center;
@@ -327,11 +327,12 @@ import type { MovieSummary } from '../../core/models/movie.model';
       font-size: 0.9rem;
       font-weight: 600;
       margin: 0 0 2px;
-      white-space: nowrap;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow: hidden;
-      text-overflow: ellipsis;
       color: var(--text-primary);
-      letter-spacing: 0;
+      line-height: 1.3;
     }
     .card__meta {
       display: flex;
@@ -370,14 +371,9 @@ export class MovieCardComponent {
   readonly imgLoaded = signal(false);
   protected readonly collection = inject(CollectionService);
   private readonly notifications = inject(NotificationService);
-  private readonly router = inject(Router);
 
   onImageLoad(): void {
     this.imgLoaded.set(true);
-  }
-
-  navigateToMovie(): void {
-    this.router.navigate(['/movie', this.movie().id]);
   }
 
   addToWatchlist(event: Event): void {

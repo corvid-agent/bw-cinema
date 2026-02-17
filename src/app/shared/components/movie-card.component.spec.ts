@@ -56,11 +56,11 @@ describe('MovieCardComponent', () => {
     expect(img.src).toContain('poster.jpg');
   });
 
-  it('should have clickable card for navigation', () => {
-    const card = fixture.nativeElement.querySelector('.card') as HTMLElement;
+  it('should have accessible anchor card for navigation', () => {
+    const card = fixture.nativeElement.querySelector('.card') as HTMLAnchorElement;
     expect(card).toBeTruthy();
-    // Card should be a div (not an anchor) for accessibility
-    expect(card.tagName).toBe('DIV');
+    expect(card.tagName).toBe('A');
+    expect(card.getAttribute('href')).toContain('/movie/Q100');
   });
 
   it('should show placeholder with title when no poster', () => {
