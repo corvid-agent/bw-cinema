@@ -426,6 +426,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Avg Genres/Film</span>
                   </div>
                 }
+                @if (watchlistStreamablePct(); as wsp) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ wsp }}%</span>
+                    <span class="stats__card-label">Watchlist Streamable</span>
+                  </div>
+                }
                 @if (watchedShortestTitle(); as wst) {
                   <div class="stats__card">
                     <span class="stats__card-value" style="font-size: 0.85em">{{ wst }}</span>
@@ -1911,6 +1917,13 @@ export class CollectionComponent implements OnInit {
     const rated = films.filter((m) => m.voteAverage > 0);
     if (rated.length < 2) return null;
     return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
+  });
+
+  readonly watchlistStreamablePct = computed(() => {
+    const films = this.watchlistMovies();
+    if (films.length < 3) return null;
+    const pct = Math.round((films.filter((m) => m.isStreamable).length / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly watchedAvgGenreCount = computed(() => {

@@ -92,6 +92,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (movieGenreCount()) {
               <span class="watch__header-rating">&middot; {{ movieGenreCount() }} genres</span>
             }
+            @if (movieImdbLinked()) {
+              <span class="watch__header-rating">&middot; on IMDb</span>
+            }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
             }
@@ -651,6 +654,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly sameLanguageCount = signal(0);
   readonly directorCareerSpan = signal(0);
   readonly movieGenreCount = signal(0);
+  readonly movieImdbLinked = signal(false);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -671,6 +675,7 @@ export class WatchComponent implements OnInit, OnDestroy {
       const wordCount = movie.title.split(/\s+/).length;
       if (wordCount >= 3) this.movieTitleWordCount.set(wordCount);
       this.movieImdbId.set(movie.imdbId);
+      if (movie.imdbId) this.movieImdbLinked.set(true);
       this.encodedTitle.set(encodeURIComponent(movie.title));
       if (movie.genres.length > 0) this.movieGenres.set(movie.genres.slice(0, 3).join(' / '));
       if (movie.genres.length >= 3) this.movieGenreCount.set(movie.genres.length);
