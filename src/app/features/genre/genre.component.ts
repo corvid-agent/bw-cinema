@@ -167,6 +167,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (oldestFilmTitle(); as oft) {
             <p class="genre__fact">Oldest: "{{ oft }}"</p>
           }
+          @if (streamableHighRatedPct(); as shrp) {
+            <p class="genre__fact">{{ shrp }}% of free films rated 7+</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -959,6 +962,14 @@ export class GenreComponent implements OnInit {
     if (counts.size < 2) return null;
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return `${top[0]}s`;
+  });
+
+  readonly streamableHighRatedPct = computed(() => {
+    const streamable = this.films().filter((m) => m.isStreamable);
+    if (streamable.length < 5) return null;
+    const highRated = streamable.filter((m) => m.voteAverage >= 7.0).length;
+    const pct = Math.round((highRated / streamable.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly oldestFilmTitle = computed(() => {

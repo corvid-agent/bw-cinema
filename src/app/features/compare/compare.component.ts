@@ -245,6 +245,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (bothHighlyRated()) {
                 <span class="compare__overlap"> &middot; both rated 8+</span>
               }
+              @if (bothPreWar()) {
+                <span class="compare__overlap"> &middot; both pre-1940</span>
+              }
               @if (avgYearDiff(); as ayd) {
                 <span class="compare__overlap"> &middot; {{ ayd }} avg year diff from catalog</span>
               }
@@ -925,6 +928,12 @@ export class CompareComponent implements OnInit {
     const a = this.filmA();
     const b = this.filmB();
     return !!(a && b && a.year < 1930 && b.year < 1930);
+  });
+
+  readonly bothPreWar = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    return !!(a && b && a.year < 1940 && b.year < 1940);
   });
 
   readonly avgYearDiff = computed(() => {
