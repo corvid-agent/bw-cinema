@@ -13,6 +13,12 @@ import type { MovieSummary } from '../../core/models/movie.model';
       <h1>Compare Films</h1>
       <p class="compare__subtitle">Select two films to compare side by side</p>
 
+      @if (catalog.error(); as err) {
+        <div class="catalog-error" role="alert">
+          <p>{{ err }}</p>
+          <button (click)="catalog.retry()">Try Again</button>
+        </div>
+      } @else {
       <div class="compare__pickers">
         <div class="compare__picker">
           <label for="film-a" class="compare__picker-label">Film 1</label>
@@ -249,6 +255,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
             </button>
           </div>
         </div>
+      }
       }
     </div>
   `,
@@ -593,7 +600,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
   `],
 })
 export class CompareComponent implements OnInit {
-  private readonly catalog = inject(CatalogService);
+  protected readonly catalog = inject(CatalogService);
   private readonly notifications = inject(NotificationService);
 
   readonly queryA = signal('');

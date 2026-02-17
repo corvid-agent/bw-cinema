@@ -71,7 +71,12 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         }
       </div>
 
-      @if (catalog.loading()) {
+      @if (catalog.error(); as err) {
+        <div class="catalog-error" role="alert">
+          <p>{{ err }}</p>
+          <button (click)="catalog.retry()">Try Again</button>
+        </div>
+      } @else if (catalog.loading()) {
         <app-skeleton-grid [count]="24" />
       } @else {
         <div class="browse__layout">

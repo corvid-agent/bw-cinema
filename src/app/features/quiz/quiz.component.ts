@@ -20,7 +20,12 @@ interface QuizStep {
       <h1>What Should I Watch?</h1>
       <p class="quiz__subtitle">Answer a few questions and we'll recommend the perfect classic film.</p>
 
-      @if (catalog.loading()) {
+      @if (catalog.error(); as err) {
+        <div class="catalog-error" role="alert">
+          <p>{{ err }}</p>
+          <button (click)="catalog.retry()">Try Again</button>
+        </div>
+      } @else if (catalog.loading()) {
         <app-loading-spinner />
       } @else if (!showResults()) {
         <div class="quiz__progress">

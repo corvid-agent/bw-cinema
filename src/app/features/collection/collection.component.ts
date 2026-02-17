@@ -30,6 +30,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
           </div>
         }
       } @else {
+      @if (catalog.error(); as err) {
+        <div class="catalog-error" role="alert">
+          <p>{{ err }}</p>
+          <button (click)="catalog.retry()">Try Again</button>
+        </div>
+      } @else {
       <div class="collection__title-row">
         <h1>My Collection</h1>
         <a class="collection__wrapped-link" routerLink="/wrapped">Year in Review &rarr;</a>
@@ -820,6 +826,7 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
             }
           </div>
         }
+      }
       }
       }
     </div>

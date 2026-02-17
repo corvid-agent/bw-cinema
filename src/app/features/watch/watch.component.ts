@@ -574,37 +574,11 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly movieYear = signal('');
   readonly filmAge = signal('');
   readonly directorTotalFilms = signal(0);
-  readonly movieLanguage = signal('');
   readonly decadeLabel = signal('');
   readonly decadeValue = signal('');
   readonly directorFilmRank = signal('');
-  readonly isCoDirected = signal(false);
-  readonly isSilentEra = signal(false);
-  readonly isNonEnglish = signal(false);
-  readonly decadeFilmCount = signal(0);
-  readonly isHighlyRated = signal(false);
   readonly genreLabel = signal('');
   readonly directorAvgRating = signal('');
-  readonly movieDecadeRank = signal('');
-  readonly sameYearCount = signal(0);
-  readonly directorGenreSpan = signal(0);
-  readonly genrePeerCount = signal(0);
-  readonly catalogRankByRating = signal(0);
-  readonly directorHighRatedCount = signal(0);
-  readonly movieTitleWordCount = signal(0);
-  readonly decadeStreamableCount = signal(0);
-  readonly primaryGenreStreamablePct = signal(0);
-  readonly sameLanguageCount = signal(0);
-  readonly directorCareerSpan = signal(0);
-  readonly movieGenreCount = signal(0);
-  readonly movieImdbLinked = signal(false);
-  readonly isPreWar = signal(false);
-  readonly decadeImdbLinkedPct = signal(0);
-  readonly genrePosterCoveragePct = signal(0);
-  readonly directorImdbLinkedPct = signal(0);
-  readonly genreIaStreamableCount = signal(0);
-  readonly decadeAvgGenreCount = signal(0);
-  readonly genreHighlyRatedPct = signal(0);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -622,65 +596,15 @@ export class WatchComponent implements OnInit, OnDestroy {
     const movie = this.catalogService.movies().find((m) => m.id === this.id());
     if (movie) {
       this.movieTitle.set(movie.title);
-      const wordCount = movie.title.split(/\s+/).length;
-      if (wordCount >= 3) this.movieTitleWordCount.set(wordCount);
       this.movieImdbId.set(movie.imdbId);
-      if (movie.imdbId) this.movieImdbLinked.set(true);
       this.encodedTitle.set(encodeURIComponent(movie.title));
       if (movie.genres.length > 0) this.movieGenres.set(movie.genres.slice(0, 3).join(' / '));
-      if (movie.genres.length >= 3) this.movieGenreCount.set(movie.genres.length);
       if (movie.voteAverage > 0) this.movieRating.set(movie.voteAverage.toFixed(1));
       this.movieYear.set(String(movie.year));
-      if (movie.language && movie.language !== 'English') this.movieLanguage.set(movie.language);
-      const lang = movie.language || 'English';
-      const sameLangCount = this.catalogService.movies().filter((m) => (m.language || 'English') === lang && m.id !== movie.id).length;
-      if (sameLangCount >= 10) this.sameLanguageCount.set(sameLangCount);
-      if (movie.directors.length > 1) this.isCoDirected.set(true);
-      if (movie.year < 1930) this.isSilentEra.set(true);
-      if (movie.year < 1940 && movie.year >= 1930) this.isPreWar.set(true);
-      if (movie.language && movie.language !== 'English' && movie.language !== 'en') this.isNonEnglish.set(true);
-      if (movie.voteAverage >= 8.0) this.isHighlyRated.set(true);
       if (movie.genres.length > 0) this.genreLabel.set(movie.genres[0]);
-      if (movie.genres.length > 0) {
-        const genreFilms = this.catalogService.movies().filter((m) => m.genres.includes(movie.genres[0]));
-        const peers = genreFilms.filter((m) => m.id !== movie.id).length;
-        if (peers >= 10) this.genrePeerCount.set(peers);
-        if (genreFilms.length >= 10) {
-          const pct = Math.round((genreFilms.filter((m) => m.isStreamable).length / genreFilms.length) * 100);
-          if (pct > 0 && pct < 100) this.primaryGenreStreamablePct.set(pct);
-          const posterPct = Math.round((genreFilms.filter((m) => m.posterUrl).length / genreFilms.length) * 100);
-          if (posterPct > 0 && posterPct < 100) this.genrePosterCoveragePct.set(posterPct);
-          const iaCount = genreFilms.filter((m) => m.internetArchiveId).length;
-          if (iaCount > 0) this.genreIaStreamableCount.set(iaCount);
-          const hrPct = Math.round((genreFilms.filter((m) => m.voteAverage >= 7.0).length / genreFilms.length) * 100);
-          if (hrPct > 0 && hrPct < 100) this.genreHighlyRatedPct.set(hrPct);
-        }
-      }
-      if (movie.voteAverage > 0) {
-        const ranked = this.catalogService.movies().filter((m) => m.voteAverage > 0).sort((a, b) => b.voteAverage - a.voteAverage);
-        const rank = ranked.findIndex((m) => m.id === movie.id);
-        if (rank >= 0 && rank < 100) this.catalogRankByRating.set(rank + 1);
-      }
       const decade = Math.floor(movie.year / 10) * 10;
       this.decadeLabel.set(`${decade}s`);
       this.decadeValue.set(String(decade));
-      const decadeFilms = this.catalogService.movies().filter((m) => Math.floor(m.year / 10) * 10 === decade);
-      if (decadeFilms.length >= 10) this.decadeFilmCount.set(decadeFilms.length);
-      const decadeStreamable = decadeFilms.filter((m) => m.isStreamable).length;
-      if (decadeStreamable >= 5) this.decadeStreamableCount.set(decadeStreamable);
-      if (decadeFilms.length >= 10) {
-        const imdbPct = Math.round((decadeFilms.filter((m) => m.imdbId).length / decadeFilms.length) * 100);
-        if (imdbPct > 0 && imdbPct < 100) this.decadeImdbLinkedPct.set(imdbPct);
-        const avgG = decadeFilms.reduce((s, m) => s + m.genres.length, 0) / decadeFilms.length;
-        if (avgG >= 1.3) this.decadeAvgGenreCount.set(parseFloat(avgG.toFixed(1)));
-      }
-      const sameYear = this.catalogService.movies().filter((m) => m.year === movie.year && m.id !== movie.id).length;
-      if (sameYear >= 5) this.sameYearCount.set(sameYear);
-      const ratedInDecade = decadeFilms.filter((m) => m.voteAverage > 0).sort((a, b) => b.voteAverage - a.voteAverage);
-      if (ratedInDecade.length >= 10 && movie.voteAverage > 0) {
-        const rank = ratedInDecade.findIndex((m) => m.id === movie.id);
-        if (rank >= 0 && rank < 10) this.movieDecadeRank.set(`#${rank + 1} in ${decade}s`);
-      }
       const age = new Date().getFullYear() - movie.year;
       if (age >= 50) this.filmAge.set(`${age} years old`);
       this.titleService.setTitle(`Watch ${movie.title} — BW Cinema`);
@@ -702,12 +626,6 @@ export class WatchComponent implements OnInit, OnDestroy {
           const allDirFilms = this.catalogService.movies()
             .filter((m) => m.id !== movie.id && m.directors.some((d) => movie.directors.includes(d)));
           this.directorTotalFilms.set(allDirFilms.length + 1);
-          const allWithCurrent = [...allDirFilms, movie];
-          if (allWithCurrent.length >= 3) {
-            const years = allWithCurrent.map((m) => m.year);
-            const span = Math.max(...years) - Math.min(...years);
-            if (span >= 5) this.directorCareerSpan.set(span);
-          }
           if (allDirFilms.length >= 2) {
             const allSorted = [...allDirFilms, movie].sort((a, b) => a.year - b.year);
             const idx = allSorted.findIndex((m) => m.id === movie.id);
@@ -716,16 +634,6 @@ export class WatchComponent implements OnInit, OnDestroy {
           const rated = [...allDirFilms, movie].filter((m) => m.voteAverage > 0);
           if (rated.length >= 2) {
             this.directorAvgRating.set((rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1));
-          }
-          const highRated = [...allDirFilms, movie].filter((m) => m.voteAverage >= 7.0).length;
-          if (highRated >= 2) this.directorHighRatedCount.set(highRated);
-          const dirGenres = new Set<string>();
-          for (const m of [...allDirFilms, movie]) for (const g of m.genres) dirGenres.add(g);
-          if (dirGenres.size >= 3) this.directorGenreSpan.set(dirGenres.size);
-          const allWithDir = [...allDirFilms, movie];
-          if (allWithDir.length >= 3) {
-            const imdbPct = Math.round((allWithDir.filter((m) => m.imdbId).length / allWithDir.length) * 100);
-            if (imdbPct > 0 && imdbPct < 100) this.directorImdbLinkedPct.set(imdbPct);
           }
           const dirFilms = allDirFilms
             .filter((m) => m.posterUrl)
