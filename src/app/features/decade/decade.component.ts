@@ -171,6 +171,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (avgGenresPerFilm(); as agpf) {
             <p class="decade__fact">Avg {{ agpf }} genres per film</p>
           }
+          @if (multiGenrePct(); as mgp) {
+            <p class="decade__fact">{{ mgp }}% have 2+ genres</p>
+          }
           @if (coDirectedPct(); as cdp) {
             <p class="decade__fact">{{ cdp }}% co-directed</p>
           }
@@ -1117,6 +1120,13 @@ export class DecadeComponent implements OnInit {
     if (f.length < 10) return null;
     const avg = f.reduce((s, m) => s + m.genres.length, 0) / f.length;
     return avg >= 1.3 ? avg.toFixed(1) : null;
+  });
+
+  readonly multiGenrePct = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const pct = Math.round((f.filter((m) => m.genres.length >= 2).length / f.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   ngOnInit(): void {

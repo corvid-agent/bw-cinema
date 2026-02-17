@@ -203,6 +203,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (iaStreamableCount(); as iasc) {
             <p class="genre__fact">{{ iasc }} on Internet Archive</p>
           }
+          @if (highlyRatedPct(); as hrp) {
+            <p class="genre__fact">{{ hrp }}% rated 7.0+</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -1126,6 +1129,13 @@ export class GenreComponent implements OnInit {
     if (f.length < 5) return null;
     const count = f.filter((m) => m.internetArchiveId).length;
     return count > 0 ? count : null;
+  });
+
+  readonly highlyRatedPct = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const pct = Math.round((f.filter((m) => m.voteAverage >= 7.0).length / f.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly decadeBreakdown = computed(() => {

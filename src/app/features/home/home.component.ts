@@ -155,6 +155,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (catalogIaStreamablePct(); as ciasp) {
           <p class="hero__avg-rating">{{ ciasp }}% on Internet Archive</p>
         }
+        @if (catalogMultiGenrePct(); as cmgp) {
+          <p class="hero__avg-rating">{{ cmgp }}% have 2+ genres</p>
+        }
       </div>
     </section>
 
@@ -1541,6 +1544,13 @@ export class HomeComponent implements OnInit {
     const movies = this.catalog.movies();
     if (movies.length < 50) return null;
     const pct = Math.round((movies.filter((m) => m.internetArchiveId).length / movies.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly catalogMultiGenrePct = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const pct = Math.round((movies.filter((m) => m.genres.length >= 2).length / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
