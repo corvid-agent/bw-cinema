@@ -12,7 +12,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
       <h1>Catalog Statistics</h1>
       <p class="stats__subtitle">A look at the numbers behind our collection of classic cinema.</p>
 
-      @if (catalog.loading()) {
+      @if (catalog.error(); as err) {
+        <div class="catalog-error" role="alert">
+          <p>{{ err }}</p>
+          <button (click)="catalog.retry()">Try Again</button>
+        </div>
+      } @else if (catalog.loading()) {
         <app-loading-spinner />
       } @else {
         <div class="stats__overview">

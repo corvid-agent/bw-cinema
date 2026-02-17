@@ -30,7 +30,14 @@ interface WrappedStats {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, MovieGridComponent, LoadingSpinnerComponent],
   template: `
-    @if (catalog.loading()) {
+    @if (catalog.error(); as err) {
+      <div class="wrapped container">
+        <div class="catalog-error" role="alert">
+          <p>{{ err }}</p>
+          <button (click)="catalog.retry()">Try Again</button>
+        </div>
+      </div>
+    } @else if (catalog.loading()) {
       <div class="wrapped container">
         <app-loading-spinner />
       </div>

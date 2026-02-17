@@ -15,7 +15,14 @@ import type { MovieSummary } from '../../core/models/movie.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, MovieGridComponent, MovieListComponent, ViewToggleComponent, LoadingSpinnerComponent],
   template: `
-    @if (catalog.loading()) {
+    @if (catalog.error(); as err) {
+      <div class="actor container">
+        <div class="catalog-error" role="alert">
+          <p>{{ err }}</p>
+          <button (click)="catalog.retry()">Try Again</button>
+        </div>
+      </div>
+    } @else if (catalog.loading()) {
       <div class="actor container">
         <app-loading-spinner />
       </div>

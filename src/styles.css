@@ -261,6 +261,31 @@ button:active {
   box-shadow: 0 4px 16px rgba(212, 168, 67, 0.35);
 }
 
+/* Shared catalog error banner */
+.catalog-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+  text-align: center;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  margin: var(--space-xl) 0;
+}
+.catalog-error button {
+  padding: 8px 20px;
+  background: var(--accent-gold);
+  color: var(--bg-deep);
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+}
+.catalog-error button:hover { opacity: 0.9; }
+
 .btn-secondary {
   background-color: var(--bg-raised);
   color: var(--text-primary);

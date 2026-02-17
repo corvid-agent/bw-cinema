@@ -39,13 +39,14 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
         <app-loading-spinner />
       } @else {
         <div class="collection__controls">
-          <div class="collection__tabs" role="tablist">
+          <div class="collection__tabs" role="tablist" (keydown)="onTabKeydown($event)">
             <button
               class="collection__tab"
               [class.collection__tab--active]="activeTab() === 'watchlist'"
               (click)="activeTab.set('watchlist')"
               role="tab"
               [attr.aria-selected]="activeTab() === 'watchlist'"
+              [attr.tabindex]="activeTab() === 'watchlist' ? 0 : -1"
             >
               Watchlist
               @if (watchlistMovies().length > 0) {
@@ -61,6 +62,7 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
               (click)="activeTab.set('watched')"
               role="tab"
               [attr.aria-selected]="activeTab() === 'watched'"
+              [attr.tabindex]="activeTab() === 'watched' ? 0 : -1"
             >
               Watched
               @if (watchedMovies().length > 0) {
@@ -73,6 +75,7 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
               (click)="activeTab.set('favorites')"
               role="tab"
               [attr.aria-selected]="activeTab() === 'favorites'"
+              [attr.tabindex]="activeTab() === 'favorites' ? 0 : -1"
             >
               Favorites
               @if (favoriteMovies().length > 0) {
@@ -85,6 +88,7 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
               (click)="activeTab.set('playlists')"
               role="tab"
               [attr.aria-selected]="activeTab() === 'playlists'"
+              [attr.tabindex]="activeTab() === 'playlists' ? 0 : -1"
             >
               Playlists
               @if (collectionService.playlists().length > 0) {
@@ -97,6 +101,7 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
               (click)="activeTab.set('stats')"
               role="tab"
               [attr.aria-selected]="activeTab() === 'stats'"
+              [attr.tabindex]="activeTab() === 'stats' ? 0 : -1"
             >
               Stats
             </button>
@@ -183,7 +188,7 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
         </div>
 
         @if (activeTab() === 'watchlist') {
-          <div role="tabpanel">
+          <div role="tabpanel" aria-live="polite">
             @if (sortedWatchlist().length > 0) {
               @if (viewMode() === 'grid') {
                 <app-movie-grid [movies]="sortedWatchlist()" />
@@ -201,7 +206,7 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
         }
 
         @if (activeTab() === 'watched') {
-          <div role="tabpanel">
+          <div role="tabpanel" aria-live="polite">
             @if (sortedWatched().length > 0) {
               @if (viewMode() === 'grid') {
                 <app-movie-grid [movies]="sortedWatched()" />
@@ -219,7 +224,7 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
         }
 
         @if (activeTab() === 'favorites') {
-          <div role="tabpanel">
+          <div role="tabpanel" aria-live="polite">
             @if (sortedFavorites().length > 0) {
               @if (viewMode() === 'grid') {
                 <app-movie-grid [movies]="sortedFavorites()" />
@@ -2170,6 +2175,23 @@ export class CollectionComponent implements OnInit {
         };
       });
   });
+
+  private readonly tabs: Array<'watchlist' | 'watched' | 'favorites' | 'playlists' | 'stats'> = ['watchlist', 'watched', 'favorites', 'playlists', 'stats'];
+
+  onTabKeydown(event: KeyboardEvent): void {
+    const idx = this.tabs.indexOf(this.activeTab());
+    let next = idx;
+    if (event.key === 'ArrowRight') next = (idx + 1) % this.tabs.length;
+    else if (event.key === 'ArrowLeft') next = (idx - 1 + this.tabs.length) % this.tabs.length;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = this.tabs.length - 1;
+    else return;
+    event.preventDefault();
+    this.activeTab.set(this.tabs[next]);
+    const tablist = (event.currentTarget as HTMLElement);
+    const buttons = tablist.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+    buttons[next]?.focus();
+  }
 
   ngOnInit(): void {
     this.catalog.load();

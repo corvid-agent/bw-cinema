@@ -13,7 +13,14 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, MovieGridComponent, MovieListComponent, ViewToggleComponent, SkeletonGridComponent],
   template: `
-    @if (catalog.loading()) {
+    @if (catalog.error(); as err) {
+      <div class="director container">
+        <div class="catalog-error" role="alert">
+          <p>{{ err }}</p>
+          <button (click)="catalog.retry()">Try Again</button>
+        </div>
+      </div>
+    } @else if (catalog.loading()) {
       <div class="director container">
         <app-skeleton-grid [count]="6" />
       </div>
