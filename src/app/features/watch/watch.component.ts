@@ -113,6 +113,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (decadeAvgGenreCount()) {
               <span class="watch__header-rating">&middot; avg {{ decadeAvgGenreCount() }} genres/film in decade</span>
             }
+            @if (genreHighlyRatedPct()) {
+              <span class="watch__header-rating">&middot; {{ genreHighlyRatedPct() }}% of genre rated 7.0+</span>
+            }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
             }
@@ -679,6 +682,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly directorImdbLinkedPct = signal(0);
   readonly genreIaStreamableCount = signal(0);
   readonly decadeAvgGenreCount = signal(0);
+  readonly genreHighlyRatedPct = signal(0);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -726,6 +730,8 @@ export class WatchComponent implements OnInit, OnDestroy {
           if (posterPct > 0 && posterPct < 100) this.genrePosterCoveragePct.set(posterPct);
           const iaCount = genreFilms.filter((m) => m.internetArchiveId).length;
           if (iaCount > 0) this.genreIaStreamableCount.set(iaCount);
+          const hrPct = Math.round((genreFilms.filter((m) => m.voteAverage >= 7.0).length / genreFilms.length) * 100);
+          if (hrPct > 0 && hrPct < 100) this.genreHighlyRatedPct.set(hrPct);
         }
       }
       if (movie.voteAverage > 0) {
