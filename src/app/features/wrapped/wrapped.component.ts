@@ -238,6 +238,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Avg Title Chars</span>
               </div>
             }
+            @if (highlyRatedWatchedCount(); as hrwc) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ hrwc }}</span>
+                <span class="wrapped__hero-label">Rated 7.0+</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -1083,6 +1089,13 @@ export class WrappedComponent implements OnInit {
     if (films.length < 3) return null;
     const longest = films.reduce((a, b) => a.title.length >= b.title.length ? a : b);
     return longest.title.length >= 15 ? longest.title : null;
+  });
+
+  readonly highlyRatedWatchedCount = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 3) return null;
+    const count = films.filter((m) => m.voteAverage >= 7.0).length;
+    return count > 0 && count < films.length ? count : null;
   });
 
   readonly avgWatchedYear = computed(() => {

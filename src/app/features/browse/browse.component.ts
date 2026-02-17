@@ -93,6 +93,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultLongestTitle(); as rlt) {
           <p class="browse__watched-note">Longest: "{{ rlt }}"</p>
         }
+        @if (resultShortestTitle(); as rst) {
+          <p class="browse__watched-note">Shortest: "{{ rst }}"</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -782,6 +785,13 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     const films = this.filteredMovies();
     if (films.length < 10) return null;
     return Math.round(films.reduce((s, m) => s + m.title.length, 0) / films.length);
+  });
+
+  readonly resultShortestTitle = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const shortest = films.reduce((a, b) => a.title.length <= b.title.length ? a : b);
+    return shortest.title.length <= 8 ? shortest.title : null;
   });
 
   readonly topResultDirector = computed(() => {
