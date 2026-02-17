@@ -533,6 +533,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">avg films per director</span>
               </div>
             }
+            @if (catalogMedianRating(); as cmr) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ cmr }}</span>
+                <span class="stats__fact-text">median rating</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1406,6 +1412,15 @@ export class StatsComponent implements OnInit {
     if (movies.length < 10) return null;
     const pct = Math.round((movies.filter((m) => m.directors.length === 1).length / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly catalogMedianRating = computed(() => {
+    const rated = this.catalog.movies().filter((m) => m.voteAverage > 0);
+    if (rated.length < 10) return null;
+    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    return median.toFixed(1);
   });
 
   readonly avgDirectorFilmCount = computed(() => {

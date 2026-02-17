@@ -80,6 +80,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (decadeStreamableCount()) {
               <span class="watch__header-rating">&middot; {{ decadeStreamableCount() }} streamable from this decade</span>
             }
+            @if (primaryGenreStreamablePct()) {
+              <span class="watch__header-rating">&middot; {{ primaryGenreStreamablePct() }}% of genre streamable</span>
+            }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
             }
@@ -635,6 +638,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly directorHighRatedCount = signal(0);
   readonly movieTitleWordCount = signal(0);
   readonly decadeStreamableCount = signal(0);
+  readonly primaryGenreStreamablePct = signal(0);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -666,8 +670,13 @@ export class WatchComponent implements OnInit, OnDestroy {
       if (movie.voteAverage >= 8.0) this.isHighlyRated.set(true);
       if (movie.genres.length > 0) this.genreLabel.set(movie.genres[0]);
       if (movie.genres.length > 0) {
-        const peers = this.catalogService.movies().filter((m) => m.id !== movie.id && m.genres.includes(movie.genres[0])).length;
+        const genreFilms = this.catalogService.movies().filter((m) => m.genres.includes(movie.genres[0]));
+        const peers = genreFilms.filter((m) => m.id !== movie.id).length;
         if (peers >= 10) this.genrePeerCount.set(peers);
+        if (genreFilms.length >= 10) {
+          const pct = Math.round((genreFilms.filter((m) => m.isStreamable).length / genreFilms.length) * 100);
+          if (pct > 0 && pct < 100) this.primaryGenreStreamablePct.set(pct);
+        }
       }
       if (movie.voteAverage > 0) {
         const ranked = this.catalogService.movies().filter((m) => m.voteAverage > 0).sort((a, b) => b.voteAverage - a.voteAverage);
