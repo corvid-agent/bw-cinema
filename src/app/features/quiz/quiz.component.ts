@@ -138,6 +138,9 @@ interface QuizStep {
           @if (resultPreWarPct(); as rpwp) {
             <p class="quiz__decade-range">{{ rpwp }}% pre-1940</p>
           }
+          @if (resultUniqueDirectorCount(); as rudc) {
+            <p class="quiz__decade-range">{{ rudc }} unique directors</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -655,6 +658,14 @@ export class QuizComponent implements OnInit {
     const silent = films.filter((m) => m.year < 1930).length;
     const pct = Math.round((silent / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly resultUniqueDirectorCount = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const dirs = new Set<string>();
+    for (const m of films) for (const d of m.directors) dirs.add(d);
+    return dirs.size >= 3 ? dirs.size : null;
   });
 
   readonly resultPreWarPct = computed(() => {

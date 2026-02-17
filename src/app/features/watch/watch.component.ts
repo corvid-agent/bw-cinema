@@ -83,6 +83,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (primaryGenreStreamablePct()) {
               <span class="watch__header-rating">&middot; {{ primaryGenreStreamablePct() }}% of genre streamable</span>
             }
+            @if (sameLanguageCount()) {
+              <span class="watch__header-rating">&middot; {{ sameLanguageCount() }} {{ movieLanguage() || 'English' }} films</span>
+            }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
             }
@@ -639,6 +642,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly movieTitleWordCount = signal(0);
   readonly decadeStreamableCount = signal(0);
   readonly primaryGenreStreamablePct = signal(0);
+  readonly sameLanguageCount = signal(0);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -664,6 +668,9 @@ export class WatchComponent implements OnInit, OnDestroy {
       if (movie.voteAverage > 0) this.movieRating.set(movie.voteAverage.toFixed(1));
       this.movieYear.set(String(movie.year));
       if (movie.language && movie.language !== 'English') this.movieLanguage.set(movie.language);
+      const lang = movie.language || 'English';
+      const sameLangCount = this.catalogService.movies().filter((m) => (m.language || 'English') === lang && m.id !== movie.id).length;
+      if (sameLangCount >= 10) this.sameLanguageCount.set(sameLangCount);
       if (movie.directors.length > 1) this.isCoDirected.set(true);
       if (movie.year < 1930) this.isSilentEra.set(true);
       if (movie.language && movie.language !== 'English' && movie.language !== 'en') this.isNonEnglish.set(true);
