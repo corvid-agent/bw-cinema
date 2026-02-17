@@ -272,6 +272,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (olderFilmLabel(); as ofl) {
                 <span class="compare__overlap"> &middot; {{ ofl }}</span>
               }
+              @if (combinedLanguages(); as cl) {
+                <span class="compare__overlap"> &middot; languages: {{ cl }}</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -987,6 +990,16 @@ export class CompareComponent implements OnInit {
     if (diff < 5) return null;
     const older = a.year < b.year ? a : b;
     return `"${older.title}" is ${diff} years older`;
+  });
+
+  readonly combinedLanguages = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return null;
+    const langs = new Set<string>();
+    if (a.language) langs.add(a.language);
+    if (b.language) langs.add(b.language);
+    return langs.size >= 2 ? [...langs].join(', ') : null;
   });
 
   readonly genreCountDiff = computed(() => {
