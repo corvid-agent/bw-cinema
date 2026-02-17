@@ -125,6 +125,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (silentEraStreamableCount(); as sesc) {
           <p class="hero__avg-rating">{{ sesc }} free silent-era films</p>
         }
+        @if (catalogDirectorCount(); as cdc) {
+          <p class="hero__avg-rating">{{ cdc }} unique directors</p>
+        }
       </div>
     </section>
 
@@ -1405,6 +1408,14 @@ export class HomeComponent implements OnInit {
     if (streamable.length === 0) return null;
     const newest = streamable.reduce((a, b) => a.year >= b.year ? a : b);
     return newest.title;
+  });
+
+  readonly catalogDirectorCount = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 10) return null;
+    const dirs = new Set<string>();
+    for (const m of movies) for (const d of m.directors) dirs.add(d);
+    return dirs.size >= 10 ? dirs.size : null;
   });
 
   readonly silentEraStreamableCount = computed(() => {

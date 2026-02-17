@@ -509,6 +509,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">most common title word ({{ mctw.count }}x)</span>
               </div>
             }
+            @if (nonStreamableWithImdbCount(); as nsic) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ nsic }}</span>
+                <span class="stats__fact-text">non-free with IMDb link</span>
+              </div>
+            }
             @if (bestRatedDecade(); as brd) {
               <div class="stats__fact-card">
                 <span class="stats__fact-number">{{ brd.decade }}s</span>
@@ -1353,6 +1359,12 @@ export class StatsComponent implements OnInit {
       .filter(([, v]) => v.count >= 10)
       .map(([decade, v]) => ({ decade, avg: Math.round(v.total / v.count) }))
       .sort((a, b) => b.avg - a.avg);
+  });
+
+  readonly nonStreamableWithImdbCount = computed(() => {
+    const movies = this.catalog.movies();
+    const count = movies.filter((m) => !m.isStreamable && m.imdbId).length;
+    return count >= 10 ? count : null;
   });
 
   readonly topDecadeByStreamable = computed(() => {

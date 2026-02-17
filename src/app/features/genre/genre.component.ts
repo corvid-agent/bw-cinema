@@ -173,6 +173,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (uniqueDirectorLanguages(); as udl) {
             <p class="genre__fact">Directors from {{ udl }} language backgrounds</p>
           }
+          @if (ratingsSpread(); as rs) {
+            <p class="genre__fact">Ratings range: {{ rs }}</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -965,6 +968,16 @@ export class GenreComponent implements OnInit {
     if (counts.size < 2) return null;
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return `${top[0]}s`;
+  });
+
+  readonly ratingsSpread = computed(() => {
+    const rated = this.films().filter((m) => m.voteAverage > 0);
+    if (rated.length < 5) return null;
+    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
+    const low = sorted[0];
+    const high = sorted[sorted.length - 1];
+    const spread = high - low;
+    return spread >= 2 ? `${low.toFixed(1)}–${high.toFixed(1)}` : null;
   });
 
   readonly uniqueDirectorLanguages = computed(() => {
