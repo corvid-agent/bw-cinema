@@ -246,7 +246,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                           <a [routerLink]="['/director', dir]">{{ dir }}</a>@if (!last) {, }
                         }
                         @if (totalDirectorFilms(); as tdf) {
-                          <span class="detail__director-count">({{ tdf }} in catalog@if (directorAvgRating(); as dar) {, avg &#9733; {{ dar }}}@if (directorStreamablePct(); as dsp) {, {{ dsp }}% free}@if (directorPeakDecade(); as dpd) {, peak {{ dpd }}s}@if (directorCoDirectedCount(); as dcdc) {, {{ dcdc }} co-directed})</span>
+                          <span class="detail__director-count">({{ tdf }} in catalog@if (directorAvgRating(); as dar) {, avg &#9733; {{ dar }}}@if (directorStreamablePct(); as dsp) {, {{ dsp }}% free}@if (directorPeakDecade(); as dpd) {, peak {{ dpd }}s}@if (directorCoDirectedCount(); as dcdc) {, {{ dcdc }} co-directed}@if (directorIaStreamableCount(); as diasc) {, {{ diasc }} on IA})</span>
                         }
                       </span>
                     </div>
@@ -1561,6 +1561,16 @@ export class MovieComponent implements OnInit {
     if (genreFilms.length < 10) return null;
     const pct = Math.round((genreFilms.filter((m) => m.directors.length > 1).length / genreFilms.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly directorIaStreamableCount = computed(() => {
+    const s = this.summary();
+    if (!s || s.directors.length === 0) return null;
+    const dir = s.directors[0];
+    const dirFilms = this.catalogService.movies().filter((m) => m.directors.includes(dir));
+    if (dirFilms.length < 3) return null;
+    const count = dirFilms.filter((m) => m.internetArchiveId).length;
+    return count > 0 ? count : null;
   });
 
   @HostListener('document:keydown', ['$event'])

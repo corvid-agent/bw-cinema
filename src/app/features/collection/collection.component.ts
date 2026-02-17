@@ -420,6 +420,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Oldest Favorite</span>
                   </div>
                 }
+                @if (favoritesIaStreamableCount(); as fiasc) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ fiasc }}</span>
+                    <span class="stats__card-label">Favorites on IA</span>
+                  </div>
+                }
                 @if (watchedLanguageCount(); as wlc) {
                   <div class="stats__card">
                     <span class="stats__card-value">{{ wlc }}</span>
@@ -2027,6 +2033,13 @@ export class CollectionComponent implements OnInit {
     if (films.length < 5) return null;
     const pct = Math.round((films.filter((m) => m.directors.length > 1).length / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly favoritesIaStreamableCount = computed(() => {
+    const films = this.favoriteMovies();
+    if (films.length < 3) return null;
+    const count = films.filter((m) => m.internetArchiveId).length;
+    return count > 0 ? count : null;
   });
 
   readonly watchlistIaStreamableCount = computed(() => {
