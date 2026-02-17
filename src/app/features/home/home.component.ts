@@ -56,107 +56,40 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
             <span class="hero__stat-label">Genres</span>
           </div>
         </div>
-        @if (silentEraCount() > 0) {
-          <p class="hero__avg-rating">Including {{ silentEraCount() }} silent-era films (pre-1930)</p>
-        }
-        @if (topNonEnglishLang(); as lang) {
-          <p class="hero__avg-rating">Top non-English language: {{ lang.name }} ({{ lang.count }} films)</p>
-        }
         @if (avgCatalogRating(); as acr) {
-          <p class="hero__avg-rating">Average catalog rating: &#9733; {{ acr }}</p>
-        }
-        @if (totalWatchedCount() > 0) {
-          <p class="hero__avg-rating">You've watched {{ totalWatchedCount() }} film{{ totalWatchedCount() !== 1 ? 's' : '' }}@if (watchlistSize() > 0) { &middot; {{ watchlistSize() }} in watchlist}@if (favoritesCount() > 0) { &middot; {{ favoritesCount() }} favorite{{ favoritesCount() !== 1 ? 's' : '' }}}@if (avgWatchedRating(); as awr) { &middot; avg &#9733; {{ awr }}}</p>
-        }
-        @if (topDecadeName(); as tdn) {
-          <p class="hero__avg-rating">Most films from the {{ tdn }}</p>
-        }
-        @if (oldestFilmYear(); as ofy) {
-          <p class="hero__avg-rating">Films dating back to {{ ofy }}@if (newestFilmYear(); as nfy) { , up to {{ nfy }}}</p>
-        }
-        @if (coDirectedCount(); as cdc) {
-          <p class="hero__avg-rating">{{ cdc }} co-directed films in catalog</p>
-        }
-        @if (avgFilmAge() > 0) {
-          <p class="hero__avg-rating">Average film age: {{ avgFilmAge() }} years</p>
-        }
-        @if (nonEnglishCount() > 0) {
-          <p class="hero__avg-rating">{{ nonEnglishCount() }} non-English films in catalog</p>
-        }
-        @if (silentEraStreamablePct(); as sesp) {
-          <p class="hero__avg-rating">{{ sesp }}% of silent-era films are free to watch</p>
-        }
-        @if (coDirectedCount() > 0) {
-          <p class="hero__avg-rating">{{ coDirectedCount() }} co-directed films in catalog</p>
-        }
-        @if (medianYear() > 0) {
-          <p class="hero__avg-rating">Median film year: {{ medianYear() }}</p>
-        }
-        @if (avgTitleLength() > 0) {
-          <p class="hero__avg-rating">Avg title length: {{ avgTitleLength() }} characters</p>
-        }
-        @if (longestTitle(); as lt) {
-          <p class="hero__avg-rating">Longest title: "{{ lt }}"</p>
-        }
-        @if (shortestTitle(); as st) {
-          <p class="hero__avg-rating">Shortest title: "{{ st }}"</p>
-        }
-        @if (highlyRatedCount() > 0) {
-          <p class="hero__avg-rating">{{ highlyRatedCount() }} films rated 7.0+</p>
-        }
-        @if (streamableHighRatedCount() > 0) {
-          <p class="hero__avg-rating">{{ streamableHighRatedCount() }} highly-rated free to watch</p>
-        }
-        @if (topGenreLabel(); as tgl) {
-          <p class="hero__avg-rating">Most common genre: {{ tgl }}</p>
-        }
-        @if (newestStreamableTitle(); as nst) {
-          <p class="hero__avg-rating">Newest free film: "{{ nst }}"</p>
-        }
-        @if (topDirectorByStreamable(); as tdbs) {
-          <p class="hero__avg-rating">Most streamable director: {{ tdbs.name }} ({{ tdbs.count }})</p>
-        }
-        @if (oldestStreamableYear()) {
-          <p class="hero__avg-rating">Oldest free film from {{ oldestStreamableYear() }}</p>
+          <p class="hero__avg-rating">Average rating: &#9733; {{ acr }}</p>
         }
         @if (catalogLanguageCount(); as clc) {
-          <p class="hero__avg-rating">{{ clc }} languages represented</p>
+          <p class="hero__avg-rating">{{ clc }} languages &middot; {{ catalogDirectorCount() }} directors</p>
         }
-        @if (silentEraStreamableCount(); as sesc) {
-          <p class="hero__avg-rating">{{ sesc }} free silent-era films</p>
+        @if (totalWatchedCount() > 0) {
+          <p class="hero__avg-rating">You've watched {{ totalWatchedCount() }} film{{ totalWatchedCount() !== 1 ? 's' : '' }}@if (watchlistSize() > 0) { &middot; {{ watchlistSize() }} in watchlist}@if (favoritesCount() > 0) { &middot; {{ favoritesCount() }} favorite{{ favoritesCount() !== 1 ? 's' : '' }}}</p>
         }
-        @if (catalogDirectorCount(); as cdc) {
-          <p class="hero__avg-rating">{{ cdc }} unique directors</p>
+        @if (oldestFilmYear(); as ofy) {
+          <p class="hero__avg-rating">{{ ofy }}–{{ newestFilmYear() }} &middot; {{ topDecadeName() }} peak</p>
         }
-        @if (highRatedStreamablePct(); as hrsp) {
-          <p class="hero__avg-rating">{{ hrsp }}% of free films rated 7.0+</p>
-        }
-        @if (preWarStreamableCount(); as pwsc) {
-          <p class="hero__avg-rating">{{ pwsc }} free pre-1940 films</p>
-        }
-        @if (catalogAvgDirectorFilmCount(); as cadfc) {
-          <p class="hero__avg-rating">Avg {{ cadfc }} films per director</p>
-        }
-        @if (streamableAvgRating(); as sar) {
-          <p class="hero__avg-rating">Free film avg &#9733; {{ sar }}</p>
-        }
-        @if (catalogCoDirectedPct(); as ccdp) {
-          <p class="hero__avg-rating">{{ ccdp }}% co-directed</p>
-        }
-        @if (catalogImdbLinkedPct(); as cilp) {
-          <p class="hero__avg-rating">{{ cilp }}% linked to IMDb</p>
-        }
-        @if (catalogPosterCoveragePct(); as cpcp) {
-          <p class="hero__avg-rating">{{ cpcp }}% have poster art</p>
-        }
-        @if (catalogYtStreamablePct(); as cysp) {
-          <p class="hero__avg-rating">{{ cysp }}% streamable via YouTube</p>
-        }
-        @if (catalogIaStreamablePct(); as ciasp) {
-          <p class="hero__avg-rating">{{ ciasp }}% on Internet Archive</p>
-        }
-        @if (catalogMultiGenrePct(); as cmgp) {
-          <p class="hero__avg-rating">{{ cmgp }}% have 2+ genres</p>
+        <button class="hero__more-toggle" (click)="showMoreHero.set(!showMoreHero())">
+          {{ showMoreHero() ? 'Less' : 'More stats' }}
+        </button>
+        @if (showMoreHero()) {
+          @if (silentEraCount() > 0) {
+            <p class="hero__avg-rating">{{ silentEraCount() }} silent-era films (pre-1930)</p>
+          }
+          @if (highlyRatedCount() > 0) {
+            <p class="hero__avg-rating">{{ highlyRatedCount() }} films rated 7.0+ &middot; {{ streamableHighRatedCount() }} free</p>
+          }
+          @if (nonEnglishCount() > 0) {
+            <p class="hero__avg-rating">{{ nonEnglishCount() }} non-English films@if (topNonEnglishLang(); as lang) { &middot; top: {{ lang.name }} ({{ lang.count }})}</p>
+          }
+          @if (catalogYtStreamablePct(); as cysp) {
+            <p class="hero__avg-rating">{{ cysp }}% on YouTube &middot; {{ catalogIaStreamablePct() }}% on Internet Archive</p>
+          }
+          @if (catalogCoDirectedPct(); as ccdp) {
+            <p class="hero__avg-rating">{{ ccdp }}% co-directed &middot; {{ catalogImdbLinkedPct() }}% IMDb-linked &middot; {{ catalogPosterCoveragePct() }}% have posters</p>
+          }
+          @if (avgFilmAge() > 0) {
+            <p class="hero__avg-rating">Avg age {{ avgFilmAge() }}yr &middot; median year {{ medianYear() }}</p>
+          }
         }
       </div>
     </section>
@@ -633,6 +566,17 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
       font-size: 0.85rem;
       color: var(--text-tertiary);
       margin: var(--space-md) 0 0;
+    }
+    .hero__more-toggle {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: var(--space-xs) 0;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+      &:hover { opacity: 1; }
     }
     .section {
       padding: var(--space-2xl) 0;
@@ -1116,6 +1060,7 @@ export class HomeComponent implements OnInit {
   private readonly recentlyViewedService = inject(RecentlyViewedService);
 
   readonly currentYear = new Date().getFullYear();
+  readonly showMoreHero = signal(false);
   private readonly gemSeed = signal(0);
   readonly decades = computed(() => this.catalog.meta()?.decades ?? []);
   readonly decadeFilmCounts = computed(() => {

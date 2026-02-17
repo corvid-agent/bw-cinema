@@ -42,8 +42,8 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
             }
           </p>
         }
-        @if (avgResultYear(); as avgYr) {
-          <p class="browse__watched-note">Average year: {{ avgYr }}</p>
+        @if (resultStreamablePct(); as rsp) {
+          <p class="browse__watched-note">{{ rsp }}% streamable@if (resultYearRange(); as ryr) { &middot; {{ ryr }}}@if (resultLanguageCount(); as rlc) { &middot; {{ rlc }} languages}</p>
         }
         @if (watchedInResults() > 0) {
           <p class="browse__watched-note">{{ watchedInResults() }} already watched</p>
@@ -51,74 +51,22 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (topResultDirector(); as trd) {
           <p class="browse__watched-note">Top director: <a [routerLink]="['/director', trd.name]">{{ trd.name }}</a> ({{ trd.count }})</p>
         }
-        @if (resultLanguageCount(); as rlc) {
-          <p class="browse__watched-note">{{ rlc }} languages in results</p>
-        }
-        @if (resultStreamablePct(); as rsp) {
-          <p class="browse__watched-note">{{ rsp }}% streamable</p>
-        }
-        @if (resultYearRange(); as ryr) {
-          <p class="browse__watched-note">Years: {{ ryr }}</p>
-        }
-        @if (resultAvgFilmAge(); as rafa) {
-          <p class="browse__watched-note">Avg age: {{ rafa }} years</p>
-        }
-        @if (resultHighRatedCount(); as rhrc) {
-          <p class="browse__watched-note">{{ rhrc }} rated 7.0+</p>
-        }
-        @if (resultDecadeCount(); as rdc) {
-          <p class="browse__watched-note">Spanning {{ rdc }} decades</p>
-        }
-        @if (resultCoDirectedCount(); as rcdc) {
-          <p class="browse__watched-note">{{ rcdc }} co-directed films</p>
-        }
-        @if (resultNonEnglishCount(); as rnec) {
-          <p class="browse__watched-note">{{ rnec }} non-English films</p>
-        }
-        @if (resultSilentEraCount(); as rsec) {
-          <p class="browse__watched-note">{{ rsec }} silent-era films (pre-1930)</p>
-        }
-        @if (resultMedianRating(); as rmr) {
-          <p class="browse__watched-note">Median rating: &#9733; {{ rmr }}</p>
-        }
-        @if (resultAvgYear(); as ray) {
-          <p class="browse__watched-note">Average year: {{ ray }}</p>
-        }
-        @if (resultMedianYear(); as rmy) {
-          <p class="browse__watched-note">Median year: {{ rmy }}</p>
-        }
-        @if (resultAvgTitleLength(); as ratl) {
-          <p class="browse__watched-note">Avg title: {{ ratl }} chars</p>
-        }
-        @if (resultLongestTitle(); as rlt) {
-          <p class="browse__watched-note">Longest: "{{ rlt }}"</p>
-        }
-        @if (resultShortestTitle(); as rst) {
-          <p class="browse__watched-note">Shortest: "{{ rst }}"</p>
-        }
-        @if (resultUniqueDirectorCount(); as rudc) {
-          <p class="browse__watched-note">{{ rudc }} unique directors</p>
-        }
-        @if (resultGenreCount(); as rgc) {
-          <p class="browse__watched-note">{{ rgc }} genres represented</p>
-        }
-        @if (resultImdbLinkedPct(); as rilp) {
-          <p class="browse__watched-note">{{ rilp }}% linked to IMDb</p>
-        }
-        @if (resultPosterCoveragePct(); as rpcp) {
-          <p class="browse__watched-note">{{ rpcp }}% have poster art</p>
-        }
-        @if (resultYtStreamablePct(); as rysp) {
-          <p class="browse__watched-note">{{ rysp }}% on YouTube</p>
-        }
-        @if (resultHighlyRatedPct(); as rhrp) {
-          <p class="browse__watched-note">{{ rhrp }}% rated 7.0+</p>
-        }
-        @if (resultCoDirectedPct(); as rcdp) {
-          <p class="browse__watched-note">{{ rcdp }}% co-directed</p>
-        }
-        @if (resultIaStreamablePct(); as riasp) {
-          <p class="browse__watched-note">{{ riasp }}% on Internet Archive</p>
+        <button class="browse__more-toggle" (click)="showMoreStats.set(!showMoreStats())">
+          {{ showMoreStats() ? 'Less' : 'More stats' }}
+        </button>
+        @if (showMoreStats()) {
+          @if (resultHighRatedCount(); as rhrc) {
+            <p class="browse__watched-note">{{ rhrc }} rated 7.0+ &middot; median &#9733; {{ resultMedianRating() }}</p>
+          }
+          @if (resultUniqueDirectorCount(); as rudc) {
+            <p class="browse__watched-note">{{ rudc }} directors &middot; {{ resultGenreCount() }} genres &middot; {{ resultDecadeCount() }} decades</p>
+          }
+          @if (resultNonEnglishCount(); as rnec) {
+            <p class="browse__watched-note">{{ rnec }} non-English &middot; {{ resultCoDirectedCount() }} co-directed &middot; {{ resultSilentEraCount() }} silent-era</p>
+          }
+          @if (resultYtStreamablePct(); as rysp) {
+            <p class="browse__watched-note">{{ rysp }}% YouTube &middot; {{ resultIaStreamablePct() }}% IA &middot; {{ resultImdbLinkedPct() }}% IMDb</p>
+          }
         }
       </div>
 
@@ -293,6 +241,16 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       font-size: 0.8rem;
       color: var(--text-tertiary);
       margin: var(--space-xs) 0 0;
+    }
+    .browse__more-toggle {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: var(--space-xs) 0;
+      opacity: 0.7;
+      &:hover { opacity: 1; }
     }
     .browse__layout {
       display: grid;
@@ -605,6 +563,7 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly page = signal(1);
   readonly viewMode = signal<ViewMode>('grid');
   readonly filterOpen = signal(false);
+  readonly showMoreStats = signal(false);
 
   readonly filter = signal<CatalogFilter>({
     query: '',

@@ -35,86 +35,8 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (filmAge()) {
               <span class="watch__header-rating">&middot; {{ filmAge() }}</span>
             }
-            @if (movieLanguage()) {
-              <span class="watch__header-rating">&middot; {{ movieLanguage() }}</span>
-            }
-            @if (isCoDirected()) {
-              <span class="watch__header-rating">&middot; Co-directed</span>
-            }
-            @if (isSilentEra()) {
-              <span class="watch__header-rating">&middot; Silent Era</span>
-            }
-            @if (isNonEnglish()) {
-              <span class="watch__header-rating">&middot; Non-English</span>
-            }
-            @if (isHighlyRated()) {
-              <span class="watch__header-rating">&middot; Highly Rated</span>
-            }
-            @if (decadeFilmCount()) {
-              <span class="watch__header-rating">&middot; {{ decadeFilmCount() }} films from this decade</span>
-            }
-            @if (movieDecadeRank()) {
-              <span class="watch__header-rating">&middot; {{ movieDecadeRank() }}</span>
-            }
-            @if (sameYearCount()) {
-              <span class="watch__header-rating">&middot; {{ sameYearCount() }} films from {{ movieYear() }}</span>
-            }
-            @if (directorGenreSpan()) {
-              <span class="watch__header-rating">&middot; {{ directorGenreSpan() }} genres by director</span>
-            }
-            @if (genrePeerCount()) {
-              <span class="watch__header-rating">&middot; {{ genrePeerCount() }} films in same genre</span>
-            }
-            @if (catalogRankByRating()) {
-              <span class="watch__header-rating">&middot; #{{ catalogRankByRating() }} by rating</span>
-            }
-            @if (directorHighRatedCount()) {
-              <span class="watch__header-rating">&middot; {{ directorHighRatedCount() }} highly-rated by director</span>
-            }
             @if (genreLabel()) {
               <span class="watch__header-rating">&middot; {{ genreLabel() }}</span>
-            }
-            @if (movieTitleWordCount()) {
-              <span class="watch__header-rating">&middot; {{ movieTitleWordCount() }}-word title</span>
-            }
-            @if (decadeStreamableCount()) {
-              <span class="watch__header-rating">&middot; {{ decadeStreamableCount() }} streamable from this decade</span>
-            }
-            @if (primaryGenreStreamablePct()) {
-              <span class="watch__header-rating">&middot; {{ primaryGenreStreamablePct() }}% of genre streamable</span>
-            }
-            @if (sameLanguageCount()) {
-              <span class="watch__header-rating">&middot; {{ sameLanguageCount() }} {{ movieLanguage() || 'English' }} films</span>
-            }
-            @if (directorCareerSpan()) {
-              <span class="watch__header-rating">&middot; {{ directorCareerSpan() }}-year career</span>
-            }
-            @if (movieGenreCount()) {
-              <span class="watch__header-rating">&middot; {{ movieGenreCount() }} genres</span>
-            }
-            @if (movieImdbLinked()) {
-              <span class="watch__header-rating">&middot; on IMDb</span>
-            }
-            @if (isPreWar()) {
-              <span class="watch__header-rating">&middot; Pre-1940</span>
-            }
-            @if (decadeImdbLinkedPct()) {
-              <span class="watch__header-rating">&middot; {{ decadeImdbLinkedPct() }}% of decade on IMDb</span>
-            }
-            @if (genrePosterCoveragePct()) {
-              <span class="watch__header-rating">&middot; {{ genrePosterCoveragePct() }}% of genre have posters</span>
-            }
-            @if (directorImdbLinkedPct()) {
-              <span class="watch__header-rating">&middot; {{ directorImdbLinkedPct() }}% of director's films on IMDb</span>
-            }
-            @if (genreIaStreamableCount()) {
-              <span class="watch__header-rating">&middot; {{ genreIaStreamableCount() }} in genre on Internet Archive</span>
-            }
-            @if (decadeAvgGenreCount()) {
-              <span class="watch__header-rating">&middot; avg {{ decadeAvgGenreCount() }} genres/film in decade</span>
-            }
-            @if (genreHighlyRatedPct()) {
-              <span class="watch__header-rating">&middot; {{ genreHighlyRatedPct() }}% of genre rated 7.0+</span>
             }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>

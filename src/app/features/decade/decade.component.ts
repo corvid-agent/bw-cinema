@@ -129,80 +129,29 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (decadeFact(); as fact) {
             <p class="decade__fact">{{ fact }}</p>
           }
-          @if (longestTitle(); as lt) {
-            <p class="decade__fact">Longest title: "{{ lt }}"</p>
-          }
-          @if (shortestTitle(); as st) {
-            <p class="decade__fact">Shortest title: "{{ st }}"</p>
-          }
           @if (medianRating(); as mr) {
-            <p class="decade__fact">Median rating: &#9733; {{ mr }}</p>
-          }
-          @if (nonEnglishPct(); as nep) {
-            <p class="decade__fact">{{ nep }}% non-English films</p>
-          }
-          @if (avgTitleLength(); as atl) {
-            <p class="decade__fact">Avg title length: {{ atl }} characters</p>
-          }
-          @if (highlyRatedCount() > 0) {
-            <p class="decade__fact">{{ highlyRatedCount() }} films rated 8.0+</p>
-          }
-          @if (streamableHighRatedCount() > 0) {
-            <p class="decade__fact">{{ streamableHighRatedCount() }} highly-rated free to watch</p>
+            <p class="decade__fact">Median &#9733; {{ mr }}@if (highlyRatedCount() > 0) { &middot; {{ highlyRatedCount() }} rated 8.0+}</p>
           }
           @if (topDirectorFilmCount(); as tdfc) {
-            <p class="decade__fact">Top director: {{ tdfc.name }} ({{ tdfc.count }} films)</p>
-          }
-          @if (decadeTopGenre(); as dtg) {
-            <p class="decade__fact">Top genre: {{ dtg }}</p>
-          }
-          @if (singleGenreCount()) {
-            <p class="decade__fact">{{ singleGenreCount() }} single-genre films</p>
-          }
-          @if (streamableImdbLinkedCount(); as silc) {
-            <p class="decade__fact">{{ silc }} streamable with IMDb link</p>
-          }
-          @if (ytStreamableCount(); as ysc) {
-            <p class="decade__fact">{{ ysc }} streamable via YouTube</p>
-          }
-          @if (iaStreamableCount(); as isc) {
-            <p class="decade__fact">{{ isc }} on Internet Archive</p>
-          }
-          @if (avgGenresPerFilm(); as agpf) {
-            <p class="decade__fact">Avg {{ agpf }} genres per film</p>
-          }
-          @if (multiGenrePct(); as mgp) {
-            <p class="decade__fact">{{ mgp }}% have 2+ genres</p>
-          }
-          @if (coDirectedPct(); as cdp) {
-            <p class="decade__fact">{{ cdp }}% co-directed</p>
+            <p class="decade__fact">Top director: {{ tdfc.name }} ({{ tdfc.count }})@if (decadeTopGenre(); as dtg) { &middot; Top genre: {{ dtg }}}</p>
           }
           @if (uniqueLanguageCount(); as ulc) {
-            <p class="decade__fact">{{ ulc }} languages represented</p>
+            <p class="decade__fact">{{ ulc }} languages@if (nonEnglishPct(); as nep) { &middot; {{ nep }}% non-English}@if (decadeDirectorCount(); as ddc) { &middot; {{ ddc }} directors}</p>
           }
-          @if (bestRatedTitle(); as brt) {
-            <p class="decade__fact">Highest rated: "{{ brt }}"</p>
-          }
-          @if (decadeDirectorCount(); as ddc) {
-            <p class="decade__fact">{{ ddc }} unique directors</p>
-          }
-          @if (decadeImdbLinkedPct(); as dilp) {
-            <p class="decade__fact">{{ dilp }}% linked to IMDb</p>
-          }
-          @if (avgDirectorFilmCount(); as adfc) {
-            <p class="decade__fact">Avg {{ adfc }} films per director</p>
-          }
-          @if (decadeMedianRating(); as dmr) {
-            <p class="decade__fact">Median rating: &#9733; {{ dmr }}</p>
-          }
-          @if (decadeAvgTitleLength(); as datl) {
-            <p class="decade__fact">Avg title: {{ datl }} characters</p>
-          }
-          @if (mostCommonLanguage(); as mcl) {
-            <p class="decade__fact">Top non-English: {{ mcl.name }} ({{ mcl.count }})</p>
-          }
-          @if (posterCoveragePct(); as pcp) {
-            <p class="decade__fact">{{ pcp }}% have poster images</p>
+          <button class="decade__more-toggle" (click)="showMoreFacts.set(!showMoreFacts())">{{ showMoreFacts() ? 'Less' : 'More facts' }}</button>
+          @if (showMoreFacts()) {
+            @if (bestRatedTitle(); as brt) {
+              <p class="decade__fact">Highest rated: "{{ brt }}"</p>
+            }
+            @if (ytStreamableCount(); as ysc) {
+              <p class="decade__fact">{{ ysc }} on YouTube &middot; {{ iaStreamableCount() }} on IA</p>
+            }
+            @if (coDirectedPct(); as cdp) {
+              <p class="decade__fact">{{ cdp }}% co-directed &middot; {{ avgGenresPerFilm() }} genres/film &middot; {{ multiGenrePct() }}% multi-genre</p>
+            }
+            @if (posterCoveragePct(); as pcp) {
+              <p class="decade__fact">{{ pcp }}% have posters &middot; {{ decadeImdbLinkedPct() }}% IMDb-linked</p>
+            }
           }
 
           @if (bestFilm(); as best) {
@@ -397,6 +346,17 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       font-size: 0.95rem;
       margin: 0 0 var(--space-xl);
       padding: var(--space-sm) 0;
+    }
+    .decade__more-toggle {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: var(--space-xs) 0;
+      margin-bottom: var(--space-md);
+      opacity: 0.7;
+      &:hover { opacity: 1; }
     }
     .decade__best-film {
       margin-bottom: var(--space-xl);
@@ -694,6 +654,7 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
   `],
 })
 export class DecadeComponent implements OnInit {
+  readonly showMoreFacts = signal(false);
   readonly year = input.required<string>();
 
   protected readonly catalog = inject(CatalogService);

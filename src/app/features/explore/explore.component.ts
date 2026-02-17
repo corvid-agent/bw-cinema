@@ -41,7 +41,11 @@ const MOODS: Mood[] = [
       <div class="explore container">
         <div class="explore__header">
           <h1>Explore</h1>
-          <p class="explore__subtitle">Discover films by mood, or let fate decide@if (totalUnwatchedStreamable(); as tus) { &middot; {{ tus }} free films to discover}@if (unwatchedAvgRating(); as uar) { &middot; avg &#9733; {{ uar }}}@if (unwatchedLanguageCount(); as ulc) { &middot; {{ ulc }} languages}@if (unwatchedGenreCount(); as ugc) { &middot; {{ ugc }} genres}@if (unwatchedDirectorCount(); as udc) { &middot; {{ udc }} directors}@if (unwatchedAvgAge(); as uaa) { &middot; avg {{ uaa }}yr old}@if (unwatchedNonEnglishCount(); as unec) { &middot; {{ unec }} non-English}@if (unwatchedSilentEraCount(); as usec) { &middot; {{ usec }} silent-era}@if (unwatchedMedianYear(); as umy) { &middot; median year {{ umy }}}@if (unwatchedCoDirectedCount(); as ucdc) { &middot; {{ ucdc }} co-directed}@if (unwatchedAvgYear(); as uay) { &middot; avg year {{ uay }}}@if (unwatchedAvgTitleLength(); as uatl) { &middot; avg title {{ uatl }} chars}@if (unwatchedHighlyRatedCount(); as uhrc) { &middot; {{ uhrc }} rated 8+}@if (uncoveredFilmCount(); as ufc) { &middot; {{ ufc }} uncategorized}@if (unwatchedShortestTitle(); as ust) { &middot; shortest: "{{ ust }}"}@if (unwatchedLongestTitle(); as ult) { &middot; longest: "{{ ult }}"}@if (topMoodByFilmCount(); as tmfc) { &middot; biggest mood: {{ tmfc }}}@if (oldestUnwatchedTitle(); as out) { &middot; oldest: "{{ out }}"}@if (oldestUnwatchedYear(); as ouy) { &middot; from {{ ouy }}}@if (moodStreamablePct(); as msp) { &middot; {{ msp }}% mood-matched}@if (moodFilmCountRange(); as mfcr) { &middot; moods: {{ mfcr }}}@if (watchedMoodCount(); as wmc) { &middot; {{ wmc }} moods watched}@if (avgMoodFilmRating(); as amfr) { &middot; mood avg &#9733; {{ amfr }}}@if (newestMoodFilm(); as nmf) { &middot; newest in mood: "{{ nmf }}"}@if (moodCoDirectedPct(); as mcdp) { &middot; {{ mcdp }}% co-directed}@if (moodNonEnglishCount(); as mnec) { &middot; {{ mnec }} non-English}@if (moodSilentEraCount(); as msec) { &middot; {{ msec }} silent-era}@if (moodAvgYear(); as may) { &middot; avg year {{ may }}}@if (moodImdbLinkedPct(); as milp) { &middot; {{ milp }}% IMDb-linked}@if (moodPosterCoveragePct(); as mpcp) { &middot; {{ mpcp }}% have posters}@if (moodAvgDirectorCount(); as madc) { &middot; avg {{ madc }} directors}@if (unwatchedIaCount(); as uiac) { &middot; {{ uiac }} on Internet Archive}@if (unwatchedYtCount(); as uytc) { &middot; {{ uytc }} on YouTube}</p>
+          <p class="explore__subtitle">Discover films by mood, or let fate decide@if (totalUnwatchedStreamable(); as tus) { &middot; {{ tus }} free films to discover}@if (unwatchedAvgRating(); as uar) { &middot; avg &#9733; {{ uar }}}@if (unwatchedLanguageCount(); as ulc) { &middot; {{ ulc }} languages}@if (unwatchedGenreCount(); as ugc) { &middot; {{ ugc }} genres}</p>
+          @if (showMoreExplore()) {
+            <p class="explore__subtitle explore__subtitle--extra">@if (unwatchedDirectorCount(); as udc) {{{ udc }} directors}@if (unwatchedNonEnglishCount(); as unec) { &middot; {{ unec }} non-English}@if (unwatchedSilentEraCount(); as usec) { &middot; {{ usec }} silent-era}@if (unwatchedHighlyRatedCount(); as uhrc) { &middot; {{ uhrc }} rated 8+}@if (unwatchedIaCount(); as uiac) { &middot; {{ uiac }} on IA}@if (unwatchedYtCount(); as uytc) { &middot; {{ uytc }} on YouTube}</p>
+          }
+          <button class="explore__more-toggle" (click)="showMoreExplore.set(!showMoreExplore())">{{ showMoreExplore() ? 'Less' : 'More stats' }}</button>
         </div>
 
         <div class="explore__random">
@@ -286,6 +290,19 @@ const MOODS: Mood[] = [
       color: var(--text-tertiary);
       font-size: 0.95rem;
       margin: 0;
+    }
+    .explore__subtitle--extra {
+      margin-top: var(--space-xs);
+    }
+    .explore__more-toggle {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: var(--space-xs) 0;
+      opacity: 0.7;
+      &:hover { opacity: 1; }
     }
     .explore__random {
       display: flex;
@@ -772,6 +789,7 @@ export class ExploreComponent implements OnInit {
   private readonly titleService = inject(Title);
 
   readonly moods = MOODS;
+  readonly showMoreExplore = signal(false);
   readonly activeMood = signal<Mood | null>(null);
   readonly doubleFeature = signal<MovieSummary[]>([]);
   readonly filmFestival = signal<{ theme: string; films: MovieSummary[] }>({ theme: '', films: [] });

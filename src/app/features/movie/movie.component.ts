@@ -246,7 +246,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                           <a [routerLink]="['/director', dir]">{{ dir }}</a>@if (!last) {, }
                         }
                         @if (totalDirectorFilms(); as tdf) {
-                          <span class="detail__director-count">({{ tdf }} in catalog@if (directorAvgRating(); as dar) {, avg &#9733; {{ dar }}}@if (directorStreamablePct(); as dsp) {, {{ dsp }}% free}@if (directorPeakDecade(); as dpd) {, peak {{ dpd }}s}@if (directorCoDirectedCount(); as dcdc) {, {{ dcdc }} co-directed}@if (directorIaStreamableCount(); as diasc) {, {{ diasc }} on IA})</span>
+                          <span class="detail__director-count">({{ tdf }} in catalog@if (directorAvgRating(); as dar) {, avg &#9733; {{ dar }}}@if (directorStreamablePct(); as dsp) {, {{ dsp }}% free})</span>
                         }
                       </span>
                     </div>
@@ -259,7 +259,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                           <a class="detail__tag" [routerLink]="['/genre', genre]">{{ genre }}</a>
                         }
                         @if (genreSiblingCount(); as gsc) {
-                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (directorAvgTitleLength(); as datl) {, avg title {{ datl }} chars}@if (decadeAvgRating(); as dar) {, decade avg &#9733; {{ dar }}}@if (genreHighlyRatedCount(); as ghrc) {, {{ ghrc }} rated 8+}@if (genreStreamablePct(); as gsp) {, {{ gsp }}% streamable}@if (decadeStreamablePct(); as dsp) {, {{ dsp }}% of decade streamable}@if (genreAvgYear(); as gay) {, avg year {{ gay }}}@if (genreAvgFilmAge(); as gafa) {, avg age {{ gafa }}yr}@if (genreDirectorCount(); as gdc) {, {{ gdc }} directors}@if (languageRankLabel(); as lrl) {, {{ lrl }}}@if (yearRankInGenre(); as yrig) {, {{ yrig }}}@if (sameYearStreamableCount(); as sysc) {, {{ sysc }} streamable from year}@if (genrePreWarPct(); as gpwp) {, {{ gpwp }}% pre-1940}@if (directorFilmCountInDecade(); as dfcid) {, {{ dfcid }} by director in decade}@if (genreImdbLinkedPct(); as gilp) {, {{ gilp }}% IMDb-linked}@if (decadePosterCoveragePct(); as dpcp) {, {{ dpcp }}% of decade have posters}@if (directorAvgGenreCount(); as dagc) {, director avg {{ dagc }} genres}@if (decadeCoDirectedPct(); as dcdp) {, {{ dcdp }}% co-directed in decade}@if (genreCoDirectedPct(); as gcdp) {, {{ gcdp }}% co-directed in genre})</span>
+                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreStreamablePct(); as gsp) {, {{ gsp }}% streamable}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (genreDirectorCount(); as gdc) {, {{ gdc }} directors})</span>
                         }
                       </div>
                     </div>
