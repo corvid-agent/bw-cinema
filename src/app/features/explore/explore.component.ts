@@ -41,7 +41,7 @@ const MOODS: Mood[] = [
       <div class="explore container">
         <div class="explore__header">
           <h1>Explore</h1>
-          <p class="explore__subtitle">Discover films by mood, or let fate decide@if (totalUnwatchedStreamable(); as tus) { &middot; {{ tus }} free films to discover}@if (unwatchedAvgRating(); as uar) { &middot; avg &#9733; {{ uar }}}@if (unwatchedLanguageCount(); as ulc) { &middot; {{ ulc }} languages}@if (unwatchedGenreCount(); as ugc) { &middot; {{ ugc }} genres}@if (unwatchedDirectorCount(); as udc) { &middot; {{ udc }} directors}@if (unwatchedAvgAge(); as uaa) { &middot; avg {{ uaa }}yr old}@if (unwatchedNonEnglishCount(); as unec) { &middot; {{ unec }} non-English}@if (unwatchedSilentEraCount(); as usec) { &middot; {{ usec }} silent-era}@if (unwatchedMedianYear(); as umy) { &middot; median year {{ umy }}}@if (unwatchedCoDirectedCount(); as ucdc) { &middot; {{ ucdc }} co-directed}@if (unwatchedAvgYear(); as uay) { &middot; avg year {{ uay }}}@if (unwatchedAvgTitleLength(); as uatl) { &middot; avg title {{ uatl }} chars}@if (unwatchedHighlyRatedCount(); as uhrc) { &middot; {{ uhrc }} rated 8+}</p>
+          <p class="explore__subtitle">Discover films by mood, or let fate decide@if (totalUnwatchedStreamable(); as tus) { &middot; {{ tus }} free films to discover}@if (unwatchedAvgRating(); as uar) { &middot; avg &#9733; {{ uar }}}@if (unwatchedLanguageCount(); as ulc) { &middot; {{ ulc }} languages}@if (unwatchedGenreCount(); as ugc) { &middot; {{ ugc }} genres}@if (unwatchedDirectorCount(); as udc) { &middot; {{ udc }} directors}@if (unwatchedAvgAge(); as uaa) { &middot; avg {{ uaa }}yr old}@if (unwatchedNonEnglishCount(); as unec) { &middot; {{ unec }} non-English}@if (unwatchedSilentEraCount(); as usec) { &middot; {{ usec }} silent-era}@if (unwatchedMedianYear(); as umy) { &middot; median year {{ umy }}}@if (unwatchedCoDirectedCount(); as ucdc) { &middot; {{ ucdc }} co-directed}@if (unwatchedAvgYear(); as uay) { &middot; avg year {{ uay }}}@if (unwatchedAvgTitleLength(); as uatl) { &middot; avg title {{ uatl }} chars}@if (unwatchedHighlyRatedCount(); as uhrc) { &middot; {{ uhrc }} rated 8+}@if (uncoveredFilmCount(); as ufc) { &middot; {{ ufc }} uncategorized}</p>
         </div>
 
         <div class="explore__random">
@@ -1221,6 +1221,15 @@ export class ExploreComponent implements OnInit {
     const years = films.map((m) => m.year).sort((a, b) => a - b);
     const mid = Math.floor(years.length / 2);
     return years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
+  });
+
+  readonly uncoveredFilmCount = computed(() => {
+    const watchedIds = this.collection.watchedIds();
+    const films = this.catalog.movies().filter((m) => m.isStreamable && !watchedIds.has(m.id));
+    if (films.length < 10) return null;
+    const covered = films.filter((m) => this.moods.some((mood) => this.matchesMood(m, mood)));
+    const uncovered = films.length - covered.length;
+    return uncovered > 0 ? uncovered : null;
   });
 
   private seededShuffle<T>(arr: T[], seed: number): T[] {

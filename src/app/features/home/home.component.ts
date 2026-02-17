@@ -101,6 +101,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (shortestTitle(); as st) {
           <p class="hero__avg-rating">Shortest title: "{{ st }}"</p>
         }
+        @if (highlyRatedCount() > 0) {
+          <p class="hero__avg-rating">{{ highlyRatedCount() }} films rated 7.0+</p>
+        }
       </div>
     </section>
 
@@ -1358,6 +1361,11 @@ export class HomeComponent implements OnInit {
     if (movies.length === 0) return null;
     const shortest = movies.reduce((a, b) => a.title.length <= b.title.length ? a : b);
     return shortest.title.length <= 5 ? shortest.title : null;
+  });
+
+  readonly highlyRatedCount = computed(() => {
+    const count = this.catalog.movies().filter((m) => m.voteAverage >= 7.0).length;
+    return count > 0 ? count : 0;
   });
 
   readonly decadeSpan = computed(() => {
