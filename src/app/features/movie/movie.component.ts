@@ -12,12 +12,13 @@ import { RatingStarsComponent } from '../../shared/components/rating-stars.compo
 import { SkeletonDetailComponent } from '../../shared/components/skeleton-detail.component';
 import { RuntimePipe } from '../../shared/pipes/runtime.pipe';
 import { ScrollRowComponent } from '../../shared/components/scroll-row.component';
+import { RevealDirective } from '../../shared/directives/reveal.directive';
 import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
 
 @Component({
   selector: 'app-movie',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RatingStarsComponent, SkeletonDetailComponent, RuntimePipe, ScrollRowComponent],
+  imports: [RouterLink, RatingStarsComponent, SkeletonDetailComponent, RuntimePipe, ScrollRowComponent, RevealDirective],
   template: `
     @if (loading()) {
       <app-skeleton-detail />
@@ -319,7 +320,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
           }
 
           @if (m.cast.length > 0) {
-            <section class="detail__cast-section">
+            <section appReveal class="detail__cast-section">
               <h2>Cast <span class="detail__section-note">({{ m.cast.length }})</span></h2>
               <div class="detail__cast">
                 @for (actor of m.cast; track actor.name) {
@@ -340,7 +341,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
           }
 
           @if (directorFilms().length > 0) {
-            <section class="detail__similar" aria-label="More by director">
+            <section appReveal class="detail__similar" aria-label="More by director">
               <div class="detail__section-header">
                 <h2>More by {{ movie()!.directors[0] }}</h2>
                 <a class="detail__section-link" [routerLink]="['/director', movie()!.directors[0]]">View all &rarr;</a>
@@ -371,7 +372,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
           }
 
           @if (similarWithReasons().length > 0) {
-            <section class="detail__similar" aria-label="Similar films">
+            <section appReveal class="detail__similar" aria-label="Similar films">
               <h2>You Might Also Like@if (similarUnwatchedCount(); as suc) { <span class="detail__section-note">({{ suc }} unwatched)</span>}@if (similarStreamableCount(); as ssc) { <span class="detail__section-note">&middot; {{ ssc }} free</span>}</h2>
               <app-scroll-row>
                 @for (s of similarWithReasons(); track s.movie.id) {

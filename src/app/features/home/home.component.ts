@@ -9,11 +9,12 @@ import { SearchBarComponent } from '../../shared/components/search-bar.component
 import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.component';
 import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.directive';
 import { ScrollRowComponent } from '../../shared/components/scroll-row.component';
+import { RevealDirective } from '../../shared/directives/reveal.directive';
 
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MovieGridComponent, SearchBarComponent, SkeletonGridComponent, KeyboardNavDirective, RouterLink, ScrollRowComponent],
+  imports: [MovieGridComponent, SearchBarComponent, SkeletonGridComponent, KeyboardNavDirective, RouterLink, ScrollRowComponent, RevealDirective],
   template: `
     <section class="hero">
       <div class="hero__bg"></div>
@@ -158,7 +159,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
       </section>
 
       @if (hiddenGems().length > 0) {
-        <section class="section container" aria-label="Hidden gems">
+        <section appReveal class="section container" aria-label="Hidden gems">
           <div class="section__header">
             <h2>Hidden Gems</h2>
             <span class="section__desc">Highly rated films with under 1,000 votes</span>
@@ -180,7 +181,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
       }
 
       @if (topRated().length > 0) {
-        <section class="section container" aria-label="Top rated classics">
+        <section appReveal class="section container" aria-label="Top rated classics">
           <div class="section__header">
             <h2>Top Rated Classics</h2>
             <a class="section__link" routerLink="/browse" [queryParams]="{ sort: 'rating' }">View all &rarr;</a>
@@ -202,7 +203,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
       }
 
       @if (worldCinema().length > 0) {
-        <section class="section container" aria-label="World cinema">
+        <section appReveal class="section container" aria-label="World cinema">
           <div class="section__header">
             <h2>World Cinema</h2>
             <a class="section__link" routerLink="/browse" [queryParams]="{ streamable: '1' }">Browse all &rarr;</a>
@@ -224,7 +225,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
       }
 
       @if (decades().length > 0) {
-        <section class="section container" aria-label="Browse by decade">
+        <section appReveal class="section container" aria-label="Browse by decade">
           <h2>Browse by Decade</h2>
           <div class="decades">
             @for (decade of decades(); track decade) {
@@ -241,7 +242,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
       }
 
       @if (genres().length > 0) {
-        <section class="section container" aria-label="Popular genres">
+        <section appReveal class="section container" aria-label="Popular genres">
           <h2>Popular Genres</h2>
           <div class="genres">
             @for (genre of genres(); track genre) {
@@ -252,7 +253,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
       }
 
       @if (topDirectors().length > 0) {
-        <section class="section container" aria-label="Featured directors">
+        <section appReveal class="section container" aria-label="Featured directors">
           <div class="section__header">
             <h2>Featured Directors</h2>
           </div>
@@ -271,7 +272,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
       }
 
       @if (decadeSpotlight(); as dSpot) {
-        <section class="section container" aria-label="Decade spotlight">
+        <section appReveal class="section container" aria-label="Decade spotlight">
           <div class="section__header">
             <div>
               <h2>Decade Spotlight: {{ dSpot.decade }}s</h2>
@@ -296,7 +297,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
       }
 
       @if (genreSpotlight(); as gSpot) {
-        <section class="section container" aria-label="Genre spotlight">
+        <section appReveal class="section container" aria-label="Genre spotlight">
           <div class="section__header">
             <div>
               <h2>Genre Spotlight: {{ gSpot.name }}</h2>
@@ -321,7 +322,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
       }
 
       @if (directorSpotlight(); as spotlight) {
-        <section class="section container" aria-label="Director spotlight">
+        <section appReveal class="section container" aria-label="Director spotlight">
           <div class="section__header">
             <div>
               <h2>Director Spotlight</h2>
@@ -415,7 +416,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
       }
 
       @if (recommendations().length > 0) {
-        <section class="section container" aria-label="Recommended for you">
+        <section appReveal class="section container" aria-label="Recommended for you">
           <div class="section__header">
             <h2>Recommended for You</h2>
             <a class="section__link" routerLink="/browse">Browse all &rarr;</a>
@@ -426,7 +427,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
         </section>
       }
 
-      <section class="section container cta-row" aria-label="Discover more">
+      <section appReveal class="section container cta-row" aria-label="Discover more">
         <a class="cta-card cta-card--quiz" routerLink="/quiz">
           <div class="cta-card__icon">?</div>
           <div>
@@ -453,7 +454,7 @@ import { ScrollRowComponent } from '../../shared/components/scroll-row.component
         </a>
       </section>
 
-      <section class="section container cta-row cta-row--secondary" aria-label="More features">
+      <section appReveal class="section container cta-row cta-row--secondary" aria-label="More features">
         <a class="cta-card cta-card--compare" routerLink="/compare">
           <div class="cta-card__icon">&#8644;</div>
           <div>
