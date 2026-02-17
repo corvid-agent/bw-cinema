@@ -806,6 +806,13 @@ const MOODS: Mood[] = [
       .explore__mood-name { font-size: 0.95rem; }
       .explore__progress-grid { grid-template-columns: 1fr; }
     }
+    @media (max-width: 360px) {
+      .explore__moods { grid-template-columns: repeat(2, 1fr); gap: var(--space-xs); }
+      .explore__mood-card { padding: var(--space-sm); }
+      .explore__mood-icon { font-size: 1.2rem; }
+      .explore__mood-name { font-size: 0.85rem; }
+      .explore__double-card img { width: 100px; }
+    }
   `],
 })
 export class ExploreComponent implements OnInit {

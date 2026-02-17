@@ -1,9 +1,11 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed, input } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
+import { firstValueFrom } from 'rxjs';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
-import { MovieService } from '../../core/services/movie.service';
+
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { MovieListComponent } from '../../shared/components/movie-list.component';
 import { ViewToggleComponent, type ViewMode } from '../../shared/components/view-toggle.component';
@@ -494,7 +496,22 @@ import type { MovieSummary } from '../../core/models/movie.model';
     }
     @media (max-width: 480px) {
       .actor__profile { flex-direction: column; text-align: center; }
-      .actor__stats { grid-template-columns: 1fr; }
+      .actor__stats { grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
+      .actor__stat { padding: var(--space-sm); }
+      .actor__stat-value { font-size: 1.2rem; }
+      .actor__timeline-bars { gap: var(--space-sm); }
+      .actor__best-film-card { padding: var(--space-sm) var(--space-md); }
+      .actor__sort-btn { padding: 6px 10px; font-size: 0.8rem; }
+      .actor__collab-chip { padding: 4px 10px; font-size: 0.8rem; }
+    }
+    @media (max-width: 360px) {
+      .actor__name { font-size: 1.3rem; }
+      .actor__stats { grid-template-columns: 1fr 1fr; }
+      .actor__stat-value { font-size: 1rem; }
+      .actor__stat-label { font-size: 0.65rem; }
+      .actor__photo, .actor__photo-placeholder { width: 64px; height: 64px; }
+      .actor__photo-placeholder { font-size: 1.5rem; }
+      .actor__genre-tag { padding: 3px 10px; font-size: 0.8rem; }
     }
     .actor__searching {
       text-align: center;
@@ -512,7 +529,7 @@ export class ActorComponent implements OnInit {
 
   protected readonly catalog = inject(CatalogService);
   private readonly collectionService = inject(CollectionService);
-  private readonly movieService = inject(MovieService);
+  private readonly http = inject(HttpClient);
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
 
@@ -653,41 +670,47 @@ export class ActorComponent implements OnInit {
     this.metaService.updateTag({ property: 'og:description', content: actorDesc });
     this.metaService.updateTag({ name: 'twitter:description', content: actorDesc });
 
-    // Search for films containing this actor by loading details
-    const actorName = this.name().toLowerCase();
-    const movies = this.catalog.movies();
-    const matchIds = new Set<string>();
-
-    // Load details in small batches with delays to respect TMDB rate limits
-    const batchSize = 8;
-    for (let i = 0; i < movies.length; i += batchSize) {
-      const batch = movies.slice(i, i + batchSize);
-      const results = await Promise.allSettled(
-        batch.map((m) => this.movieService.getDetail(m))
+    try {
+      // Search TMDB for the person (1 API call)
+      const searchResult = await firstValueFrom(
+        this.http.get<{ results: { id: number; name: string; profile_path: string | null }[] }>(
+          `https://api.themoviedb.org/3/search/person?query=${encodeURIComponent(this.name())}`
+        )
       );
-      for (const result of results) {
-        if (result.status === 'fulfilled') {
-          const detail = result.value;
-          if (detail.cast.some((c) => c.name.toLowerCase() === actorName)) {
-            matchIds.add(detail.id);
-            // Grab photo from first match
-            if (!this.photoUrl()) {
-              const actor = detail.cast.find((c) => c.name.toLowerCase() === actorName);
-              if (actor?.profileUrl) this.photoUrl.set(actor.profileUrl);
-            }
-          }
+
+      const person = searchResult.results.find(
+        (p) => p.name.toLowerCase() === this.name().toLowerCase()
+      ) ?? searchResult.results[0];
+
+      if (!person) {
+        this.searching.set(false);
+        return;
+      }
+
+      if (person.profile_path) {
+        this.photoUrl.set(`https://image.tmdb.org/t/p/w185${person.profile_path}`);
+      }
+
+      // Get their movie credits (1 API call)
+      const credits = await firstValueFrom(
+        this.http.get<{ cast: { id: number }[] }>(
+          `https://api.themoviedb.org/3/person/${person.id}/movie_credits`
+        )
+      );
+
+      // Cross-reference TMDB movie IDs with our catalog
+      const tmdbIds = new Set(credits.cast.map((c) => String(c.id)));
+      const movies = this.catalog.movies();
+      const matchIds = new Set<string>();
+      for (const m of movies) {
+        if (m.tmdbId && tmdbIds.has(m.tmdbId)) {
+          matchIds.add(m.id);
         }
       }
-      // Update incrementally so user sees results appearing
-      if (matchIds.size > 0) {
-        this.actorFilmIds.set(new Set(matchIds));
-      }
-      // Small delay between batches to avoid TMDB rate limiting
-      if (i + batchSize < movies.length) {
-        await new Promise((r) => setTimeout(r, 300));
-      }
+      this.actorFilmIds.set(matchIds);
+    } catch {
+      // TMDB lookup failed — no results
     }
-    this.actorFilmIds.set(new Set(matchIds));
     this.searching.set(false);
   }
 

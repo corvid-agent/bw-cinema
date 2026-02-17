@@ -557,6 +557,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
       .watch__fallback-actions { flex-direction: column; align-items: stretch; }
       .watch__fallback-btn { text-align: center; justify-content: center; }
     }
+    @media (max-width: 360px) {
+      .watch__header h1 { font-size: 1rem; }
+    }
   `],
 })
 export class WatchComponent implements OnInit, OnDestroy {

@@ -1065,7 +1065,42 @@ import { RevealDirective } from '../../shared/directives/reveal.directive';
     @media (max-width: 480px) {
       .hero__title { font-size: 1.8rem; }
       .hero__subtitle { font-size: 1rem; }
-      .hero__stats { flex-wrap: wrap; gap: var(--space-lg); }
+      .hero__stats {
+        flex-wrap: wrap;
+        gap: var(--space-sm) var(--space-lg);
+        justify-content: center;
+      }
+      .hero__stat-value { font-size: 1.2rem; }
+      .hero__stat-label { font-size: 0.7rem; }
+      .hero__surprise { padding: 8px 18px; font-size: 0.9rem; }
+      .decades { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+      .genre-tag { padding: 5px 14px; font-size: 0.85rem; }
+      .gems__card { flex: 0 0 110px; }
+      .fotd__poster { max-width: 160px; }
+      .fotd__title { font-size: 1.2rem; }
+      .cta-card { padding: var(--space-md); gap: var(--space-sm); }
+      .cta-card__icon { width: 34px; height: 34px; font-size: 1rem; }
+      .cta-card__title { font-size: 0.9rem; }
+      .cta-card__desc { font-size: 0.75rem; }
+      .rate-cards { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: var(--space-sm); }
+    }
+    @media (max-width: 360px) {
+      .hero { padding: var(--space-xl) 0 var(--space-lg); }
+      .hero__title { font-size: 1.5rem; }
+      .hero__subtitle { font-size: 0.9rem; }
+      .hero__eyebrow { font-size: 0.7rem; }
+      .hero__stats { gap: var(--space-xs) var(--space-md); }
+      .hero__stat-value { font-size: 1rem; }
+      .hero__stat-label { font-size: 0.65rem; }
+      .decades { grid-template-columns: repeat(2, 1fr); }
+      .decade-card { padding: var(--space-md) var(--space-sm); }
+      .decade-card__year { font-size: 1.1rem; }
+      .gems__card { flex: 0 0 100px; }
+      .fotd__poster { max-width: 120px; }
+      .fotd__title { font-size: 1.1rem; }
+      .director-chip { padding: var(--space-xs) var(--space-sm); }
+      .director-chip__initial { width: 28px; height: 28px; font-size: 0.85rem; }
+      .director-chip__name { font-size: 0.8rem; }
     }
   `],
 })

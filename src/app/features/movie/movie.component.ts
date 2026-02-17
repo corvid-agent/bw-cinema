@@ -1010,6 +1010,26 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       .detail__overview {
         font-size: 0.9rem;
       }
+      .detail__meta { font-size: 0.85rem; gap: var(--space-xs); }
+      .detail__tagline { font-size: 0.9rem; }
+      .detail__actions { gap: var(--space-xs); }
+      .detail__watch-btn { padding: var(--space-sm) var(--space-md); font-size: 0.9rem; }
+      .detail__detail-row { font-size: 0.85rem; }
+      .detail__detail-label { min-width: 75px; font-size: 0.75rem; }
+      .detail__cast { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: var(--space-sm); }
+      .cast-card img { width: 56px; height: 56px; }
+      .cast-card__name { font-size: 0.75rem; }
+      .cast-card__character { font-size: 0.65rem; }
+      .detail__carousel-card { flex: 0 0 110px; }
+    }
+    @media (max-width: 360px) {
+      .detail__hero { height: 180px; }
+      .detail__content { margin-top: -40px; }
+      .detail__poster { max-width: 120px; }
+      .detail__title { font-size: 1.3rem; }
+      .detail__back { padding: 4px 10px 4px 6px; font-size: 0.8rem; }
+      .detail__sub-ranks { gap: 2px; }
+      .detail__sub-rank { font-size: 0.6rem; padding: 1px 6px; }
     }
   `],
 })

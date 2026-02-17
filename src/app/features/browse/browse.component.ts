@@ -552,6 +552,12 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       .browse__sort select { width: 100%; }
       .browse__lang { flex: 1 1 100%; }
       .browse__lang select { width: 100%; }
+      .browse__chip { font-size: 0.8rem; padding: 4px 10px; }
+    }
+    @media (max-width: 360px) {
+      .browse__toolbar { gap: var(--space-xs); }
+      .browse__chip { font-size: 0.75rem; padding: 3px 8px; min-height: 40px; }
+      .browse__surprise { min-height: 40px; min-width: 40px; }
     }
   `],
 })
