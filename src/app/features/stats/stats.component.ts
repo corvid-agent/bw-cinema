@@ -575,6 +575,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">avg films per decade</span>
               </div>
             }
+            @if (iaVsYtRatio(); as iyr) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ iyr }}</span>
+                <span class="stats__fact-text">Internet Archive : YouTube ratio</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1540,6 +1546,16 @@ export class StatsComponent implements OnInit {
     if (decades.size < 3) return null;
     const avg = Math.round(movies.length / decades.size);
     return avg > 0 ? avg : null;
+  });
+
+  readonly iaVsYtRatio = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const ia = movies.filter((m) => m.internetArchiveId).length;
+    const yt = movies.filter((m) => m.youtubeId).length;
+    if (ia === 0 || yt === 0) return null;
+    const ratio = (ia / yt).toFixed(1);
+    return `${ratio}:1`;
   });
 
   readonly preWarPct = computed(() => {

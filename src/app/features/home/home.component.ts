@@ -149,6 +149,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (catalogPosterCoveragePct(); as cpcp) {
           <p class="hero__avg-rating">{{ cpcp }}% have poster art</p>
         }
+        @if (catalogYtStreamablePct(); as cysp) {
+          <p class="hero__avg-rating">{{ cysp }}% streamable via YouTube</p>
+        }
       </div>
     </section>
 
@@ -1462,6 +1465,13 @@ export class HomeComponent implements OnInit {
     const movies = this.catalog.movies();
     if (movies.length < 50) return null;
     const pct = Math.round((movies.filter((m) => m.posterUrl).length / movies.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly catalogYtStreamablePct = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const pct = Math.round((movies.filter((m) => m.youtubeId).length / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
