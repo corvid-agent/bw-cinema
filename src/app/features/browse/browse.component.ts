@@ -102,6 +102,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultGenreCount(); as rgc) {
           <p class="browse__watched-note">{{ rgc }} genres represented</p>
         }
+        @if (resultImdbLinkedPct(); as rilp) {
+          <p class="browse__watched-note">{{ rilp }}% linked to IMDb</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -814,6 +817,13 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     const genres = new Set<string>();
     for (const m of films) for (const g of m.genres) genres.add(g);
     return genres.size > 1 ? genres.size : null;
+  });
+
+  readonly resultImdbLinkedPct = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const pct = Math.round((films.filter((m) => m.imdbId).length / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly topResultDirector = computed(() => {

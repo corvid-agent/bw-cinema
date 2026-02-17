@@ -147,6 +147,9 @@ interface QuizStep {
           @if (resultAvgGenreCount(); as ragc) {
             <p class="quiz__decade-range">Avg {{ ragc }} genres per film</p>
           }
+          @if (resultPosterCoveragePct(); as rpcp) {
+            <p class="quiz__decade-range">{{ rpcp }}% have poster art</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -671,6 +674,13 @@ export class QuizComponent implements OnInit {
     if (films.length < 3) return null;
     const avg = films.reduce((s, m) => s + m.genres.length, 0) / films.length;
     return avg >= 1.5 ? avg.toFixed(1) : null;
+  });
+
+  readonly resultPosterCoveragePct = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const pct = Math.round((films.filter((m) => m.posterUrl).length / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly resultAvgDirectorCount = computed(() => {
