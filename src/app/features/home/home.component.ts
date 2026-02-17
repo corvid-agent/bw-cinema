@@ -122,6 +122,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (catalogLanguageCount(); as clc) {
           <p class="hero__avg-rating">{{ clc }} languages represented</p>
         }
+        @if (silentEraStreamableCount(); as sesc) {
+          <p class="hero__avg-rating">{{ sesc }} free silent-era films</p>
+        }
       </div>
     </section>
 
@@ -1402,6 +1405,11 @@ export class HomeComponent implements OnInit {
     if (streamable.length === 0) return null;
     const newest = streamable.reduce((a, b) => a.year >= b.year ? a : b);
     return newest.title;
+  });
+
+  readonly silentEraStreamableCount = computed(() => {
+    const count = this.catalog.movies().filter((m) => m.isStreamable && m.year < 1930).length;
+    return count >= 5 ? count : null;
   });
 
   readonly catalogLanguageCount = computed(() => {

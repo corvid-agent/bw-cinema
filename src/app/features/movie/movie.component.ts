@@ -259,7 +259,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                           <a class="detail__tag" [routerLink]="['/genre', genre]">{{ genre }}</a>
                         }
                         @if (genreSiblingCount(); as gsc) {
-                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (directorAvgTitleLength(); as datl) {, avg title {{ datl }} chars}@if (decadeAvgRating(); as dar) {, decade avg &#9733; {{ dar }}}@if (genreHighlyRatedCount(); as ghrc) {, {{ ghrc }} rated 8+}@if (genreStreamablePct(); as gsp) {, {{ gsp }}% streamable}@if (decadeStreamablePct(); as dsp) {, {{ dsp }}% of decade streamable}@if (genreAvgYear(); as gay) {, avg year {{ gay }}}@if (genreAvgFilmAge(); as gafa) {, avg age {{ gafa }}yr})</span>
+                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (directorAvgTitleLength(); as datl) {, avg title {{ datl }} chars}@if (decadeAvgRating(); as dar) {, decade avg &#9733; {{ dar }}}@if (genreHighlyRatedCount(); as ghrc) {, {{ ghrc }} rated 8+}@if (genreStreamablePct(); as gsp) {, {{ gsp }}% streamable}@if (decadeStreamablePct(); as dsp) {, {{ dsp }}% of decade streamable}@if (genreAvgYear(); as gay) {, avg year {{ gay }}}@if (genreAvgFilmAge(); as gafa) {, avg age {{ gafa }}yr}@if (genreDirectorCount(); as gdc) {, {{ gdc }} directors})</span>
                         }
                       </div>
                     </div>
@@ -1414,6 +1414,17 @@ export class MovieComponent implements OnInit {
       .filter((m) => m.id !== s.id && m.directors.includes(dir))
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(0, 8);
+  });
+
+  readonly genreDirectorCount = computed(() => {
+    const s = this.summary();
+    if (!s || s.genres.length === 0) return null;
+    const genre = s.genres[0];
+    const genreFilms = this.catalogService.movies().filter((m) => m.genres.includes(genre));
+    if (genreFilms.length < 10) return null;
+    const dirs = new Set<string>();
+    for (const m of genreFilms) for (const d of m.directors) dirs.add(d);
+    return dirs.size >= 5 ? dirs.size : null;
   });
 
   readonly genreAvgFilmAge = computed(() => {
