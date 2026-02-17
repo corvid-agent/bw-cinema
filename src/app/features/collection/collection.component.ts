@@ -438,6 +438,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">IMDb Linked</span>
                   </div>
                 }
+                @if (watchedPosterCoveragePct(); as wpcp) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ wpcp }}%</span>
+                    <span class="stats__card-label">Have Poster</span>
+                  </div>
+                }
                 @if (watchedShortestTitle(); as wst) {
                   <div class="stats__card">
                     <span class="stats__card-value" style="font-size: 0.85em">{{ wst }}</span>
@@ -1937,6 +1943,13 @@ export class CollectionComponent implements OnInit {
     if (films.length < 3) return null;
     const count = films.filter((m) => m.imdbId).length;
     return count > 0 ? count : null;
+  });
+
+  readonly watchedPosterCoveragePct = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 3) return null;
+    const pct = Math.round((films.filter((m) => m.posterUrl).length / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly watchedAvgGenreCount = computed(() => {

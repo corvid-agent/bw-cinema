@@ -569,6 +569,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">pre-1940 films streamable</span>
               </div>
             }
+            @if (avgFilmsPerDecade(); as afpd) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ afpd }}</span>
+                <span class="stats__fact-text">avg films per decade</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1525,6 +1531,15 @@ export class StatsComponent implements OnInit {
     if (movies.length < 50) return null;
     const count = movies.filter((m) => m.year < 1940 && m.isStreamable).length;
     return count > 0 ? count : null;
+  });
+
+  readonly avgFilmsPerDecade = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const decades = new Set(movies.map((m) => Math.floor(m.year / 10) * 10));
+    if (decades.size < 3) return null;
+    const avg = Math.round(movies.length / decades.size);
+    return avg > 0 ? avg : null;
   });
 
   readonly preWarPct = computed(() => {
