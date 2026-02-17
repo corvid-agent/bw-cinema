@@ -191,6 +191,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (imdbLinkedPct(); as ilp) {
             <p class="genre__fact">{{ ilp }}% linked to IMDb</p>
           }
+          @if (posterCoveragePct(); as pcp) {
+            <p class="genre__fact">{{ pcp }}% have poster art</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -1072,6 +1075,13 @@ export class GenreComponent implements OnInit {
     if (f.length < 5) return 0;
     const count = f.filter((m) => m.year < 1940).length;
     return count >= 3 ? count : 0;
+  });
+
+  readonly posterCoveragePct = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const pct = Math.round((f.filter((m) => m.posterUrl).length / f.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly decadeBreakdown = computed(() => {

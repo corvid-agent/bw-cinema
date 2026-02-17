@@ -98,6 +98,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (isPreWar()) {
               <span class="watch__header-rating">&middot; Pre-1940</span>
             }
+            @if (decadeImdbLinkedPct()) {
+              <span class="watch__header-rating">&middot; {{ decadeImdbLinkedPct() }}% of decade on IMDb</span>
+            }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
             }
@@ -659,6 +662,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly movieGenreCount = signal(0);
   readonly movieImdbLinked = signal(false);
   readonly isPreWar = signal(false);
+  readonly decadeImdbLinkedPct = signal(0);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -716,6 +720,10 @@ export class WatchComponent implements OnInit, OnDestroy {
       if (decadeFilms.length >= 10) this.decadeFilmCount.set(decadeFilms.length);
       const decadeStreamable = decadeFilms.filter((m) => m.isStreamable).length;
       if (decadeStreamable >= 5) this.decadeStreamableCount.set(decadeStreamable);
+      if (decadeFilms.length >= 10) {
+        const imdbPct = Math.round((decadeFilms.filter((m) => m.imdbId).length / decadeFilms.length) * 100);
+        if (imdbPct > 0 && imdbPct < 100) this.decadeImdbLinkedPct.set(imdbPct);
+      }
       const sameYear = this.catalogService.movies().filter((m) => m.year === movie.year && m.id !== movie.id).length;
       if (sameYear >= 5) this.sameYearCount.set(sameYear);
       const ratedInDecade = decadeFilms.filter((m) => m.voteAverage > 0).sort((a, b) => b.voteAverage - a.voteAverage);

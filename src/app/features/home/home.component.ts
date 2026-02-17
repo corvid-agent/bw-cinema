@@ -146,6 +146,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (catalogImdbLinkedPct(); as cilp) {
           <p class="hero__avg-rating">{{ cilp }}% linked to IMDb</p>
         }
+        @if (catalogPosterCoveragePct(); as cpcp) {
+          <p class="hero__avg-rating">{{ cpcp }}% have poster art</p>
+        }
       </div>
     </section>
 
@@ -1452,6 +1455,13 @@ export class HomeComponent implements OnInit {
     const movies = this.catalog.movies();
     if (movies.length < 50) return null;
     const pct = Math.round((movies.filter((m) => m.imdbId).length / movies.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly catalogPosterCoveragePct = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const pct = Math.round((movies.filter((m) => m.posterUrl).length / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
