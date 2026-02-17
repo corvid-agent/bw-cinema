@@ -420,6 +420,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Languages Watched</span>
                   </div>
                 }
+                @if (watchedAvgGenreCount(); as wagc) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ wagc }}</span>
+                    <span class="stats__card-label">Avg Genres/Film</span>
+                  </div>
+                }
                 @if (watchedShortestTitle(); as wst) {
                   <div class="stats__card">
                     <span class="stats__card-value" style="font-size: 0.85em">{{ wst }}</span>
@@ -1905,6 +1911,13 @@ export class CollectionComponent implements OnInit {
     const rated = films.filter((m) => m.voteAverage > 0);
     if (rated.length < 2) return null;
     return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
+  });
+
+  readonly watchedAvgGenreCount = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 5) return null;
+    const avg = films.reduce((s, m) => s + m.genres.length, 0) / films.length;
+    return avg >= 1.5 ? avg.toFixed(1) : null;
   });
 
   readonly watchedLanguageCount = computed(() => {

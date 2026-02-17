@@ -246,6 +246,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Pre-1940</span>
               </div>
             }
+            @if (imdbLinkedCount() > 0) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ imdbLinkedCount() }}</span>
+                <span class="director__stat-label">IMDb Linked</span>
+              </div>
+            }
           </div>
 
           @if (bestFilm(); as best) {
@@ -1112,6 +1118,13 @@ export class DirectorComponent implements OnInit {
     if (f.length < 2) return null;
     const latest = f.reduce((a, b) => a.year >= b.year ? a : b);
     return latest.title;
+  });
+
+  readonly imdbLinkedCount = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return 0;
+    const count = f.filter((m) => m.imdbId).length;
+    return count >= 2 ? count : 0;
   });
 
   readonly preWarFilmCount = computed(() => {
