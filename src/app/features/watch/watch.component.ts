@@ -86,6 +86,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (sameLanguageCount()) {
               <span class="watch__header-rating">&middot; {{ sameLanguageCount() }} {{ movieLanguage() || 'English' }} films</span>
             }
+            @if (directorCareerSpan()) {
+              <span class="watch__header-rating">&middot; {{ directorCareerSpan() }}-year career</span>
+            }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
             }
@@ -643,6 +646,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly decadeStreamableCount = signal(0);
   readonly primaryGenreStreamablePct = signal(0);
   readonly sameLanguageCount = signal(0);
+  readonly directorCareerSpan = signal(0);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -725,6 +729,12 @@ export class WatchComponent implements OnInit, OnDestroy {
           const allDirFilms = this.catalogService.movies()
             .filter((m) => m.id !== movie.id && m.directors.some((d) => movie.directors.includes(d)));
           this.directorTotalFilms.set(allDirFilms.length + 1);
+          const allWithCurrent = [...allDirFilms, movie];
+          if (allWithCurrent.length >= 3) {
+            const years = allWithCurrent.map((m) => m.year);
+            const span = Math.max(...years) - Math.min(...years);
+            if (span >= 5) this.directorCareerSpan.set(span);
+          }
           if (allDirFilms.length >= 2) {
             const allSorted = [...allDirFilms, movie].sort((a, b) => a.year - b.year);
             const idx = allSorted.findIndex((m) => m.id === movie.id);

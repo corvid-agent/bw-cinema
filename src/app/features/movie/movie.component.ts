@@ -259,7 +259,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                           <a class="detail__tag" [routerLink]="['/genre', genre]">{{ genre }}</a>
                         }
                         @if (genreSiblingCount(); as gsc) {
-                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (directorAvgTitleLength(); as datl) {, avg title {{ datl }} chars}@if (decadeAvgRating(); as dar) {, decade avg &#9733; {{ dar }}}@if (genreHighlyRatedCount(); as ghrc) {, {{ ghrc }} rated 8+}@if (genreStreamablePct(); as gsp) {, {{ gsp }}% streamable}@if (decadeStreamablePct(); as dsp) {, {{ dsp }}% of decade streamable}@if (genreAvgYear(); as gay) {, avg year {{ gay }}}@if (genreAvgFilmAge(); as gafa) {, avg age {{ gafa }}yr}@if (genreDirectorCount(); as gdc) {, {{ gdc }} directors}@if (languageRankLabel(); as lrl) {, {{ lrl }}}@if (yearRankInGenre(); as yrig) {, {{ yrig }}})</span>
+                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (directorAvgTitleLength(); as datl) {, avg title {{ datl }} chars}@if (decadeAvgRating(); as dar) {, decade avg &#9733; {{ dar }}}@if (genreHighlyRatedCount(); as ghrc) {, {{ ghrc }} rated 8+}@if (genreStreamablePct(); as gsp) {, {{ gsp }}% streamable}@if (decadeStreamablePct(); as dsp) {, {{ dsp }}% of decade streamable}@if (genreAvgYear(); as gay) {, avg year {{ gay }}}@if (genreAvgFilmAge(); as gafa) {, avg age {{ gafa }}yr}@if (genreDirectorCount(); as gdc) {, {{ gdc }} directors}@if (languageRankLabel(); as lrl) {, {{ lrl }}}@if (yearRankInGenre(); as yrig) {, {{ yrig }}}@if (sameYearStreamableCount(); as sysc) {, {{ sysc }} streamable from year})</span>
                         }
                       </div>
                     </div>
@@ -1436,6 +1436,13 @@ export class MovieComponent implements OnInit {
     const rank = langFilms.findIndex((m) => m.id === s.id);
     if (rank >= 0 && rank < 20) return `#${rank + 1} in ${s.language}`;
     return null;
+  });
+
+  readonly sameYearStreamableCount = computed(() => {
+    const s = this.summary();
+    if (!s) return null;
+    const count = this.catalogService.movies().filter((m) => m.year === s.year && m.isStreamable && m.id !== s.id).length;
+    return count >= 5 ? count : null;
   });
 
   readonly yearRankInGenre = computed(() => {
