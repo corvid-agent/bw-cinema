@@ -143,6 +143,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (catalogCoDirectedPct(); as ccdp) {
           <p class="hero__avg-rating">{{ ccdp }}% co-directed</p>
         }
+        @if (catalogImdbLinkedPct(); as cilp) {
+          <p class="hero__avg-rating">{{ cilp }}% linked to IMDb</p>
+        }
       </div>
     </section>
 
@@ -1443,6 +1446,13 @@ export class HomeComponent implements OnInit {
     if (movies.length < 10) return null;
     const langs = new Set(movies.filter((m) => m.language).map((m) => m.language));
     return langs.size >= 3 ? langs.size : null;
+  });
+
+  readonly catalogImdbLinkedPct = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const pct = Math.round((movies.filter((m) => m.imdbId).length / movies.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly catalogCoDirectedPct = computed(() => {

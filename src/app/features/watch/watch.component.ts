@@ -95,6 +95,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (movieImdbLinked()) {
               <span class="watch__header-rating">&middot; on IMDb</span>
             }
+            @if (isPreWar()) {
+              <span class="watch__header-rating">&middot; Pre-1940</span>
+            }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
             }
@@ -655,6 +658,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly directorCareerSpan = signal(0);
   readonly movieGenreCount = signal(0);
   readonly movieImdbLinked = signal(false);
+  readonly isPreWar = signal(false);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -687,6 +691,7 @@ export class WatchComponent implements OnInit, OnDestroy {
       if (sameLangCount >= 10) this.sameLanguageCount.set(sameLangCount);
       if (movie.directors.length > 1) this.isCoDirected.set(true);
       if (movie.year < 1930) this.isSilentEra.set(true);
+      if (movie.year < 1940 && movie.year >= 1930) this.isPreWar.set(true);
       if (movie.language && movie.language !== 'English' && movie.language !== 'en') this.isNonEnglish.set(true);
       if (movie.voteAverage >= 8.0) this.isHighlyRated.set(true);
       if (movie.genres.length > 0) this.genreLabel.set(movie.genres[0]);

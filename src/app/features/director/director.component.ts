@@ -258,6 +258,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Median &#9733;</span>
               </div>
             }
+            @if (posterCoveragePct(); as pcp) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ pcp }}%</span>
+                <span class="director__stat-label">Have Posters</span>
+              </div>
+            }
           </div>
 
           @if (bestFilm(); as best) {
@@ -1124,6 +1130,13 @@ export class DirectorComponent implements OnInit {
     if (f.length < 2) return null;
     const latest = f.reduce((a, b) => a.year >= b.year ? a : b);
     return latest.title;
+  });
+
+  readonly posterCoveragePct = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const pct = Math.round((f.filter((m) => m.posterUrl).length / f.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly directorMedianRating = computed(() => {
