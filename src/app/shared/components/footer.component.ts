@@ -39,6 +39,7 @@ import { RouterLink } from '@angular/router';
             <a href="https://corvid-agent.github.io/pd-audiobooks/" target="_blank" rel="noopener">Audiobooks</a>
             <a href="https://corvid-agent.github.io/weather-dashboard/" target="_blank" rel="noopener">Weather</a>
             <a href="https://corvid-agent.github.io/space-dashboard/" target="_blank" rel="noopener">Space</a>
+            <a href="https://corvid-agent.github.io/retro-arcade/" target="_blank" rel="noopener">Retro Arcade</a>
           </div>
         </nav>
         <div class="footer__decades">
