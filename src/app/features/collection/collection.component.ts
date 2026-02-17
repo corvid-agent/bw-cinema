@@ -390,6 +390,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Longest Title</span>
                   </div>
                 }
+                @if (watchlistAvgYear(); as way) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ way }}</span>
+                    <span class="stats__card-label">Watchlist Avg Year</span>
+                  </div>
+                }
                 @if (watchedShortestTitle(); as wst) {
                   <div class="stats__card">
                     <span class="stats__card-value" style="font-size: 0.85em">{{ wst }}</span>
@@ -1803,6 +1809,12 @@ export class CollectionComponent implements OnInit {
     if (films.length < 3) return null;
     const longest = films.reduce((a, b) => a.title.length >= b.title.length ? a : b);
     return longest.title.length >= 15 ? longest.title : null;
+  });
+
+  readonly watchlistAvgYear = computed(() => {
+    const films = this.watchlistMovies();
+    if (films.length < 3) return null;
+    return Math.round(films.reduce((s, m) => s + m.year, 0) / films.length);
   });
 
   private computeStreaks(): { current: number; longest: number } {

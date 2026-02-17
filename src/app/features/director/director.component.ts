@@ -192,6 +192,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Avg Films/Decade</span>
               </div>
             }
+            @if (genreConsistencyPct(); as gcp) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ gcp }}%</span>
+                <span class="director__stat-label">Top Genre</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -1050,6 +1056,17 @@ export class DirectorComponent implements OnInit {
     const decades = new Set(f.map((m) => Math.floor(m.year / 10) * 10));
     if (decades.size < 2) return null;
     return (f.length / decades.size).toFixed(1);
+  });
+
+  readonly genreConsistencyPct = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const counts = new Map<string, number>();
+    for (const m of f) for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (!top) return null;
+    const pct = Math.round((top[1] / f.length) * 100);
+    return pct >= 30 && pct < 100 ? pct : null;
   });
 
   ngOnInit(): void {

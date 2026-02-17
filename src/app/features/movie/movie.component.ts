@@ -246,7 +246,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                           <a [routerLink]="['/director', dir]">{{ dir }}</a>@if (!last) {, }
                         }
                         @if (totalDirectorFilms(); as tdf) {
-                          <span class="detail__director-count">({{ tdf }} in catalog@if (directorAvgRating(); as dar) {, avg &#9733; {{ dar }}}@if (directorStreamablePct(); as dsp) {, {{ dsp }}% free})</span>
+                          <span class="detail__director-count">({{ tdf }} in catalog@if (directorAvgRating(); as dar) {, avg &#9733; {{ dar }}}@if (directorStreamablePct(); as dsp) {, {{ dsp }}% free}@if (directorPeakDecade(); as dpd) {, peak {{ dpd }}s})</span>
                         }
                       </span>
                     </div>
@@ -1414,6 +1414,22 @@ export class MovieComponent implements OnInit {
       .filter((m) => m.id !== s.id && m.directors.includes(dir))
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(0, 8);
+  });
+
+  readonly directorPeakDecade = computed(() => {
+    const s = this.summary();
+    if (!s || s.directors.length === 0) return null;
+    const dir = s.directors[0];
+    const dirFilms = this.catalogService.movies().filter((m) => m.directors.includes(dir));
+    if (dirFilms.length < 3) return null;
+    const counts = new Map<number, number>();
+    for (const m of dirFilms) {
+      const d = Math.floor(m.year / 10) * 10;
+      counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    if (counts.size < 2) return null;
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return top[0];
   });
 
   @HostListener('document:keydown', ['$event'])
