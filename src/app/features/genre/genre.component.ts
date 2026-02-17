@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed, input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
@@ -652,6 +652,7 @@ export class GenreComponent implements OnInit {
   protected readonly catalog = inject(CatalogService);
   private readonly collection = inject(CollectionService);
   private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
   private readonly router = inject(Router);
 
   readonly viewMode = signal<ViewMode>('grid');
@@ -998,6 +999,10 @@ export class GenreComponent implements OnInit {
   ngOnInit(): void {
     this.catalog.load();
     this.titleService.setTitle(`${this.name()} Films — BW Cinema`);
+    const genreDesc = `Classic ${this.name()} films — browse the black-and-white cinema collection on BW Cinema.`;
+    this.metaService.updateTag({ name: 'description', content: genreDesc });
+    this.metaService.updateTag({ property: 'og:description', content: genreDesc });
+    this.metaService.updateTag({ name: 'twitter:description', content: genreDesc });
   }
 
   surpriseMe(): void {

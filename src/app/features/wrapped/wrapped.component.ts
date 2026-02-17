@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -740,6 +740,7 @@ export class WrappedComponent implements OnInit {
   protected readonly catalog = inject(CatalogService);
   private readonly collection = inject(CollectionService);
   private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
   private readonly notifications = inject(NotificationService);
 
   readonly selectedYear = signal(new Date().getFullYear());
@@ -1047,6 +1048,10 @@ export class WrappedComponent implements OnInit {
   ngOnInit(): void {
     this.catalog.load();
     this.titleService.setTitle('Year in Review — BW Cinema');
+    const wrappedDesc = 'Your year in classic cinema \u2014 personal viewing stats and highlights.';
+    this.metaService.updateTag({ name: 'description', content: wrappedDesc });
+    this.metaService.updateTag({ property: 'og:description', content: wrappedDesc });
+    this.metaService.updateTag({ name: 'twitter:description', content: wrappedDesc });
     // Auto-select the most recent year with data
     const years = this.availableYears();
     if (years.length > 0) {

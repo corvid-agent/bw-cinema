@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { NotificationService } from '../../core/services/notification.service';
 import type { MovieSummary } from '../../core/models/movie.model';
@@ -602,6 +603,8 @@ import type { MovieSummary } from '../../core/models/movie.model';
 export class CompareComponent implements OnInit {
   protected readonly catalog = inject(CatalogService);
   private readonly notifications = inject(NotificationService);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   readonly queryA = signal('');
   readonly queryB = signal('');
@@ -802,6 +805,11 @@ export class CompareComponent implements OnInit {
 
   ngOnInit(): void {
     this.catalog.load();
+    this.titleService.setTitle('Compare Films — BW Cinema');
+    const compareDesc = 'Compare two classic films side by side \u2014 ratings, genres, directors, and more.';
+    this.metaService.updateTag({ name: 'description', content: compareDesc });
+    this.metaService.updateTag({ property: 'og:description', content: compareDesc });
+    this.metaService.updateTag({ name: 'twitter:description', content: compareDesc });
   }
 
   onSearchA(event: Event): void {

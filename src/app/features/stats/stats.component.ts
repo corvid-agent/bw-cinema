@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
 
@@ -883,6 +884,8 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
 })
 export class StatsComponent implements OnInit {
   protected readonly catalog = inject(CatalogService);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   // ── Single-pass catalog index ──────────────────────────────────────
   private readonly idx = computed(() => {
@@ -1494,5 +1497,10 @@ export class StatsComponent implements OnInit {
 
   ngOnInit(): void {
     this.catalog.load();
+    this.titleService.setTitle('Catalog Statistics — BW Cinema');
+    const statsDesc = 'Explore catalog statistics for BW Cinema\u2019s collection of classic black-and-white films.';
+    this.metaService.updateTag({ name: 'description', content: statsDesc });
+    this.metaService.updateTag({ property: 'og:description', content: statsDesc });
+    this.metaService.updateTag({ name: 'twitter:description', content: statsDesc });
   }
 }

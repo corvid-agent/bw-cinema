@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { MovieService } from '../../core/services/movie.service';
@@ -500,6 +500,7 @@ export class ActorComponent implements OnInit {
   private readonly collectionService = inject(CollectionService);
   private readonly movieService = inject(MovieService);
   private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   readonly viewMode = signal<ViewMode>('grid');
   readonly sortMode = signal<'rating' | 'chronological'>('rating');
@@ -632,6 +633,10 @@ export class ActorComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     await this.catalog.load();
     this.titleService.setTitle(`${this.name()} — BW Cinema`);
+    const actorDesc = `Films starring ${this.name()} — explore their classic black-and-white filmography on BW Cinema.`;
+    this.metaService.updateTag({ name: 'description', content: actorDesc });
+    this.metaService.updateTag({ property: 'og:description', content: actorDesc });
+    this.metaService.updateTag({ name: 'twitter:description', content: actorDesc });
 
     // Search for films containing this actor by loading details
     // First, do a quick scan — load detail for a batch of films to find cast matches

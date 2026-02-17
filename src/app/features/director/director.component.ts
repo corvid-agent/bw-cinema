@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
@@ -811,6 +811,7 @@ export class DirectorComponent implements OnInit {
   protected readonly catalog = inject(CatalogService);
   private readonly collectionService = inject(CollectionService);
   private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   readonly viewMode = signal<ViewMode>('grid');
   readonly sortMode = signal<'rating' | 'chronological'>('rating');
@@ -1307,6 +1308,10 @@ export class DirectorComponent implements OnInit {
   ngOnInit(): void {
     this.catalog.load();
     this.titleService.setTitle(`${this.name()} — BW Cinema`);
+    const dirDesc = `Films directed by ${this.name()} — explore their classic black-and-white filmography on BW Cinema.`;
+    this.metaService.updateTag({ name: 'description', content: dirDesc });
+    this.metaService.updateTag({ property: 'og:description', content: dirDesc });
+    this.metaService.updateTag({ name: 'twitter:description', content: dirDesc });
   }
 
   addUnwatchedToWatchlist(): void {

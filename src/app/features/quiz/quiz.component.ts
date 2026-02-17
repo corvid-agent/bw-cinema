@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -462,6 +463,8 @@ export class QuizComponent implements OnInit {
   protected readonly catalog = inject(CatalogService);
   private readonly collection = inject(CollectionService);
   private readonly notifications = inject(NotificationService);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   private readonly steps: QuizStep[] = [
     {
@@ -847,6 +850,11 @@ export class QuizComponent implements OnInit {
 
   ngOnInit(): void {
     this.catalog.load();
+    this.titleService.setTitle('Film Quiz — BW Cinema');
+    const quizDesc = 'Take a short quiz to find the perfect classic black-and-white film to watch.';
+    this.metaService.updateTag({ name: 'description', content: quizDesc });
+    this.metaService.updateTag({ property: 'og:description', content: quizDesc });
+    this.metaService.updateTag({ name: 'twitter:description', content: quizDesc });
   }
 
   selectAnswer(value: string): void {

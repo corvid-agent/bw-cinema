@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
@@ -807,6 +807,7 @@ export class ExploreComponent implements OnInit {
   private readonly collection = inject(CollectionService);
   private readonly router = inject(Router);
   private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   readonly moods = MOODS;
   readonly showMoreExplore = signal(false);
@@ -1052,6 +1053,10 @@ export class ExploreComponent implements OnInit {
   ngOnInit(): void {
     this.catalog.load();
     this.titleService.setTitle('Explore — BW Cinema');
+    const exploreDesc = 'Discover classic films by mood, get random picks, double features, and personalized recommendations.';
+    this.metaService.updateTag({ name: 'description', content: exploreDesc });
+    this.metaService.updateTag({ property: 'og:description', content: exploreDesc });
+    this.metaService.updateTag({ name: 'twitter:description', content: exploreDesc });
     this.shuffleSeed.set(Date.now());
   }
 

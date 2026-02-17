@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal, computed, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
@@ -547,6 +548,8 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly elRef = inject(ElementRef);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   private static loadLangPref(): string[] {
     try {
@@ -863,6 +866,11 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit(): void {
     this.catalog.load();
+    this.titleService.setTitle('Browse Films — BW Cinema');
+    const browseDesc = 'Browse and filter classic black-and-white films by decade, genre, director, and language.';
+    this.metaService.updateTag({ name: 'description', content: browseDesc });
+    this.metaService.updateTag({ property: 'og:description', content: browseDesc });
+    this.metaService.updateTag({ name: 'twitter:description', content: browseDesc });
     const p = this.route.snapshot.queryParams;
     if (Object.keys(p).length > 0) {
       this.filter.update((f) => ({

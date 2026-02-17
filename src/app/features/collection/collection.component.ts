@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -1275,6 +1276,8 @@ export class CollectionComponent implements OnInit {
   protected readonly collectionService = inject(CollectionService);
   private readonly notifications = inject(NotificationService);
   private readonly route = inject(ActivatedRoute);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   readonly currentYear = new Date().getFullYear();
   readonly isSharedView = signal(false);
@@ -2202,6 +2205,11 @@ export class CollectionComponent implements OnInit {
 
   ngOnInit(): void {
     this.catalog.load();
+    this.titleService.setTitle('My Collection — BW Cinema');
+    const collDesc = 'Manage your personal collection \u2014 watchlist, watched history, and viewing stats.';
+    this.metaService.updateTag({ name: 'description', content: collDesc });
+    this.metaService.updateTag({ property: 'og:description', content: collDesc });
+    this.metaService.updateTag({ name: 'twitter:description', content: collDesc });
     const shared = this.route.snapshot.queryParams['shared'];
     if (shared) {
       this.isSharedView.set(true);

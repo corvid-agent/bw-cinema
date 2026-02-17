@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal, computed, input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { MovieGridComponent } from '../../shared/components/movie-grid.component';
 import { MovieListComponent } from '../../shared/components/movie-list.component';
@@ -666,6 +666,7 @@ export class DecadeComponent implements OnInit {
 
   protected readonly catalog = inject(CatalogService);
   private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
   private readonly router = inject(Router);
 
   readonly viewMode = signal<ViewMode>('grid');
@@ -1023,6 +1024,10 @@ export class DecadeComponent implements OnInit {
   ngOnInit(): void {
     this.catalog.load();
     this.titleService.setTitle(`${this.year()}s Films — BW Cinema`);
+    const decDesc = `Classic films from the ${this.year()}s — browse the black-and-white cinema collection on BW Cinema.`;
+    this.metaService.updateTag({ name: 'description', content: decDesc });
+    this.metaService.updateTag({ property: 'og:description', content: decDesc });
+    this.metaService.updateTag({ name: 'twitter:description', content: decDesc });
   }
 
   surpriseMe(): void {

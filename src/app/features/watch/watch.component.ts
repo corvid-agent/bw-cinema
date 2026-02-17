@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal, input, computed, ElementRef, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
+import { DomSanitizer, Meta, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { CatalogService } from '../../core/services/catalog.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { StreamingService, StreamingSource } from '../../core/services/streaming.service';
@@ -551,6 +551,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   private readonly streamingService = inject(StreamingService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
   private readonly notifications = inject(NotificationService);
 
   @ViewChild('playerContainer') playerContainer!: ElementRef<HTMLElement>;
@@ -608,6 +609,10 @@ export class WatchComponent implements OnInit, OnDestroy {
       const age = new Date().getFullYear() - movie.year;
       if (age >= 50) this.filmAge.set(`${age} years old`);
       this.titleService.setTitle(`Watch ${movie.title} — BW Cinema`);
+      const watchDesc = `Watch ${movie.title} (${movie.year}) — stream this classic black-and-white film on BW Cinema.`;
+      this.metaService.updateTag({ name: 'description', content: watchDesc });
+      this.metaService.updateTag({ property: 'og:description', content: watchDesc });
+      this.metaService.updateTag({ name: 'twitter:description', content: watchDesc });
       const src = this.streamingService.getSource(movie.internetArchiveId, movie.youtubeId);
       this.source.set(src);
       this.isWatched.set(this.collectionService.isWatched(movie.id));
