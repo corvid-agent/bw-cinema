@@ -135,6 +135,9 @@ interface QuizStep {
           @if (resultSilentEraPct(); as rsep) {
             <p class="quiz__decade-range">{{ rsep }}% from silent era</p>
           }
+          @if (resultPreWarPct(); as rpwp) {
+            <p class="quiz__decade-range">{{ rpwp }}% pre-1940</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -651,6 +654,14 @@ export class QuizComponent implements OnInit {
     if (films.length < 3) return null;
     const silent = films.filter((m) => m.year < 1930).length;
     const pct = Math.round((silent / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly resultPreWarPct = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const preWar = films.filter((m) => m.year < 1940).length;
+    const pct = Math.round((preWar / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 

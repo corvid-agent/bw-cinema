@@ -228,6 +228,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Highest Rated</span>
               </div>
             }
+            @if (avgFilmGap(); as afg) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ afg }} yr</span>
+                <span class="director__stat-label">Avg Gap Between Films</span>
+              </div>
+            }
           </div>
 
           @if (bestFilm(); as best) {
@@ -1094,6 +1100,16 @@ export class DirectorComponent implements OnInit {
     if (f.length < 2) return null;
     const latest = f.reduce((a, b) => a.year >= b.year ? a : b);
     return latest.title;
+  });
+
+  readonly avgFilmGap = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const years = f.map((m) => m.year).sort((a, b) => a - b);
+    const gaps: number[] = [];
+    for (let i = 1; i < years.length; i++) gaps.push(years[i] - years[i - 1]);
+    const avg = gaps.reduce((s, g) => s + g, 0) / gaps.length;
+    return avg >= 1 ? avg.toFixed(1) : null;
   });
 
   readonly earliestFilmTitle = computed(() => {

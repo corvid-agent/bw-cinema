@@ -176,6 +176,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (ratingsSpread(); as rs) {
             <p class="genre__fact">Ratings range: {{ rs }}</p>
           }
+          @if (directorWithMostFilms(); as dwmf) {
+            <p class="genre__fact">Top director: {{ dwmf.name }} ({{ dwmf.count }} films)</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -1007,6 +1010,15 @@ export class GenreComponent implements OnInit {
     if (f.length < 2) return null;
     const newest = f.reduce((a, b) => a.year >= b.year ? a : b);
     return newest.title;
+  });
+
+  readonly directorWithMostFilms = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const counts = new Map<string, number>();
+    for (const m of f) for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return top && top[1] >= 3 ? { name: top[0], count: top[1] } : null;
   });
 
   readonly preWarCount = computed(() => {
