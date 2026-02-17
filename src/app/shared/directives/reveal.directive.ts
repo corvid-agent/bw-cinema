@@ -8,6 +8,11 @@ export class RevealDirective implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const host = this.el.nativeElement;
+
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      return; // Respect reduced-motion preference
+    }
+
     this.renderer.setStyle(host, 'opacity', '0');
     this.renderer.setStyle(host, 'transform', 'translateY(24px)');
     this.renderer.setStyle(host, 'transition', 'opacity 0.5s ease, transform 0.5s ease');

@@ -111,6 +111,29 @@ import { CatalogService } from '../../core/services/catalog.service';
         </nav>
       </div>
     </header>
+    @if (shortcutsOpen()) {
+      <div class="shortcuts-backdrop" (click)="shortcutsOpen.set(false)"></div>
+      <div class="shortcuts-overlay" role="dialog" aria-label="Keyboard shortcuts">
+        <div class="shortcuts__header">
+          <h2 class="shortcuts__title">Keyboard Shortcuts</h2>
+          <button class="shortcuts__close" (click)="shortcutsOpen.set(false)" aria-label="Close">&times;</button>
+        </div>
+        <div class="shortcuts__section">
+          <h3>Navigation</h3>
+          <div class="shortcuts__row"><kbd>H</kbd><span>Home</span></div>
+          <div class="shortcuts__row"><kbd>B</kbd><span>Browse</span></div>
+          <div class="shortcuts__row"><kbd>C</kbd><span>Collection</span></div>
+          <div class="shortcuts__row"><kbd>E</kbd><span>Explore</span></div>
+          <div class="shortcuts__row"><kbd>S</kbd><span>Stats</span></div>
+        </div>
+        <div class="shortcuts__section">
+          <h3>Actions</h3>
+          <div class="shortcuts__row"><kbd>/</kbd><span>Focus search</span></div>
+          <div class="shortcuts__row"><kbd>Esc</kbd><span>Clear / close</span></div>
+          <div class="shortcuts__row"><kbd>?</kbd><span>Toggle this dialog</span></div>
+        </div>
+      </div>
+    }
   `,
   styles: [`
     .header {
@@ -368,6 +391,82 @@ import { CatalogService } from '../../core/services/catalog.service';
       background: var(--bg-hover);
       color: var(--accent-gold);
     }
+    .shortcuts-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 999;
+    }
+    .shortcuts-overlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: var(--space-lg);
+      z-index: 1000;
+      min-width: 300px;
+      max-width: 400px;
+    }
+    .shortcuts__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-md);
+    }
+    .shortcuts__title {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    .shortcuts__close {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+    .shortcuts__close:hover { color: var(--text-primary); }
+    .shortcuts__section h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-tertiary);
+      margin: var(--space-md) 0 var(--space-sm);
+    }
+    .shortcuts__section:first-of-type h3 { margin-top: 0; }
+    .shortcuts__row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+    }
+    .shortcuts__row kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 26px;
+      padding: 0 8px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border-bright);
+      border-radius: 4px;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      box-shadow: 0 1px 0 var(--border);
+    }
+    .shortcuts__row span {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
     @media (max-width: 768px) {
       .header__hamburger { display: flex; }
       .header__nav {
@@ -423,6 +522,7 @@ export class HeaderComponent implements OnInit {
   readonly theme = inject(ThemeService);
   readonly a11y = inject(AccessibilityService);
   readonly menuOpen = signal(false);
+  readonly shortcutsOpen = signal(false);
   readonly searchQuery = signal('');
   readonly searchFocused = signal(false);
   readonly activeResultIndex = signal(-1);
@@ -459,9 +559,36 @@ export class HeaderComponent implements OnInit {
 
   @HostListener('document:keydown', ['$event'])
   onGlobalKey(event: KeyboardEvent): void {
-    if (event.key === '/' && !this.isInputFocused()) {
-      event.preventDefault();
-      this.searchInput?.nativeElement.focus();
+    if (event.key === 'Escape' && this.shortcutsOpen()) {
+      this.shortcutsOpen.set(false);
+      return;
+    }
+    if (this.isInputFocused()) return;
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+    switch (event.key) {
+      case '/':
+        event.preventDefault();
+        this.searchInput?.nativeElement.focus();
+        break;
+      case '?':
+        this.shortcutsOpen.update((v) => !v);
+        break;
+      case 'h':
+        this.router.navigate(['/home']);
+        break;
+      case 'b':
+        this.router.navigate(['/browse']);
+        break;
+      case 'c':
+        this.router.navigate(['/collection']);
+        break;
+      case 'e':
+        this.router.navigate(['/explore']);
+        break;
+      case 's':
+        this.router.navigate(['/stats']);
+        break;
     }
   }
 
