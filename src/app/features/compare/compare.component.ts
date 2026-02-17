@@ -278,6 +278,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (avgGenreCount(); as agc) {
                 <span class="compare__overlap"> &middot; avg {{ agc }} genres</span>
               }
+              @if (bothImdbLinked()) {
+                <span class="compare__overlap"> &middot; both on IMDb</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -993,6 +996,13 @@ export class CompareComponent implements OnInit {
     if (diff < 5) return null;
     const older = a.year < b.year ? a : b;
     return `"${older.title}" is ${diff} years older`;
+  });
+
+  readonly bothImdbLinked = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return false;
+    return !!a.imdbId && !!b.imdbId;
   });
 
   readonly avgGenreCount = computed(() => {

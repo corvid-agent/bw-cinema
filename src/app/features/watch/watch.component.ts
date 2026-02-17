@@ -89,6 +89,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (directorCareerSpan()) {
               <span class="watch__header-rating">&middot; {{ directorCareerSpan() }}-year career</span>
             }
+            @if (movieGenreCount()) {
+              <span class="watch__header-rating">&middot; {{ movieGenreCount() }} genres</span>
+            }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
             }
@@ -647,6 +650,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly primaryGenreStreamablePct = signal(0);
   readonly sameLanguageCount = signal(0);
   readonly directorCareerSpan = signal(0);
+  readonly movieGenreCount = signal(0);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -669,6 +673,7 @@ export class WatchComponent implements OnInit, OnDestroy {
       this.movieImdbId.set(movie.imdbId);
       this.encodedTitle.set(encodeURIComponent(movie.title));
       if (movie.genres.length > 0) this.movieGenres.set(movie.genres.slice(0, 3).join(' / '));
+      if (movie.genres.length >= 3) this.movieGenreCount.set(movie.genres.length);
       if (movie.voteAverage > 0) this.movieRating.set(movie.voteAverage.toFixed(1));
       this.movieYear.set(String(movie.year));
       if (movie.language && movie.language !== 'English') this.movieLanguage.set(movie.language);

@@ -185,6 +185,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (nonEnglishCount() > 0) {
             <p class="genre__fact">{{ nonEnglishCount() }} non-English films</p>
           }
+          @if (genreAvgDirectorFilmCount(); as gadfc) {
+            <p class="genre__fact">Avg {{ gadfc }} films per director</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -1016,6 +1019,16 @@ export class GenreComponent implements OnInit {
     if (f.length < 2) return null;
     const newest = f.reduce((a, b) => a.year >= b.year ? a : b);
     return newest.title;
+  });
+
+  readonly genreAvgDirectorFilmCount = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const counts = new Map<string, number>();
+    for (const m of f) for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
+    if (counts.size < 5) return null;
+    const avg = [...counts.values()].reduce((s, c) => s + c, 0) / counts.size;
+    return avg >= 1.1 ? avg.toFixed(1) : null;
   });
 
   readonly nonEnglishCount = computed(() => {
