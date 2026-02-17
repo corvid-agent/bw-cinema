@@ -153,6 +153,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (topDirectorFilmCount(); as tdfc) {
             <p class="decade__fact">Top director: {{ tdfc.name }} ({{ tdfc.count }} films)</p>
           }
+          @if (decadeTopGenre(); as dtg) {
+            <p class="decade__fact">Top genre: {{ dtg }}</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -943,6 +946,15 @@ export class DecadeComponent implements OnInit {
     for (const m of f) for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return top && top[1] >= 3 ? { name: top[0], count: top[1] } : null;
+  });
+
+  readonly decadeTopGenre = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const counts = new Map<string, number>();
+    for (const m of f) for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return top ? top[0] : null;
   });
 
   ngOnInit(): void {
