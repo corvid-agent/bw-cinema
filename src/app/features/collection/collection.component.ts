@@ -414,6 +414,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Oldest Favorite</span>
                   </div>
                 }
+                @if (watchedLanguageCount(); as wlc) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ wlc }}</span>
+                    <span class="stats__card-label">Languages Watched</span>
+                  </div>
+                }
                 @if (watchedShortestTitle(); as wst) {
                   <div class="stats__card">
                     <span class="stats__card-value" style="font-size: 0.85em">{{ wst }}</span>
@@ -1899,6 +1905,13 @@ export class CollectionComponent implements OnInit {
     const rated = films.filter((m) => m.voteAverage > 0);
     if (rated.length < 2) return null;
     return (rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1);
+  });
+
+  readonly watchedLanguageCount = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 3) return null;
+    const langs = new Set(films.filter((m) => m.language).map((m) => m.language));
+    return langs.size >= 2 ? langs.size : null;
   });
 
   readonly favoritesOldestYear = computed(() => {
