@@ -16,11 +16,11 @@ The definitive destination for discovering, tracking, and watching classic black
 - **Hidden Gems** — Curated section highlighting well-rated films you may have missed.
 - **Achievements & Streaks** — Gamified watch tracking with badges and streak counters.
 - **Accessibility** — High contrast mode, reduced motion, wide spacing, keyboard navigation, screen reader support.
-- **Themes** — Dark and sepia modes with film-grain overlay.
+- **Themes** — Dark, sepia, and light modes with system preference auto-detection and film-grain overlay.
 - **Explore by Mood** — 8 mood categories, double features, film festivals, serendipity mode.
 - **Actor Pages** — Actor filmography with TMDb cast lookup and career stats.
 - **Year in Review** — Spotify Wrapped-style annual viewing summary.
-- **PWA Support** — Installable as a Progressive Web App with offline caching.
+- **PWA Support** — Installable as a Progressive Web App with offline fallback page, auto-reconnect, and service worker caching.
 
 ## Tech Stack
 
@@ -63,5 +63,7 @@ src/
 ```
 
 ## License
+
+MIT — see [LICENSE](LICENSE).
 
 All film metadata sourced from TMDb. This product uses the TMDB API but is not endorsed or certified by TMDB.
