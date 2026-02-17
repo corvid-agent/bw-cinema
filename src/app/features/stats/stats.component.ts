@@ -473,6 +473,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">avg directors per film</span>
               </div>
             }
+            @if (imdbLinkedPct(); as ilp) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ ilp }}%</span>
+                <span class="stats__fact-text">linked to IMDb</span>
+              </div>
+            }
             @if (highlyRatedCount() > 0) {
               <div class="stats__fact-card">
                 <span class="stats__fact-number">{{ highlyRatedCount() }}</span>
@@ -1335,6 +1341,13 @@ export class StatsComponent implements OnInit {
       .filter(([, v]) => v.count >= 10)
       .map(([decade, v]) => ({ decade, avg: Math.round(v.total / v.count) }))
       .sort((a, b) => b.avg - a.avg);
+  });
+
+  readonly imdbLinkedPct = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 10) return null;
+    const pct = Math.round((movies.filter((m) => m.imdbId).length / movies.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly singleDirectorPct = computed(() => {
