@@ -169,15 +169,15 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                   </button>
                   @if (shareMenuOpen()) {
                     <div class="detail__share-menu">
-                      <button class="detail__share-option" (click)="shareTwitter(m)">
+                      <button class="detail__share-option" (click)="shareTwitter(m)" aria-label="Share on Twitter / X">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                         Twitter / X
                       </button>
-                      <button class="detail__share-option" (click)="shareFacebook(m)">
+                      <button class="detail__share-option" (click)="shareFacebook(m)" aria-label="Share on Facebook">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                         Facebook
                       </button>
-                      <button class="detail__share-option" (click)="copyLink()">
+                      <button class="detail__share-option" (click)="copyLink()" aria-label="Copy link to clipboard">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                         Copy Link
                       </button>
@@ -473,7 +473,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
     .detail__poster-placeholder {
       width: 100%;
       aspect-ratio: 2 / 3;
-      background: linear-gradient(170deg, #1a1a1a 0%, #222 40%, #1a1a1a 100%);
+      background: linear-gradient(170deg, #1a1a1a, #222 40%, #1a1a1a);
       border-radius: var(--radius-lg);
       display: flex;
       flex-direction: column;
@@ -481,16 +481,15 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       justify-content: center;
       gap: var(--space-sm);
       box-shadow: var(--shadow-poster);
+      font-family: var(--font-heading);
     }
     .detail__poster-title {
-      font-family: var(--font-heading);
       color: var(--text-secondary);
       font-size: 1.1rem;
       text-align: center;
       padding: 0 var(--space-md);
     }
     .detail__poster-year {
-      font-family: var(--font-heading);
       color: var(--accent-gold);
       font-size: 1.6rem;
       font-weight: 700;
@@ -527,7 +526,6 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       flex-wrap: wrap;
       margin-bottom: var(--space-sm);
     }
-    .detail__sub-ranks:empty { display: none; }
     .detail__sub-rank {
       font-size: 0.7rem;
       font-weight: 600;
@@ -643,7 +641,6 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       flex-shrink: 0;
       font-size: 0.85rem;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
       padding-top: 2px;
     }
     .detail__director-count {
@@ -683,7 +680,6 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       text-transform: uppercase;
       letter-spacing: 0.05em;
       font-weight: 600;
-      margin-right: var(--space-xs);
     }
     .detail__source-badge {
       display: inline-flex;
@@ -695,37 +691,18 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       font-weight: 600;
       text-decoration: none;
       transition: all 0.2s;
+      --_c: var(--text-secondary);
+      background: color-mix(in srgb, var(--_c) 12%, transparent);
+      color: var(--_c);
+      border: 1px solid color-mix(in srgb, var(--_c) 30%, transparent);
     }
-    .detail__source-badge--ia {
-      background: rgba(25, 135, 84, 0.15);
-      color: rgb(25, 135, 84);
-      border: 1px solid rgba(25, 135, 84, 0.3);
+    .detail__source-badge:hover {
+      background: color-mix(in srgb, var(--_c) 22%, transparent);
+      border-color: var(--_c);
     }
-    .detail__source-badge--ia:hover {
-      background: rgba(25, 135, 84, 0.25);
-      border-color: rgb(25, 135, 84);
-      color: rgb(25, 135, 84);
-    }
-    .detail__source-badge--yt {
-      background: rgba(255, 0, 0, 0.1);
-      color: rgb(220, 50, 50);
-      border: 1px solid rgba(255, 0, 0, 0.2);
-    }
-    .detail__source-badge--yt:hover {
-      background: rgba(255, 0, 0, 0.2);
-      border-color: rgba(255, 0, 0, 0.5);
-      color: rgb(220, 50, 50);
-    }
-    .detail__source-badge--imdb {
-      background: rgba(245, 197, 24, 0.1);
-      color: #f5c518;
-      border: 1px solid rgba(245, 197, 24, 0.3);
-    }
-    .detail__source-badge--imdb:hover {
-      background: rgba(245, 197, 24, 0.2);
-      border-color: #f5c518;
-      color: #f5c518;
-    }
+    .detail__source-badge--ia { --_c: rgb(25, 135, 84); }
+    .detail__source-badge--yt { --_c: rgb(220, 50, 50); }
+    .detail__source-badge--imdb { --_c: #f5c518; }
     .detail__cast-section {
       margin-top: var(--space-2xl);
       padding-top: var(--space-xl);
@@ -740,10 +717,9 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       text-align: center;
       text-decoration: none;
       color: inherit;
-      transition: transform 0.2s;
     }
-    .cast-card:hover { color: inherit; }
     @media (hover: hover) and (pointer: fine) {
+      .cast-card { transition: transform 0.2s; }
       .cast-card:hover { transform: translateY(-2px); }
     }
     .cast-card:hover .cast-card__name { color: var(--accent-gold); }
@@ -773,14 +749,11 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       color: var(--text-tertiary);
       margin: 0;
     }
-    .detail__playlist-wrap {
+    .detail__playlist-wrap, .detail__share-wrap {
       position: relative;
     }
     .detail__playlist-btn {
       font-size: 0.9rem;
-    }
-    .detail__share-wrap {
-      position: relative;
     }
     .detail__share-btn {
       display: inline-flex;
@@ -793,7 +766,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       top: 100%;
       left: 0;
       margin-top: 4px;
-      background-color: var(--bg-surface);
+      background: var(--bg-surface);
       border: 1px solid var(--border-bright);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-lg);
@@ -813,13 +786,9 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       font-size: 0.9rem;
       cursor: pointer;
       border-radius: var(--radius);
-      text-align: left;
       min-height: 40px;
     }
-    .detail__share-option:hover {
-      background-color: var(--bg-hover);
-      color: var(--text-primary);
-    }
+    .detail__share-option:hover { background: var(--bg-hover); color: var(--text-primary); }
     .detail__fav-btn {
       display: inline-flex;
       align-items: center;
@@ -830,8 +799,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       color: var(--text-tertiary);
       transition: color 0.2s, transform 0.2s;
     }
-    .detail__fav-btn:hover { color: #e53e3e; }
-    .detail__fav-btn--active { color: #e53e3e; }
+    .detail__fav-btn:hover, .detail__fav-btn--active { color: #e53e3e; }
     .detail__fav-btn--active:hover { transform: scale(1.1); }
     .detail__notes {
       margin-bottom: var(--space-xl);
@@ -852,19 +820,11 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       color: var(--text-primary);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      font-family: var(--font-body);
-      font-size: 0.95rem;
-      line-height: 1.6;
+      font: 0.95rem/1.6 var(--font-body);
       resize: vertical;
       min-height: 80px;
     }
-    .detail__notes-input:focus {
-      border-color: var(--accent-gold);
-      outline: none;
-    }
-    .detail__notes-input::placeholder {
-      color: var(--text-tertiary);
-    }
+    .detail__notes-input:focus { border-color: var(--accent-gold); outline: none; }
     .detail__user-rating {
       display: flex;
       align-items: center;
@@ -908,10 +868,10 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       scroll-snap-align: start;
       text-decoration: none;
       color: var(--text-primary);
-      transition: transform 0.2s;
     }
-    .detail__carousel-card:hover {
-      transform: translateY(-4px);
+    @media (hover: hover) and (pointer: fine) {
+      .detail__carousel-card { transition: transform 0.2s; }
+      .detail__carousel-card:hover { transform: translateY(-4px); }
     }
     .detail__carousel-poster-wrap {
       position: relative;
@@ -935,17 +895,9 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       justify-content: center;
       font-size: 0.7rem;
       font-weight: 700;
-      backdrop-filter: blur(4px);
     }
-    .detail__carousel-badge--watched {
-      background: rgba(212, 175, 55, 0.9);
-      color: var(--bg-deep);
-    }
-    .detail__carousel-badge--watchlist {
-      background: rgba(0, 0, 0, 0.6);
-      color: var(--accent-gold);
-      border: 1px solid var(--accent-gold);
-    }
+    .detail__carousel-badge--watched { background: rgba(212, 175, 55, 0.9); color: var(--bg-deep); }
+    .detail__carousel-badge--watchlist { background: rgba(0, 0, 0, 0.6); color: var(--accent-gold); border: 1px solid var(--accent-gold); }
     .detail__carousel-placeholder {
       width: 100%;
       aspect-ratio: 2 / 3;
@@ -958,29 +910,24 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       margin-bottom: var(--space-xs);
       font-size: 0.75rem;
       color: var(--text-tertiary);
-      text-align: center;
     }
     .detail__carousel-title {
       font-size: 0.85rem;
       font-weight: 600;
       margin: 0;
-      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
-    .detail__carousel-meta {
-      font-size: 0.75rem;
-      color: var(--text-tertiary);
-      margin: 0;
-    }
+    .detail__carousel-meta { font-size: 0.75rem; color: var(--text-tertiary); margin: 0; }
     .detail__carousel-reason {
       font-size: 0.65rem;
       color: var(--accent-gold);
       margin: 2px 0 0;
       opacity: 0.85;
-      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .detail__context {
       display: flex;
@@ -1005,36 +952,17 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
       margin-bottom: var(--space-xl);
     }
     .detail__review-display {
-      background-color: var(--bg-surface);
+      background: var(--bg-surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: var(--space-md) var(--space-lg);
     }
-    .detail__review-text {
-      color: var(--text-secondary);
-      line-height: 1.8;
-      font-size: 0.95rem;
-      margin: 0 0 var(--space-sm);
-      white-space: pre-wrap;
-    }
-    .detail__review-edit {
-      font-size: 0.8rem;
-      color: var(--text-tertiary);
-    }
-    .detail__review-edit:hover {
-      color: var(--accent-gold);
-    }
-    .detail__review-start {
-      font-size: 0.9rem;
-    }
-    .detail__review-input {
-      min-height: 120px;
-    }
-    .detail__review-hint {
-      font-size: 0.75rem;
-      color: var(--text-tertiary);
-      margin: var(--space-xs) 0 0;
-    }
+    .detail__review-text { color: var(--text-secondary); line-height: 1.8; font-size: 0.95rem; margin: 0 0 var(--space-sm); white-space: pre-wrap; }
+    .detail__review-edit { font-size: 0.8rem; color: var(--text-tertiary); }
+    .detail__review-edit:hover { color: var(--accent-gold); }
+    .detail__review-start { font-size: 0.9rem; }
+    .detail__review-input { min-height: 120px; }
+    .detail__review-hint { font-size: 0.75rem; color: var(--text-tertiary); margin: var(--space-xs) 0 0; }
     .detail__imdb-btn {
       border-color: rgba(245, 197, 24, 0.5);
       color: #f5c518;

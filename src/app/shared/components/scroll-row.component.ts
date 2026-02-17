@@ -76,8 +76,10 @@ export class ScrollRowComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.updateArrows();
-    this.resizeObserver = new ResizeObserver(() => this.updateArrows());
-    this.resizeObserver.observe(this.containerRef.nativeElement);
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => this.updateArrows());
+      this.resizeObserver.observe(this.containerRef.nativeElement);
+    }
   }
 
   ngOnDestroy(): void {

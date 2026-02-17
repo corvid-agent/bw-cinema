@@ -9,12 +9,13 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
 import { MovieListComponent } from '../../shared/components/movie-list.component';
 import { ViewToggleComponent, type ViewMode } from '../../shared/components/view-toggle.component';
 import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.directive';
+import { ScrollRowComponent } from '../../shared/components/scroll-row.component';
 import type { CatalogFilter } from '../../core/models/catalog.model';
 
 @Component({
   selector: 'app-browse',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, MovieGridComponent, MovieListComponent, ViewToggleComponent, SearchBarComponent, FilterPanelComponent, SkeletonGridComponent, KeyboardNavDirective],
+  imports: [RouterLink, MovieGridComponent, MovieListComponent, ViewToggleComponent, SearchBarComponent, FilterPanelComponent, SkeletonGridComponent, KeyboardNavDirective, ScrollRowComponent],
   template: `
     <div class="browse container">
       <div class="browse__top">
@@ -146,22 +147,22 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
             }
 
             @if (quickDecades().length > 0 && filterChips().length === 0) {
-              <div class="browse__quick-decades">
+              <app-scroll-row class="browse__quick-decades">
                 @for (d of quickDecades(); track d.decade) {
                   <button class="browse__quick-decade" (click)="quickFilterDecade(d.decade)">
                     {{ d.decade }}s
                     <span class="browse__quick-count">{{ d.count }}</span>
                   </button>
                 }
-              </div>
-              <div class="browse__quick-decades">
+              </app-scroll-row>
+              <app-scroll-row class="browse__quick-decades">
                 @for (g of quickGenres(); track g.name) {
                   <button class="browse__quick-decade" (click)="quickFilterGenre(g.name)">
                     {{ g.name }}
                     <span class="browse__quick-count">{{ g.count }}</span>
                   </button>
                 }
-              </div>
+              </app-scroll-row>
             }
 
             @if (browseSuggestion(); as suggestion) {
@@ -336,12 +337,8 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       color: var(--text-secondary);
     }
     .browse__quick-decades {
-      display: flex;
-      gap: var(--space-xs);
+      --scroll-row-gap: var(--space-xs);
       margin-bottom: var(--space-md);
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 2px;
     }
     .browse__quick-decade {
       display: flex;
