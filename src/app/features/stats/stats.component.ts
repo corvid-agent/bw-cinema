@@ -485,6 +485,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">films rated 8.0+</span>
               </div>
             }
+            @if (ytStreamablePct(); as ysp) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ ysp }}%</span>
+                <span class="stats__fact-text">YouTube sourced</span>
+              </div>
+            }
             @if (topGenre(); as tg) {
               <div class="stats__fact-card">
                 <span class="stats__fact-number" style="font-size: 0.85em">{{ tg.name }}</span>
@@ -1341,6 +1347,14 @@ export class StatsComponent implements OnInit {
       .filter(([, v]) => v.count >= 10)
       .map(([decade, v]) => ({ decade, avg: Math.round(v.total / v.count) }))
       .sort((a, b) => b.avg - a.avg);
+  });
+
+  readonly ytStreamablePct = computed(() => {
+    const streamable = this.catalog.movies().filter((m) => m.isStreamable);
+    if (streamable.length < 10) return null;
+    const yt = streamable.filter((m) => m.youtubeId && !m.internetArchiveId).length;
+    const pct = Math.round((yt / streamable.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly imdbLinkedPct = computed(() => {

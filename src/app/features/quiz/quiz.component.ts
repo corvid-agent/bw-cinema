@@ -126,6 +126,9 @@ interface QuizStep {
           @if (resultOldestTitle(); as rot) {
             <p class="quiz__decade-range">Oldest: "{{ rot }}"</p>
           }
+          @if (resultMedianRating(); as rmr) {
+            <p class="quiz__decade-range">Median rating: &#9733; {{ rmr }}</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -635,6 +638,15 @@ export class QuizComponent implements OnInit {
     }
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return top && top[1] >= 2 ? top[0] : null;
+  });
+
+  readonly resultMedianRating = computed(() => {
+    const rated = this.results().filter((m) => m.voteAverage > 0);
+    if (rated.length < 3) return null;
+    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    return median.toFixed(1);
   });
 
   readonly resultOldestTitle = computed(() => {
