@@ -456,6 +456,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">On YouTube</span>
                   </div>
                 }
+                @if (watchedCoDirectedPct(); as wcdp) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ wcdp }}%</span>
+                    <span class="stats__card-label">Co-Directed</span>
+                  </div>
+                }
                 @if (watchedShortestTitle(); as wst) {
                   <div class="stats__card">
                     <span class="stats__card-value" style="font-size: 0.85em">{{ wst }}</span>
@@ -2008,6 +2014,13 @@ export class CollectionComponent implements OnInit {
     const films = this.watchlistMovies();
     if (films.length < 3) return null;
     return Math.round(films.reduce((s, m) => s + m.year, 0) / films.length);
+  });
+
+  readonly watchedCoDirectedPct = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 5) return null;
+    const pct = Math.round((films.filter((m) => m.directors.length > 1).length / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   private computeStreaks(): { current: number; longest: number } {
