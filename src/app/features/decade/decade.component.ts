@@ -162,6 +162,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (coDirectedPct(); as cdp) {
             <p class="decade__fact">{{ cdp }}% co-directed</p>
           }
+          @if (uniqueLanguageCount(); as ulc) {
+            <p class="decade__fact">{{ ulc }} languages represented</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -961,6 +964,13 @@ export class DecadeComponent implements OnInit {
     for (const m of f) for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return top ? top[0] : null;
+  });
+
+  readonly uniqueLanguageCount = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const langs = new Set(f.filter((m) => m.language).map((m) => m.language));
+    return langs.size >= 3 ? langs.size : null;
   });
 
   readonly coDirectedPct = computed(() => {
