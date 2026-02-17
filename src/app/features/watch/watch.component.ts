@@ -59,6 +59,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (sameYearCount()) {
               <span class="watch__header-rating">&middot; {{ sameYearCount() }} films from {{ movieYear() }}</span>
             }
+            @if (directorGenreSpan()) {
+              <span class="watch__header-rating">&middot; {{ directorGenreSpan() }} genres by director</span>
+            }
             @if (genreLabel()) {
               <span class="watch__header-rating">&middot; {{ genreLabel() }}</span>
             }
@@ -611,6 +614,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly directorAvgRating = signal('');
   readonly movieDecadeRank = signal('');
   readonly sameYearCount = signal(0);
+  readonly directorGenreSpan = signal(0);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -681,6 +685,9 @@ export class WatchComponent implements OnInit, OnDestroy {
           if (rated.length >= 2) {
             this.directorAvgRating.set((rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1));
           }
+          const dirGenres = new Set<string>();
+          for (const m of [...allDirFilms, movie]) for (const g of m.genres) dirGenres.add(g);
+          if (dirGenres.size >= 3) this.directorGenreSpan.set(dirGenres.size);
           const dirFilms = allDirFilms
             .filter((m) => m.posterUrl)
             .sort((a, b) => b.voteAverage - a.voteAverage)

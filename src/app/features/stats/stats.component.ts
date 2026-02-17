@@ -455,6 +455,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">multilingual directors</span>
               </div>
             }
+            @if (preWarPct(); as pwp) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ pwp }}%</span>
+                <span class="stats__fact-text">films from before 1940</span>
+              </div>
+            }
             @if (avgDirectorsPerFilm(); as adpf) {
               <div class="stats__fact-card">
                 <span class="stats__fact-number">{{ adpf }}</span>
@@ -1323,6 +1329,13 @@ export class StatsComponent implements OnInit {
       .filter(([, v]) => v.count >= 10)
       .map(([decade, v]) => ({ decade, avg: Math.round(v.total / v.count) }))
       .sort((a, b) => b.avg - a.avg);
+  });
+
+  readonly preWarPct = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 10) return null;
+    const pct = Math.round((movies.filter((m) => m.year < 1940).length / movies.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   ngOnInit(): void {
