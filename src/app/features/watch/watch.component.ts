@@ -104,6 +104,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (genrePosterCoveragePct()) {
               <span class="watch__header-rating">&middot; {{ genrePosterCoveragePct() }}% of genre have posters</span>
             }
+            @if (directorImdbLinkedPct()) {
+              <span class="watch__header-rating">&middot; {{ directorImdbLinkedPct() }}% of director's films on IMDb</span>
+            }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
             }
@@ -667,6 +670,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly isPreWar = signal(false);
   readonly decadeImdbLinkedPct = signal(0);
   readonly genrePosterCoveragePct = signal(0);
+  readonly directorImdbLinkedPct = signal(0);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -778,6 +782,11 @@ export class WatchComponent implements OnInit, OnDestroy {
           const dirGenres = new Set<string>();
           for (const m of [...allDirFilms, movie]) for (const g of m.genres) dirGenres.add(g);
           if (dirGenres.size >= 3) this.directorGenreSpan.set(dirGenres.size);
+          const allWithDir = [...allDirFilms, movie];
+          if (allWithDir.length >= 3) {
+            const imdbPct = Math.round((allWithDir.filter((m) => m.imdbId).length / allWithDir.length) * 100);
+            if (imdbPct > 0 && imdbPct < 100) this.directorImdbLinkedPct.set(imdbPct);
+          }
           const dirFilms = allDirFilms
             .filter((m) => m.posterUrl)
             .sort((a, b) => b.voteAverage - a.voteAverage)

@@ -290,6 +290,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (combinedPosterCount(); as cpc) {
                 <span class="compare__overlap"> &middot; {{ cpc }}/2 have poster art</span>
               }
+              @if (combinedAvgFilmAge(); as cafa) {
+                <span class="compare__overlap"> &middot; avg {{ cafa }} years old</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -1055,6 +1058,15 @@ export class CompareComponent implements OnInit {
     const b = this.filmB();
     if (!a || !b) return false;
     return a.posterUrl && b.posterUrl ? true : false;
+  });
+
+  readonly combinedAvgFilmAge = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return null;
+    const now = new Date().getFullYear();
+    const avg = Math.round(((now - a.year) + (now - b.year)) / 2);
+    return avg >= 20 ? avg : null;
   });
 
   readonly combinedPosterCount = computed(() => {
