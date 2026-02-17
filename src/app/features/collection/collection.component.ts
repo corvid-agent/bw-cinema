@@ -420,6 +420,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Rated 8.0+</span>
                   </div>
                 }
+                @if (watchedOldestYear()) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ watchedOldestYear() }}</span>
+                    <span class="stats__card-label">Oldest Watched</span>
+                  </div>
+                }
                 @if (watchedStreamablePct(); as wsp) {
                   <div class="stats__card">
                     <span class="stats__card-value">{{ wsp }}%</span>
@@ -1821,6 +1827,12 @@ export class CollectionComponent implements OnInit {
     if (films.length < 3) return null;
     const longest = films.reduce((a, b) => a.title.length >= b.title.length ? a : b);
     return longest.title.length >= 15 ? longest.title : null;
+  });
+
+  readonly watchedOldestYear = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 2) return null;
+    return films.reduce((a, b) => a.year <= b.year ? a : b).year;
   });
 
   readonly watchedNewestYear = computed(() => {

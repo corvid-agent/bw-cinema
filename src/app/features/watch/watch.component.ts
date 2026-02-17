@@ -68,6 +68,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (catalogRankByRating()) {
               <span class="watch__header-rating">&middot; #{{ catalogRankByRating() }} by rating</span>
             }
+            @if (directorHighRatedCount()) {
+              <span class="watch__header-rating">&middot; {{ directorHighRatedCount() }} highly-rated by director</span>
+            }
             @if (genreLabel()) {
               <span class="watch__header-rating">&middot; {{ genreLabel() }}</span>
             }
@@ -623,6 +626,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly directorGenreSpan = signal(0);
   readonly genrePeerCount = signal(0);
   readonly catalogRankByRating = signal(0);
+  readonly directorHighRatedCount = signal(0);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -702,6 +706,8 @@ export class WatchComponent implements OnInit, OnDestroy {
           if (rated.length >= 2) {
             this.directorAvgRating.set((rated.reduce((s, m) => s + m.voteAverage, 0) / rated.length).toFixed(1));
           }
+          const highRated = [...allDirFilms, movie].filter((m) => m.voteAverage >= 7.0).length;
+          if (highRated >= 2) this.directorHighRatedCount.set(highRated);
           const dirGenres = new Set<string>();
           for (const m of [...allDirFilms, movie]) for (const g of m.genres) dirGenres.add(g);
           if (dirGenres.size >= 3) this.directorGenreSpan.set(dirGenres.size);
