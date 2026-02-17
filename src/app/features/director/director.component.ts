@@ -168,6 +168,12 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Longest Title</span>
               </div>
             }
+            @if (highlyRatedCount(); as hrc) {
+              <div class="director__stat">
+                <span class="director__stat-value">{{ hrc }}</span>
+                <span class="director__stat-label">Rated 7.0+</span>
+              </div>
+            }
             @if (bestDecade(); as bd) {
               <a class="director__stat director__stat--link" [routerLink]="['/decade', bd.decade]">
                 <span class="director__stat-value">{{ bd.decade }}s</span>
@@ -1000,6 +1006,13 @@ export class DirectorComponent implements OnInit {
     const years = f.map((m) => m.year).sort((a, b) => a - b);
     const mid = Math.floor(years.length / 2);
     return years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
+  });
+
+  readonly highlyRatedCount = computed(() => {
+    const f = this.films();
+    if (f.length < 3) return null;
+    const count = f.filter((m) => m.voteAverage >= 7.0).length;
+    return count > 0 && count < f.length ? count : null;
   });
 
   ngOnInit(): void {
