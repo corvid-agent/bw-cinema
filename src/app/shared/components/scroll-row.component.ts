@@ -22,6 +22,7 @@ import { Component, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewIni
     :host {
       display: block;
       position: relative;
+      overflow: hidden;
     }
     .scroll-row {
       display: flex;
