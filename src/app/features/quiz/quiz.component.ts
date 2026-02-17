@@ -114,6 +114,9 @@ interface QuizStep {
           @if (resultLongestTitle(); as rlt) {
             <p class="quiz__decade-range">Longest: "{{ rlt }}"</p>
           }
+          @if (resultShortestTitle(); as rst) {
+            <p class="quiz__decade-range">Shortest: "{{ rst }}"</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -605,6 +608,13 @@ export class QuizComponent implements OnInit {
     if (films.length < 3) return null;
     const longest = films.reduce((a, b) => a.title.length >= b.title.length ? a : b);
     return longest.title.length >= 20 ? longest.title : null;
+  });
+
+  readonly resultShortestTitle = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const shortest = films.reduce((a, b) => a.title.length <= b.title.length ? a : b);
+    return shortest.title.length <= 10 ? shortest.title : null;
   });
 
   readonly avgMatchScore = computed(() => {

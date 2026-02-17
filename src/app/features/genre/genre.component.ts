@@ -152,6 +152,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (coDirectedPct(); as cdp) {
             <p class="genre__fact">{{ cdp }}% co-directed</p>
           }
+          @if (streamableHighRatedCount() > 0) {
+            <p class="genre__fact">{{ streamableHighRatedCount() }} highly-rated free to watch</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -927,6 +930,10 @@ export class GenreComponent implements OnInit {
     if (f.length < 10) return null;
     const pct = Math.round((f.filter((m) => m.directors.length > 1).length / f.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly streamableHighRatedCount = computed(() => {
+    return this.films().filter((m) => m.isStreamable && m.voteAverage >= 7.0).length;
   });
 
   readonly decadeBreakdown = computed(() => {

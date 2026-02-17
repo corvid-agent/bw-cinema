@@ -242,6 +242,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (sameDecade()) {
                 <span class="compare__overlap"> &middot; same decade</span>
               }
+              @if (ratingGap(); as rg) {
+                <span class="compare__overlap"> &middot; {{ rg }} rating gap</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -878,6 +881,14 @@ export class CompareComponent implements OnInit {
     const b = this.filmB();
     if (!a || !b) return false;
     return Math.floor(a.year / 10) === Math.floor(b.year / 10);
+  });
+
+  readonly ratingGap = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b || a.voteAverage === 0 || b.voteAverage === 0) return null;
+    const gap = Math.abs(a.voteAverage - b.voteAverage);
+    return gap >= 1.0 ? gap.toFixed(1) : null;
   });
 
   readonly bothSilentEra = computed(() => {
