@@ -245,6 +245,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (bothHighlyRated()) {
                 <span class="compare__overlap"> &middot; both rated 8+</span>
               }
+              @if (avgYearDiff(); as ayd) {
+                <span class="compare__overlap"> &middot; {{ ayd }} avg year diff from catalog</span>
+              }
               @if (sameDecade()) {
                 <span class="compare__overlap"> &middot; same decade</span>
               }
@@ -922,6 +925,18 @@ export class CompareComponent implements OnInit {
     const a = this.filmA();
     const b = this.filmB();
     return !!(a && b && a.year < 1930 && b.year < 1930);
+  });
+
+  readonly avgYearDiff = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return null;
+    const movies = this.catalog.movies();
+    if (movies.length < 10) return null;
+    const avgYear = Math.round(movies.reduce((s, m) => s + m.year, 0) / movies.length);
+    const pairAvg = Math.round((a.year + b.year) / 2);
+    const diff = Math.abs(pairAvg - avgYear);
+    return diff >= 5 ? diff : null;
   });
 
   readonly directorCountDiff = computed(() => {

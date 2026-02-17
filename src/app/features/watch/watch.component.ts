@@ -65,6 +65,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (genrePeerCount()) {
               <span class="watch__header-rating">&middot; {{ genrePeerCount() }} films in same genre</span>
             }
+            @if (catalogRankByRating()) {
+              <span class="watch__header-rating">&middot; #{{ catalogRankByRating() }} by rating</span>
+            }
             @if (genreLabel()) {
               <span class="watch__header-rating">&middot; {{ genreLabel() }}</span>
             }
@@ -619,6 +622,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly sameYearCount = signal(0);
   readonly directorGenreSpan = signal(0);
   readonly genrePeerCount = signal(0);
+  readonly catalogRankByRating = signal(0);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -650,6 +654,11 @@ export class WatchComponent implements OnInit, OnDestroy {
       if (movie.genres.length > 0) {
         const peers = this.catalogService.movies().filter((m) => m.id !== movie.id && m.genres.includes(movie.genres[0])).length;
         if (peers >= 10) this.genrePeerCount.set(peers);
+      }
+      if (movie.voteAverage > 0) {
+        const ranked = this.catalogService.movies().filter((m) => m.voteAverage > 0).sort((a, b) => b.voteAverage - a.voteAverage);
+        const rank = ranked.findIndex((m) => m.id === movie.id);
+        if (rank >= 0 && rank < 100) this.catalogRankByRating.set(rank + 1);
       }
       const decade = Math.floor(movie.year / 10) * 10;
       this.decadeLabel.set(`${decade}s`);

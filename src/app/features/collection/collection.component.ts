@@ -408,6 +408,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Shortest Title</span>
                   </div>
                 }
+                @if (watchedNewestYear()) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ watchedNewestYear() }}</span>
+                    <span class="stats__card-label">Newest Watched</span>
+                  </div>
+                }
                 @if (watchedHighlyRatedCount() > 0) {
                   <div class="stats__card">
                     <span class="stats__card-value">{{ watchedHighlyRatedCount() }}</span>
@@ -1815,6 +1821,12 @@ export class CollectionComponent implements OnInit {
     if (films.length < 3) return null;
     const longest = films.reduce((a, b) => a.title.length >= b.title.length ? a : b);
     return longest.title.length >= 15 ? longest.title : null;
+  });
+
+  readonly watchedNewestYear = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 2) return null;
+    return films.reduce((a, b) => a.year >= b.year ? a : b).year;
   });
 
   readonly favoritesAvgRating = computed(() => {
