@@ -862,21 +862,65 @@ export class ExploreComponent implements OnInit {
     }).filter((p) => p.total > 0);
   });
 
-  readonly catalogProgress = computed(() => {
+  /** Single-pass index over unwatched streamable films — replaces ~15 independent iterations */
+  private readonly uwIdx = computed(() => {
     const watchedIds = this.collection.watchedIds();
-    if (watchedIds.size === 0) return null;
-    const streamable = this.catalog.movies().filter((m) => m.isStreamable);
-    const total = streamable.length;
-    if (total === 0) return null;
-    const watched = streamable.filter((m) => watchedIds.has(m.id)).length;
-    const pct = Math.round((watched / total) * 100);
-    return { watched, total, pct };
+    const movies = this.catalog.movies();
+    let streamTotal = 0, streamWatched = 0, uwCount = 0;
+    let ratingSum = 0, ratedCount = 0, nonEnglish = 0, silentEra = 0, highlyRated = 0;
+    let iaCount = 0, ytCount = 0;
+    let bestRated: MovieSummary | null = null;
+    const langs = new Set<string>();
+    const genres = new Set<string>();
+    const dirs = new Set<string>();
+    const dirCounts = new Map<string, number>();
+    const genreCounts = new Map<string, number>();
+    const decadeCounts = new Map<number, number>();
+    for (const m of movies) {
+      if (!m.isStreamable) continue;
+      streamTotal++;
+      if (watchedIds.has(m.id)) { streamWatched++; continue; }
+      uwCount++;
+      if (m.voteAverage > 0) {
+        ratingSum += m.voteAverage;
+        ratedCount++;
+        if (m.voteAverage >= 8.0) highlyRated++;
+        if (!bestRated || m.voteAverage > bestRated.voteAverage) bestRated = m;
+      }
+      if (m.language) {
+        langs.add(m.language);
+        if (m.language !== 'English' && m.language !== 'en') nonEnglish++;
+      }
+      if (m.year < 1930) silentEra++;
+      if (m.internetArchiveId) iaCount++;
+      if (m.youtubeId) ytCount++;
+      for (const g of m.genres) {
+        genres.add(g);
+        genreCounts.set(g, (genreCounts.get(g) ?? 0) + 1);
+      }
+      for (const d of m.directors) {
+        dirs.add(d);
+        dirCounts.set(d, (dirCounts.get(d) ?? 0) + 1);
+      }
+      const dec = Math.floor(m.year / 10) * 10;
+      decadeCounts.set(dec, (decadeCounts.get(dec) ?? 0) + 1);
+    }
+    return {
+      streamTotal, streamWatched, uwCount,
+      ratingSum, ratedCount, nonEnglish, silentEra, highlyRated,
+      iaCount, ytCount, bestRated,
+      langCount: langs.size, genreCount: genres.size, dirCount: dirs.size,
+      dirCounts, genreCounts, decadeCounts,
+    };
   });
 
-  readonly unwatchedCount = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    return this.catalog.movies().filter((m) => !watchedIds.has(m.id) && m.isStreamable).length;
+  readonly catalogProgress = computed(() => {
+    const idx = this.uwIdx();
+    if (this.collection.watchedIds().size === 0 || idx.streamTotal === 0) return null;
+    return { watched: idx.streamWatched, total: idx.streamTotal, pct: Math.round((idx.streamWatched / idx.streamTotal) * 100) };
   });
+
+  readonly unwatchedCount = computed(() => this.uwIdx().uwCount);
 
   readonly topMood = computed(() => {
     const watchedIds = this.collection.watchedIds();
@@ -910,127 +954,70 @@ export class ExploreComponent implements OnInit {
   });
 
   readonly directorToExplore = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    if (watchedIds.size === 0) return null;
-    const dirCounts = new Map<string, number>();
-    for (const m of this.catalog.movies()) {
-      if (!m.isStreamable || watchedIds.has(m.id)) continue;
-      for (const d of m.directors) {
-        dirCounts.set(d, (dirCounts.get(d) ?? 0) + 1);
-      }
-    }
-    const best = [...dirCounts.entries()]
+    if (this.collection.watchedIds().size === 0) return null;
+    const best = [...this.uwIdx().dirCounts.entries()]
       .filter(([, c]) => c >= 3)
       .sort((a, b) => b[1] - a[1]);
     return best.length > 0 ? { name: best[0][0], count: best[0][1] } : null;
   });
 
   readonly genreToExplore = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    if (watchedIds.size === 0) return null;
-    const genreCounts = new Map<string, number>();
-    for (const m of this.catalog.movies()) {
-      if (!m.isStreamable || watchedIds.has(m.id)) continue;
-      for (const g of m.genres) {
-        genreCounts.set(g, (genreCounts.get(g) ?? 0) + 1);
-      }
-    }
-    const best = [...genreCounts.entries()]
+    if (this.collection.watchedIds().size === 0) return null;
+    const best = [...this.uwIdx().genreCounts.entries()]
       .filter(([, c]) => c >= 5)
       .sort((a, b) => b[1] - a[1]);
     return best.length > 0 ? { name: best[0][0], count: best[0][1] } : null;
   });
 
   readonly unwatchedAvgRating = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    if (watchedIds.size === 0) return null;
-    const unwatched = this.catalog.movies().filter((m) => m.isStreamable && !watchedIds.has(m.id) && m.voteAverage > 0);
-    if (unwatched.length < 10) return null;
-    return (unwatched.reduce((s, m) => s + m.voteAverage, 0) / unwatched.length).toFixed(1);
+    const idx = this.uwIdx();
+    if (this.collection.watchedIds().size === 0 || idx.ratedCount < 10) return null;
+    return (idx.ratingSum / idx.ratedCount).toFixed(1);
   });
 
   readonly unwatchedLanguageCount = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    if (watchedIds.size === 0) return null;
-    const langs = new Set<string>();
-    for (const m of this.catalog.movies()) {
-      if (m.isStreamable && !watchedIds.has(m.id) && m.language) langs.add(m.language);
-    }
-    return langs.size > 1 ? langs.size : null;
+    if (this.collection.watchedIds().size === 0) return null;
+    const c = this.uwIdx().langCount;
+    return c > 1 ? c : null;
   });
 
   readonly unwatchedGenreCount = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    if (watchedIds.size === 0) return null;
-    const genres = new Set<string>();
-    for (const m of this.catalog.movies()) {
-      if (m.isStreamable && !watchedIds.has(m.id)) {
-        for (const g of m.genres) genres.add(g);
-      }
-    }
-    return genres.size > 1 ? genres.size : null;
+    if (this.collection.watchedIds().size === 0) return null;
+    const c = this.uwIdx().genreCount;
+    return c > 1 ? c : null;
   });
 
   readonly unwatchedDirectorCount = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    if (watchedIds.size === 0) return null;
-    const dirs = new Set<string>();
-    for (const m of this.catalog.movies()) {
-      if (m.isStreamable && !watchedIds.has(m.id)) {
-        for (const d of m.directors) dirs.add(d);
-      }
-    }
-    return dirs.size > 1 ? dirs.size : null;
+    if (this.collection.watchedIds().size === 0) return null;
+    const c = this.uwIdx().dirCount;
+    return c > 1 ? c : null;
   });
 
   readonly unwatchedNonEnglishCount = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    if (watchedIds.size === 0) return null;
-    let count = 0;
-    for (const m of this.catalog.movies()) {
-      if (m.isStreamable && !watchedIds.has(m.id) && m.language && m.language !== 'English' && m.language !== 'en') {
-        count++;
-      }
-    }
-    return count > 0 ? count : null;
+    if (this.collection.watchedIds().size === 0) return null;
+    const c = this.uwIdx().nonEnglish;
+    return c > 0 ? c : null;
   });
 
   readonly unwatchedSilentEraCount = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    if (watchedIds.size === 0) return null;
-    let count = 0;
-    for (const m of this.catalog.movies()) {
-      if (m.isStreamable && !watchedIds.has(m.id) && m.year < 1930) count++;
-    }
-    return count > 0 ? count : null;
+    if (this.collection.watchedIds().size === 0) return null;
+    const c = this.uwIdx().silentEra;
+    return c > 0 ? c : null;
   });
 
   readonly totalUnwatchedStreamable = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    if (watchedIds.size === 0) return null;
-    return this.catalog.movies().filter((m) => m.isStreamable && !watchedIds.has(m.id)).length;
+    if (this.collection.watchedIds().size === 0) return null;
+    return this.uwIdx().uwCount;
   });
 
   readonly topRatedUnwatched = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    if (watchedIds.size === 0) return null;
-    const films = this.catalog.movies()
-      .filter((m) => m.isStreamable && !watchedIds.has(m.id) && m.voteAverage > 0)
-      .sort((a, b) => b.voteAverage - a.voteAverage);
-    return films.length > 0 ? films[0] : null;
+    if (this.collection.watchedIds().size === 0) return null;
+    return this.uwIdx().bestRated;
   });
 
   readonly unwatchedDecadeBreakdown = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    if (watchedIds.size === 0) return null;
-    const counts = new Map<number, number>();
-    for (const m of this.catalog.movies()) {
-      if (m.isStreamable && !watchedIds.has(m.id)) {
-        const d = Math.floor(m.year / 10) * 10;
-        counts.set(d, (counts.get(d) ?? 0) + 1);
-      }
-    }
-    const entries = [...counts.entries()]
+    if (this.collection.watchedIds().size === 0) return null;
+    const entries = [...this.uwIdx().decadeCounts.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
       .map(([decade, count]) => ({ decade, count }));
@@ -1201,23 +1188,19 @@ export class ExploreComponent implements OnInit {
   }
 
   readonly unwatchedHighlyRatedCount = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    const films = this.catalog.movies().filter((m) => m.isStreamable && !watchedIds.has(m.id));
-    if (films.length < 10) return null;
-    const count = films.filter((m) => m.voteAverage >= 8.0).length;
-    return count > 0 ? count : null;
+    const idx = this.uwIdx();
+    if (idx.uwCount < 10) return null;
+    return idx.highlyRated > 0 ? idx.highlyRated : null;
   });
 
   readonly unwatchedIaCount = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    const films = this.catalog.movies().filter((m) => m.internetArchiveId && !watchedIds.has(m.id));
-    return films.length >= 5 ? films.length : null;
+    const c = this.uwIdx().iaCount;
+    return c >= 5 ? c : null;
   });
 
   readonly unwatchedYtCount = computed(() => {
-    const watchedIds = this.collection.watchedIds();
-    const films = this.catalog.movies().filter((m) => m.youtubeId && !watchedIds.has(m.id));
-    return films.length >= 5 ? films.length : null;
+    const c = this.uwIdx().ytCount;
+    return c >= 5 ? c : null;
   });
 
   private seededShuffle<T>(arr: T[], seed: number): T[] {
