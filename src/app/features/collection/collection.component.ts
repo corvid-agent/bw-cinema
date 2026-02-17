@@ -426,6 +426,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Genres</span>
                   </div>
                 }
+                @if (watchedTopDirector(); as wtd) {
+                  <div class="stats__card">
+                    <span class="stats__card-value" style="font-size: 0.85em">{{ wtd }}</span>
+                    <span class="stats__card-label">Top Director</span>
+                  </div>
+                }
               </div>
 
               @if (nextMilestone(); as milestone) {
@@ -1779,6 +1785,17 @@ export class CollectionComponent implements OnInit {
     const genres = new Set<string>();
     for (const m of this.watchedMovies()) for (const g of m.genres) genres.add(g);
     return genres.size;
+  });
+
+  readonly watchedTopDirector = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 3) return null;
+    const counts = new Map<string, number>();
+    for (const m of films) {
+      for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
+    }
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return top && top[1] >= 2 ? top[0] : null;
   });
 
   readonly watchedLongestTitle = computed(() => {

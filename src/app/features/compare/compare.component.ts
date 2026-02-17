@@ -248,6 +248,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (combinedAvgYear(); as cay) {
                 <span class="compare__overlap"> &middot; avg year {{ cay }}</span>
               }
+              @if (titleLengthDiff(); as tld) {
+                <span class="compare__overlap"> &middot; {{ tld }} char title difference</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -899,6 +902,14 @@ export class CompareComponent implements OnInit {
     const b = this.filmB();
     if (!a || !b) return null;
     return Math.round((a.year + b.year) / 2);
+  });
+
+  readonly titleLengthDiff = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return null;
+    const diff = Math.abs(a.title.length - b.title.length);
+    return diff >= 5 ? diff : null;
   });
 
   readonly bothSilentEra = computed(() => {
