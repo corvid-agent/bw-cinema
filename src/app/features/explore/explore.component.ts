@@ -70,6 +70,9 @@ const MOODS: Mood[] = [
           <button class="explore__random-btn explore__random-btn--secondary" (click)="blindWatch()">
             Blind Watch
           </button>
+          <a class="explore__random-btn explore__random-btn--quiz" routerLink="/quiz">
+            What Should I Watch?
+          </a>
         </div>
 
         @if (doubleFeature().length === 2) {
@@ -336,6 +339,16 @@ const MOODS: Mood[] = [
       border-color: var(--accent-gold);
       color: var(--accent-gold);
       box-shadow: none;
+    }
+    .explore__random-btn--quiz {
+      text-decoration: none;
+      background: var(--accent-gold-dim);
+      color: var(--accent-gold);
+      border: 1px solid var(--accent-gold);
+    }
+    .explore__random-btn--quiz:hover {
+      background: var(--accent-gold);
+      color: var(--bg-deep);
     }
     .explore__top-mood {
       font-size: 0.85rem;

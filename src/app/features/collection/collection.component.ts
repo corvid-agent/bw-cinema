@@ -30,7 +30,10 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
           </div>
         }
       } @else {
-      <h1>My Collection</h1>
+      <div class="collection__title-row">
+        <h1>My Collection</h1>
+        <a class="collection__wrapped-link" routerLink="/wrapped">Year in Review &rarr;</a>
+      </div>
 
       @if (catalog.loading()) {
         <app-loading-spinner />
@@ -830,6 +833,8 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       gap: var(--space-md);
       margin-bottom: var(--space-xl);
     }
+    .collection__title-row { display: flex; align-items: baseline; justify-content: space-between; }
+    .collection__wrapped-link { font: 600 0.85rem var(--font-body); color: var(--accent-gold); }
     .collection__tabs {
       display: flex;
       gap: 2px;
@@ -867,7 +872,6 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       height: 6px;
       border-radius: 50%;
       background: rgb(25, 135, 84);
-      margin-left: 2px;
       vertical-align: super;
     }
     .collection__actions { display: flex; gap: var(--space-sm); align-items: center; }
@@ -876,14 +880,8 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       padding: var(--space-sm) var(--space-md);
       border-radius: var(--radius-lg);
       background: var(--bg-surface);
-      font-size: 0.9rem;
     }
-    .collection__export {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.85rem;
-    }
+    .collection__export { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; }
     .collection__import-label, .collection__restore-label { cursor: pointer; }
     .collection__search {
       display: flex;
@@ -1036,10 +1034,9 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       flex-direction: column;
       align-items: center;
       gap: 4px;
-      height: 100%;
       justify-content: flex-end;
     }
-    .stats__trend-count { font-size: 0.7rem; color: var(--text-tertiary); }
+    .stats__trend-count { font-size: 0.7rem; }
     .stats__trend-bar {
       width: 100%;
       max-width: 40px;
@@ -1058,24 +1055,14 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
     .playlists__name { font-size: 1.1rem; margin: 0; cursor: pointer; }
     .playlists__name:hover { color: var(--accent-gold); }
     .playlists__rename-input {
-      font-size: 1.1rem;
-      font-weight: 700;
+      font: 700 1.1rem var(--font-body);
       background: var(--bg-raised);
       border: 1px solid var(--accent-gold);
       border-radius: var(--radius);
       padding: 2px 8px;
     }
     .playlists__count { font-size: 0.8rem; color: var(--text-tertiary); }
-    .playlists__delete {
-      margin-left: auto;
-      color: var(--text-tertiary);
-      min-width: 36px;
-      min-height: 36px;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    .playlists__delete { margin-left: auto; color: var(--text-tertiary); width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; }
     .playlists__delete:hover { color: #e53e3e; }
     .playlists__movies { display: flex; gap: var(--space-xs); overflow-x: auto; }
     .playlists__movie { flex: 0 0 60px; }
@@ -1089,7 +1076,6 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       align-items: center;
       justify-content: center;
       color: var(--text-tertiary);
-      font-size: 1.2rem;
     }
     /* Challenges */
     .challenges, .achievements { margin-bottom: var(--space-xl); }
@@ -1124,11 +1110,8 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       background: var(--bg-raised);
       border: 1px solid transparent;
       color: var(--text-tertiary);
-      font-size: 0.75rem;
-      font-weight: 600;
+      font: 600 0.75rem var(--font-body);
       cursor: pointer;
-      min-height: auto;
-      min-width: auto;
     }
     .heatmap__year-btn:hover, .heatmap__year-btn--active { color: var(--accent-gold); border-color: var(--accent-gold); }
     .heatmap__year-btn--active { background: var(--accent-gold-dim); }
@@ -1190,7 +1173,6 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
       align-items: center;
       gap: 2px;
       padding: var(--space-sm) var(--space-md);
-      background: var(--bg-surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       text-decoration: none;

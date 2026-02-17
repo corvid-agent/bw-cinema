@@ -1034,6 +1034,28 @@ export class MovieComponent implements OnInit {
   readonly playlistMenuOpen = signal(false);
   readonly reviewEditing = signal(false);
   private readonly summary = signal<MovieSummary | null>(null);
+
+  // Shared base computations — filtered once, reused by many derived signals
+  private readonly ratedMovies = computed(() =>
+    this.catalogService.movies().filter((m) => m.voteAverage > 0)
+  );
+  private readonly primaryGenreFilms = computed(() => {
+    const s = this.summary();
+    if (!s || s.genres.length === 0) return [];
+    return this.catalogService.movies().filter((m) => m.genres.includes(s.genres[0]));
+  });
+  private readonly primaryDirFilms = computed(() => {
+    const s = this.summary();
+    if (!s || s.directors.length === 0) return [];
+    return this.catalogService.movies().filter((m) => m.directors.includes(s.directors[0]));
+  });
+  private readonly sameDecadeFilms = computed(() => {
+    const s = this.summary();
+    if (!s) return [];
+    const decade = Math.floor(s.year / 10) * 10;
+    return this.catalogService.movies().filter((m) => Math.floor(m.year / 10) * 10 === decade);
+  });
+
   readonly similarFilms = computed(() => {
     const s = this.summary();
     return s ? this.catalogService.getSimilar(s) : [];
@@ -1091,9 +1113,7 @@ export class MovieComponent implements OnInit {
   readonly catalogRank = computed(() => {
     const s = this.summary();
     if (!s || s.voteAverage === 0) return 0;
-    const ranked = this.catalogService.movies()
-      .filter((m) => m.voteAverage > 0)
-      .sort((a, b) => b.voteAverage - a.voteAverage);
+    const ranked = [...this.ratedMovies()].sort((a, b) => b.voteAverage - a.voteAverage);
     const idx = ranked.findIndex((m) => m.id === s.id);
     return idx >= 0 ? idx + 1 : 0;
   });
@@ -1101,57 +1121,55 @@ export class MovieComponent implements OnInit {
   readonly genreRank = computed(() => {
     const s = this.summary();
     if (!s || s.voteAverage === 0 || s.genres.length === 0) return null;
-    const genre = s.genres[0];
-    const ranked = this.catalogService.movies()
-      .filter((m) => m.voteAverage > 0 && m.genres.includes(genre))
+    const ranked = this.primaryGenreFilms()
+      .filter((m) => m.voteAverage > 0)
       .sort((a, b) => b.voteAverage - a.voteAverage);
     const idx = ranked.findIndex((m) => m.id === s.id);
     if (idx < 0 || idx >= 20) return null;
-    return { rank: idx + 1, genre, total: ranked.length };
+    return { rank: idx + 1, genre: s.genres[0], total: ranked.length };
   });
 
   readonly decadeRank = computed(() => {
     const s = this.summary();
     if (!s || s.voteAverage === 0) return null;
-    const decade = Math.floor(s.year / 10) * 10;
-    const ranked = this.catalogService.movies()
-      .filter((m) => m.voteAverage > 0 && Math.floor(m.year / 10) * 10 === decade)
+    const ranked = this.sameDecadeFilms()
+      .filter((m) => m.voteAverage > 0)
       .sort((a, b) => b.voteAverage - a.voteAverage);
     const idx = ranked.findIndex((m) => m.id === s.id);
     if (idx < 0 || idx >= 20) return null;
-    return { rank: idx + 1, decade, total: ranked.length };
+    return { rank: idx + 1, decade: Math.floor(s.year / 10) * 10, total: ranked.length };
   });
 
   readonly directorRank = computed(() => {
     const s = this.summary();
     if (!s || s.voteAverage === 0 || s.directors.length === 0) return null;
-    const dir = s.directors[0];
-    const dirFilms = this.catalogService.movies()
-      .filter((m) => m.voteAverage > 0 && m.directors.includes(dir))
+    const dirFilms = this.primaryDirFilms()
+      .filter((m) => m.voteAverage > 0)
       .sort((a, b) => b.voteAverage - a.voteAverage);
     if (dirFilms.length < 3) return null;
     const idx = dirFilms.findIndex((m) => m.id === s.id);
     if (idx < 0 || idx >= 10) return null;
-    return { rank: idx + 1, director: dir, total: dirFilms.length };
+    return { rank: idx + 1, director: s.directors[0], total: dirFilms.length };
   });
 
   readonly languageRank = computed(() => {
     const s = this.summary();
     if (!s || s.voteAverage === 0 || !s.language || s.language === 'English') return null;
-    const langFilms = this.catalogService.movies()
-      .filter((m) => m.voteAverage > 0 && m.language === s.language)
+    const lang = s.language;
+    const langFilms = this.ratedMovies()
+      .filter((m) => m.language === lang)
       .sort((a, b) => b.voteAverage - a.voteAverage);
     if (langFilms.length < 20) return null;
     const idx = langFilms.findIndex((m) => m.id === s.id);
     if (idx < 0 || idx >= 10) return null;
-    return { rank: idx + 1, language: s.language };
+    return { rank: idx + 1, language: lang };
   });
 
   readonly streamableRank = computed(() => {
     const s = this.summary();
     if (!s || s.voteAverage === 0 || !s.isStreamable) return null;
-    const ranked = this.catalogService.movies()
-      .filter((m) => m.isStreamable && m.voteAverage > 0)
+    const ranked = this.ratedMovies()
+      .filter((m) => m.isStreamable)
       .sort((a, b) => b.voteAverage - a.voteAverage);
     const idx = ranked.findIndex((m) => m.id === s.id);
     if (idx < 0 || idx >= 20) return null;
@@ -1159,47 +1177,28 @@ export class MovieComponent implements OnInit {
   });
 
   readonly totalDirectorFilms = computed(() => {
-    const s = this.summary();
-    if (!s || s.directors.length === 0) return null;
-    const count = this.catalogService.movies().filter((m) => m.directors.includes(s.directors[0])).length;
-    return count > 1 ? count : null;
+    const films = this.primaryDirFilms();
+    return films.length > 1 ? films.length : null;
   });
 
   readonly directorAvgRating = computed(() => {
-    const s = this.summary();
-    if (!s || s.directors.length === 0) return null;
-    const dir = s.directors[0];
-    const dirFilms = this.catalogService.movies().filter((m) => m.directors.includes(dir) && m.voteAverage > 0);
+    const dirFilms = this.primaryDirFilms().filter((m) => m.voteAverage > 0);
     if (dirFilms.length < 3) return null;
     return (dirFilms.reduce((sum, m) => sum + m.voteAverage, 0) / dirFilms.length).toFixed(1);
   });
 
   readonly directorStreamablePct = computed(() => {
-    const s = this.summary();
-    if (!s || s.directors.length === 0) return null;
-    const dir = s.directors[0];
-    const dirFilms = this.catalogService.movies().filter((m) => m.directors.includes(dir));
+    const dirFilms = this.primaryDirFilms();
     if (dirFilms.length < 3) return null;
     const pct = Math.round((dirFilms.filter((m) => m.isStreamable).length / dirFilms.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
   });
 
-  readonly directorCoDirectedCount = computed(() => {
-    const s = this.summary();
-    if (!s || s.directors.length === 0) return null;
-    const dir = s.directors[0];
-    const dirFilms = this.catalogService.movies().filter((m) => m.directors.includes(dir));
-    if (dirFilms.length < 3) return null;
-    const coDir = dirFilms.filter((m) => m.directors.length > 1).length;
-    return coDir >= 2 ? coDir : null;
-  });
-
   readonly genreSiblingCount = computed(() => {
     const s = this.summary();
     if (!s || s.genres.length === 0) return null;
-    const primaryGenre = s.genres[0];
-    const count = this.catalogService.movies().filter((m) => m.id !== s.id && m.genres.includes(primaryGenre)).length;
-    return count >= 10 ? { genre: primaryGenre, count } : null;
+    const count = this.primaryGenreFilms().length - 1; // exclude self
+    return count >= 10 ? { genre: s.genres[0], count } : null;
   });
 
   readonly similarUnwatchedCount = computed(() => {
@@ -1216,22 +1215,8 @@ export class MovieComponent implements OnInit {
     return count > 0 && count < films.length ? count : null;
   });
 
-  readonly genreNonEnglishPct = computed(() => {
-    const s = this.summary();
-    if (!s || s.genres.length === 0) return null;
-    const genre = s.genres[0];
-    const films = this.catalogService.movies().filter((m) => m.genres.includes(genre));
-    if (films.length < 10) return null;
-    const count = films.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
-    const pct = Math.round((count / films.length) * 100);
-    return pct > 0 && pct < 100 ? pct : null;
-  });
-
   readonly genreMedianRating = computed(() => {
-    const s = this.summary();
-    if (!s || s.genres.length === 0) return null;
-    const genre = s.genres[0];
-    const rated = this.catalogService.movies().filter((m) => m.genres.includes(genre) && m.voteAverage > 0);
+    const rated = this.primaryGenreFilms().filter((m) => m.voteAverage > 0);
     if (rated.length < 10) return null;
     const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
@@ -1239,68 +1224,11 @@ export class MovieComponent implements OnInit {
     return median.toFixed(1);
   });
 
-  readonly genreHighlyRatedCount = computed(() => {
-    const s = this.summary();
-    if (!s || s.genres.length === 0) return null;
-    const genre = s.genres[0];
-    const films = this.catalogService.movies().filter((m) => m.genres.includes(genre) && m.voteAverage >= 8.0);
-    return films.length > 0 ? films.length : null;
-  });
-
-  readonly decadeAvgRating = computed(() => {
-    const s = this.summary();
-    if (!s) return null;
-    const decade = Math.floor(s.year / 10) * 10;
-    const rated = this.catalogService.movies().filter((m) => Math.floor(m.year / 10) * 10 === decade && m.voteAverage > 0);
-    if (rated.length < 10) return null;
-    return (rated.reduce((sum, m) => sum + m.voteAverage, 0) / rated.length).toFixed(1);
-  });
-
-  readonly directorAvgTitleLength = computed(() => {
-    const s = this.summary();
-    if (!s || s.directors.length === 0) return null;
-    const films = this.catalogService.movies().filter((m) => m.directors.some((d) => s.directors.includes(d)));
-    if (films.length < 3) return null;
-    return Math.round(films.reduce((sum, m) => sum + m.title.length, 0) / films.length);
-  });
-
-  readonly decadeStreamablePct = computed(() => {
-    const s = this.summary();
-    if (!s) return null;
-    const decade = Math.floor(s.year / 10) * 10;
-    const films = this.catalogService.movies().filter((m) => m.year >= decade && m.year < decade + 10);
-    if (films.length < 10) return null;
-    const pct = Math.round((films.filter((m) => m.isStreamable).length / films.length) * 100);
-    return pct > 0 && pct < 100 ? pct : null;
-  });
-
   readonly genreStreamablePct = computed(() => {
-    const s = this.summary();
-    if (!s || s.genres.length === 0) return null;
-    const genre = s.genres[0];
-    const films = this.catalogService.movies().filter((m) => m.genres.includes(genre));
+    const films = this.primaryGenreFilms();
     if (films.length < 10) return null;
     const pct = Math.round((films.filter((m) => m.isStreamable).length / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
-  });
-
-  readonly genreAvgYear = computed(() => {
-    const s = this.summary();
-    if (!s || s.genres.length === 0) return null;
-    const genre = s.genres[0];
-    const films = this.catalogService.movies().filter((m) => m.genres.includes(genre));
-    if (films.length < 10) return null;
-    return Math.round(films.reduce((sum, m) => sum + m.year, 0) / films.length);
-  });
-
-  readonly genreSilentEraCount = computed(() => {
-    const s = this.summary();
-    if (!s || s.genres.length === 0) return null;
-    const genre = s.genres[0];
-    const films = this.catalogService.movies().filter((m) => m.genres.includes(genre));
-    if (films.length < 10) return null;
-    const count = films.filter((m) => m.year < 1930).length;
-    return count > 0 ? count : null;
   });
 
   readonly yearDecade = computed(() => {
@@ -1311,13 +1239,13 @@ export class MovieComponent implements OnInit {
   readonly yearPeers = computed(() => {
     const s = this.summary();
     if (!s) return 0;
-    return this.catalogService.movies().filter((m) => m.year === s.year).length;
+    return this.sameDecadeFilms().filter((m) => m.year === s.year).length;
   });
 
   readonly ratingPercentile = computed(() => {
     const s = this.summary();
     if (!s || s.voteAverage === 0) return null;
-    const rated = this.catalogService.movies().filter((m) => m.voteAverage > 0);
+    const rated = this.ratedMovies();
     if (rated.length < 10) return null;
     const rank = rated.filter((m) => m.voteAverage > s.voteAverage).length;
     const pct = Math.round((rank / rated.length) * 100);
@@ -1330,158 +1258,18 @@ export class MovieComponent implements OnInit {
   readonly directorFilms = computed(() => {
     const s = this.summary();
     if (!s || s.directors.length === 0) return [];
-    const dir = s.directors[0];
-    return this.catalogService.movies()
-      .filter((m) => m.id !== s.id && m.directors.includes(dir))
+    return this.primaryDirFilms()
+      .filter((m) => m.id !== s.id)
       .sort((a, b) => b.voteAverage - a.voteAverage)
       .slice(0, 8);
   });
 
-  readonly languageRankLabel = computed(() => {
-    const s = this.summary();
-    if (!s || !s.language || s.voteAverage === 0) return null;
-    const langFilms = this.catalogService.movies()
-      .filter((m) => m.language === s.language && m.voteAverage > 0)
-      .sort((a, b) => b.voteAverage - a.voteAverage);
-    if (langFilms.length < 10) return null;
-    const rank = langFilms.findIndex((m) => m.id === s.id);
-    if (rank >= 0 && rank < 20) return `#${rank + 1} in ${s.language}`;
-    return null;
-  });
-
-  readonly directorFilmCountInDecade = computed(() => {
-    const s = this.summary();
-    if (!s || s.directors.length === 0) return null;
-    const decade = Math.floor(s.year / 10) * 10;
-    const count = this.catalogService.movies().filter((m) =>
-      m.directors.includes(s.directors[0]) && Math.floor(m.year / 10) * 10 === decade
-    ).length;
-    return count >= 3 ? count : null;
-  });
-
-  readonly genrePreWarPct = computed(() => {
-    const s = this.summary();
-    if (!s || s.genres.length === 0) return null;
-    const genreFilms = this.catalogService.movies().filter((m) => m.genres.includes(s.genres[0]));
-    if (genreFilms.length < 10) return null;
-    const pct = Math.round((genreFilms.filter((m) => m.year < 1940).length / genreFilms.length) * 100);
-    return pct > 0 && pct < 100 ? pct : null;
-  });
-
-  readonly sameYearStreamableCount = computed(() => {
-    const s = this.summary();
-    if (!s) return null;
-    const count = this.catalogService.movies().filter((m) => m.year === s.year && m.isStreamable && m.id !== s.id).length;
-    return count >= 5 ? count : null;
-  });
-
-  readonly yearRankInGenre = computed(() => {
-    const s = this.summary();
-    if (!s || s.genres.length === 0) return null;
-    const genre = s.genres[0];
-    const genreFilms = this.catalogService.movies().filter((m) => m.genres.includes(genre));
-    if (genreFilms.length < 10) return null;
-    const sorted = [...genreFilms].sort((a, b) => a.year - b.year);
-    const rank = sorted.findIndex((m) => m.id === s.id);
-    if (rank >= 0 && rank < 5) return `#${rank + 1} oldest in genre`;
-    if (rank >= 0 && rank >= sorted.length - 5) return `#${sorted.length - rank} newest in genre`;
-    return null;
-  });
-
   readonly genreDirectorCount = computed(() => {
-    const s = this.summary();
-    if (!s || s.genres.length === 0) return null;
-    const genre = s.genres[0];
-    const genreFilms = this.catalogService.movies().filter((m) => m.genres.includes(genre));
-    if (genreFilms.length < 10) return null;
+    const films = this.primaryGenreFilms();
+    if (films.length < 10) return null;
     const dirs = new Set<string>();
-    for (const m of genreFilms) for (const d of m.directors) dirs.add(d);
+    for (const m of films) for (const d of m.directors) dirs.add(d);
     return dirs.size >= 5 ? dirs.size : null;
-  });
-
-  readonly genreAvgFilmAge = computed(() => {
-    const s = this.summary();
-    if (!s || s.genres.length === 0) return null;
-    const genre = s.genres[0];
-    const genreFilms = this.catalogService.movies().filter((m) => m.genres.includes(genre));
-    if (genreFilms.length < 10) return null;
-    const now = new Date().getFullYear();
-    return Math.round(genreFilms.reduce((sum, m) => sum + (now - m.year), 0) / genreFilms.length);
-  });
-
-  readonly genreImdbLinkedPct = computed(() => {
-    const s = this.summary();
-    if (!s || s.genres.length === 0) return null;
-    const genre = s.genres[0];
-    const genreFilms = this.catalogService.movies().filter((m) => m.genres.includes(genre));
-    if (genreFilms.length < 10) return null;
-    const pct = Math.round((genreFilms.filter((m) => m.imdbId).length / genreFilms.length) * 100);
-    return pct > 0 && pct < 100 ? pct : null;
-  });
-
-  readonly directorAvgGenreCount = computed(() => {
-    const s = this.summary();
-    if (!s || s.directors.length === 0) return null;
-    const dir = s.directors[0];
-    const dirFilms = this.catalogService.movies().filter((m) => m.directors.includes(dir));
-    if (dirFilms.length < 3) return null;
-    const avg = dirFilms.reduce((sum, m) => sum + m.genres.length, 0) / dirFilms.length;
-    return avg >= 1.3 ? avg.toFixed(1) : null;
-  });
-
-  readonly decadePosterCoveragePct = computed(() => {
-    const s = this.summary();
-    if (!s) return null;
-    const decade = Math.floor(s.year / 10) * 10;
-    const decadeFilms = this.catalogService.movies().filter((m) => Math.floor(m.year / 10) * 10 === decade);
-    if (decadeFilms.length < 10) return null;
-    const pct = Math.round((decadeFilms.filter((m) => m.posterUrl).length / decadeFilms.length) * 100);
-    return pct > 0 && pct < 100 ? pct : null;
-  });
-
-  readonly directorPeakDecade = computed(() => {
-    const s = this.summary();
-    if (!s || s.directors.length === 0) return null;
-    const dir = s.directors[0];
-    const dirFilms = this.catalogService.movies().filter((m) => m.directors.includes(dir));
-    if (dirFilms.length < 3) return null;
-    const counts = new Map<number, number>();
-    for (const m of dirFilms) {
-      const d = Math.floor(m.year / 10) * 10;
-      counts.set(d, (counts.get(d) ?? 0) + 1);
-    }
-    if (counts.size < 2) return null;
-    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
-    return top[0];
-  });
-
-  readonly decadeCoDirectedPct = computed(() => {
-    const s = this.summary();
-    if (!s) return null;
-    const decade = Math.floor(s.year / 10) * 10;
-    const decadeFilms = this.catalogService.movies().filter((m) => Math.floor(m.year / 10) * 10 === decade);
-    if (decadeFilms.length < 10) return null;
-    const pct = Math.round((decadeFilms.filter((m) => m.directors.length > 1).length / decadeFilms.length) * 100);
-    return pct > 0 && pct < 100 ? pct : null;
-  });
-
-  readonly genreCoDirectedPct = computed(() => {
-    const s = this.summary();
-    if (!s || s.genres.length === 0) return null;
-    const genreFilms = this.catalogService.movies().filter((m) => m.genres.includes(s.genres[0]));
-    if (genreFilms.length < 10) return null;
-    const pct = Math.round((genreFilms.filter((m) => m.directors.length > 1).length / genreFilms.length) * 100);
-    return pct > 0 && pct < 100 ? pct : null;
-  });
-
-  readonly directorIaStreamableCount = computed(() => {
-    const s = this.summary();
-    if (!s || s.directors.length === 0) return null;
-    const dir = s.directors[0];
-    const dirFilms = this.catalogService.movies().filter((m) => m.directors.includes(dir));
-    if (dirFilms.length < 3) return null;
-    const count = dirFilms.filter((m) => m.internetArchiveId).length;
-    return count > 0 ? count : null;
   });
 
   @HostListener('document:keydown', ['$event'])
