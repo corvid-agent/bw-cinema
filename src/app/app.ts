@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './shared/components/header.component';
 import { FooterComponent } from './shared/components/footer.component';
@@ -18,6 +18,9 @@ const ONBOARDING_KEY = 'bw-cinema-onboarded';
   imports: [RouterOutlet, HeaderComponent, FooterComponent, ToastContainerComponent, BackToTopComponent, BottomNavComponent],
   template: `
     <a class="skip-link" href="#main-content">Skip to main content</a>
+    @if (offline()) {
+      <div class="offline-banner" role="status">Offline — some features may be unavailable</div>
+    }
     <app-header />
     <main id="main-content">
       <router-outlet />
@@ -140,6 +143,14 @@ const ONBOARDING_KEY = 'bw-cinema-onboarded';
   styles: [`
     main {
       min-height: calc(100vh - 60px - 100px);
+    }
+    .offline-banner {
+      background: var(--color-info);
+      color: #fff;
+      text-align: center;
+      padding: 6px var(--space-md);
+      font-size: 0.85rem;
+      font-weight: 600;
     }
     @media (max-width: 768px) {
       main {
@@ -448,9 +459,16 @@ export class App implements OnInit, OnDestroy {
   private readonly notifications = inject(NotificationService);
 
   showOnboarding = false;
+  readonly offline = signal(typeof navigator !== 'undefined' ? !navigator.onLine : false);
 
-  private onlineHandler = () => this.notifications.show('You\'re back online', 'success');
-  private offlineHandler = () => this.notifications.show('You\'re offline — cached content still available', 'info', 5000);
+  private onlineHandler = () => {
+    this.offline.set(false);
+    this.notifications.show('You\'re back online', 'success');
+  };
+  private offlineHandler = () => {
+    this.offline.set(true);
+    this.notifications.show('You\'re offline — cached content still available', 'info', 5000);
+  };
 
   ngOnInit(): void {
     this.theme.init();

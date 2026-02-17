@@ -1,5 +1,8 @@
 import { Directive, ElementRef, inject, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 
+const TMDB_PATTERN = /^https:\/\/image\.tmdb\.org\/t\/p\/w\d+\//;
+const TMDB_WIDTHS = [154, 342, 500];
+
 @Directive({ selector: 'img[appLazyImage]', standalone: true })
 export class LazyImageDirective implements OnInit, OnDestroy {
   private readonly el = inject(ElementRef<HTMLImageElement>);
@@ -13,8 +16,20 @@ export class LazyImageDirective implements OnInit, OnDestroy {
     this.renderer.setStyle(img, 'opacity', '0');
     this.renderer.setStyle(img, 'transition', 'opacity 0.3s ease');
 
-    // Use IntersectionObserver to defer src loading
+    // Generate srcset for TMDB poster URLs
     const src = img.getAttribute('src');
+    if (src && TMDB_PATTERN.test(src)) {
+      const path = src.replace(/^https:\/\/image\.tmdb\.org\/t\/p\/w\d+\//, '');
+      const srcset = TMDB_WIDTHS
+        .map((w) => `https://image.tmdb.org/t/p/w${w}/${path} ${w}w`)
+        .join(', ');
+      img.setAttribute('data-srcset', srcset);
+      if (!img.getAttribute('sizes')) {
+        img.setAttribute('sizes', '(max-width: 480px) 140px, 180px');
+      }
+    }
+
+    // Use IntersectionObserver to defer src loading
     if (src && 'IntersectionObserver' in window) {
       img.setAttribute('data-src', src);
       img.removeAttribute('src');
@@ -26,6 +41,11 @@ export class LazyImageDirective implements OnInit, OnDestroy {
               const target = entry.target as HTMLImageElement;
               const lazySrc = target.getAttribute('data-src');
               if (lazySrc) {
+                const lazySrcset = target.getAttribute('data-srcset');
+                if (lazySrcset) {
+                  target.srcset = lazySrcset;
+                  target.removeAttribute('data-srcset');
+                }
                 target.src = lazySrc;
                 target.removeAttribute('data-src');
               }

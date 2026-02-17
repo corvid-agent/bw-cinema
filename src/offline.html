@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Offline — BW Cinema</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0d0d0d;
+      color: #f0ede8;
+      font-family: 'Source Sans 3', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      text-align: center;
+      padding: 24px;
+    }
+    .offline {
+      max-width: 420px;
+    }
+    .offline__icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+    .offline__title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin: 0 0 12px;
+      color: #d4a843;
+    }
+    .offline__text {
+      color: #a8a29e;
+      font-size: 1rem;
+      line-height: 1.6;
+      margin: 0 0 24px;
+    }
+    .offline__btn {
+      display: inline-block;
+      padding: 12px 32px;
+      background: #d4a843;
+      color: #0d0d0d;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .offline__btn:hover { opacity: 0.9; }
+    .offline__status {
+      margin-top: 16px;
+      font-size: 0.85rem;
+      color: #6b6560;
+    }
+  </style>
+</head>
+<body>
+  <div class="offline">
+    <div class="offline__icon" aria-hidden="true">&#9881;</div>
+    <h1 class="offline__title">You're Offline</h1>
+    <p class="offline__text">BW Cinema will be back when your connection returns. Cached pages may still be available.</p>
+    <button class="offline__btn" onclick="window.location.reload()">Try Again</button>
+    <p class="offline__status" id="status">Waiting for connection...</p>
+  </div>
+  <script>
+    window.addEventListener('online', function() {
+      document.getElementById('status').textContent = 'Connection restored — reloading...';
+      setTimeout(function() { window.location.reload(); }, 500);
+    });
+  </script>
+</body>
+</html>

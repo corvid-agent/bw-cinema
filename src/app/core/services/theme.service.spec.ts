@@ -35,9 +35,18 @@ describe('ThemeService', () => {
     expect(mockStore['bw-cinema-theme']).toBe('sepia');
   });
 
-  it('should toggle back to dark', () => {
-    service.toggle();
-    service.toggle();
+  it('should toggle to light after sepia', () => {
+    service.toggle(); // dark → sepia
+    service.toggle(); // sepia → light
+    expect(service.theme()).toBe('light');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+    expect(mockStore['bw-cinema-theme']).toBe('light');
+  });
+
+  it('should toggle back to dark after light', () => {
+    service.toggle(); // dark → sepia
+    service.toggle(); // sepia → light
+    service.toggle(); // light → dark
     expect(service.theme()).toBe('dark');
     expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
     expect(mockStore['bw-cinema-theme']).toBe('dark');

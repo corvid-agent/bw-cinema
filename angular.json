@@ -27,6 +27,11 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
+              },
+              {
+                "glob": "offline.html",
+                "input": "src",
+                "output": ""
               }
             ],
             "styles": [
