@@ -182,6 +182,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (avgFilmYearGap(); as afyg) {
             <p class="genre__fact">Avg {{ afyg }} years between films</p>
           }
+          @if (nonEnglishCount() > 0) {
+            <p class="genre__fact">{{ nonEnglishCount() }} non-English films</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -1013,6 +1016,13 @@ export class GenreComponent implements OnInit {
     if (f.length < 2) return null;
     const newest = f.reduce((a, b) => a.year >= b.year ? a : b);
     return newest.title;
+  });
+
+  readonly nonEnglishCount = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return 0;
+    const count = f.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
+    return count >= 3 ? count : 0;
   });
 
   readonly avgFilmYearGap = computed(() => {

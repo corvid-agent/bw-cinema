@@ -539,6 +539,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">median rating</span>
               </div>
             }
+            @if (longestDirectorCareer(); as ldc) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ ldc.span }} yr</span>
+                <span class="stats__fact-text">longest career ({{ ldc.name }})</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1412,6 +1418,29 @@ export class StatsComponent implements OnInit {
     if (movies.length < 10) return null;
     const pct = Math.round((movies.filter((m) => m.directors.length === 1).length / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly longestDirectorCareer = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const dirYears = new Map<string, { min: number; max: number }>();
+    for (const m of movies) {
+      for (const d of m.directors) {
+        const entry = dirYears.get(d);
+        if (entry) {
+          if (m.year < entry.min) entry.min = m.year;
+          if (m.year > entry.max) entry.max = m.year;
+        } else {
+          dirYears.set(d, { min: m.year, max: m.year });
+        }
+      }
+    }
+    let best: { name: string; span: number } | null = null;
+    for (const [name, { min, max }] of dirYears) {
+      const span = max - min;
+      if (span >= 10 && (!best || span > best.span)) best = { name, span };
+    }
+    return best;
   });
 
   readonly catalogMedianRating = computed(() => {

@@ -134,6 +134,9 @@ import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.direc
         @if (preWarStreamableCount(); as pwsc) {
           <p class="hero__avg-rating">{{ pwsc }} free pre-1940 films</p>
         }
+        @if (catalogAvgDirectorFilmCount(); as cadfc) {
+          <p class="hero__avg-rating">Avg {{ cadfc }} films per director</p>
+        }
       </div>
     </section>
 
@@ -1434,6 +1437,16 @@ export class HomeComponent implements OnInit {
     if (movies.length < 10) return null;
     const langs = new Set(movies.filter((m) => m.language).map((m) => m.language));
     return langs.size >= 3 ? langs.size : null;
+  });
+
+  readonly catalogAvgDirectorFilmCount = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const counts = new Map<string, number>();
+    for (const m of movies) for (const d of m.directors) counts.set(d, (counts.get(d) ?? 0) + 1);
+    if (counts.size < 10) return null;
+    const avg = [...counts.values()].reduce((s, c) => s + c, 0) / counts.size;
+    return avg >= 1.1 ? avg.toFixed(1) : null;
   });
 
   readonly preWarStreamableCount = computed(() => {
