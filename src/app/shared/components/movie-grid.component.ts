@@ -57,7 +57,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
     @media (max-width: 360px) {
       .grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-sm) var(--space-xs);
+        gap: var(--space-sm);
       }
     }
   `],
