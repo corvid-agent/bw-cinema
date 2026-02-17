@@ -100,13 +100,13 @@ import type { MovieSummary } from '../../core/models/movie.model';
             <div class="compare__cell compare__cell--label"></div>
             <div class="compare__cell compare__cell--a">
               @if (filmA()!.posterUrl) {
-                <img [src]="filmA()!.posterUrl" [alt]="filmA()!.title" class="compare__poster" />
+                <img [src]="filmA()!.posterUrl" [alt]="filmA()!.title" class="compare__poster" loading="lazy" />
               }
               <a class="compare__film-link" [routerLink]="['/movie', filmA()!.id]">{{ filmA()!.title }}</a>
             </div>
             <div class="compare__cell compare__cell--b">
               @if (filmB()!.posterUrl) {
-                <img [src]="filmB()!.posterUrl" [alt]="filmB()!.title" class="compare__poster" />
+                <img [src]="filmB()!.posterUrl" [alt]="filmB()!.title" class="compare__poster" loading="lazy" />
               }
               <a class="compare__film-link" [routerLink]="['/movie', filmB()!.id]">{{ filmB()!.title }}</a>
             </div>

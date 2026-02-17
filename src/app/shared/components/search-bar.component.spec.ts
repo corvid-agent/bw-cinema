@@ -100,6 +100,19 @@ describe('SearchBarComponent', () => {
     expect(component.showSuggestions()).toBe(false);
   });
 
+  it('should have aria-live region for suggestion announcements', () => {
+    component.suggestions.set([
+      { id: 'Q1', title: 'Film A', year: 1940, posterUrl: null, tmdbId: '1', imdbId: null, internetArchiveId: null, youtubeId: null, voteAverage: 7, genres: [], directors: [], language: null, isStreamable: true },
+      { id: 'Q2', title: 'Film B', year: 1950, posterUrl: null, tmdbId: '2', imdbId: null, internetArchiveId: null, youtubeId: null, voteAverage: 6, genres: [], directors: [], language: null, isStreamable: true },
+    ]);
+    component.showSuggestions.set(true);
+    fixture.detectChanges();
+
+    const liveRegion = el.querySelector('[aria-live="polite"]') as HTMLElement;
+    expect(liveRegion).toBeTruthy();
+    expect(liveRegion.textContent).toContain('2 suggestions available');
+  });
+
   it('should render suggestions when showSuggestions is true', () => {
     component.suggestions.set([
       { id: 'Q1', title: 'Film A', year: 1940, posterUrl: null, tmdbId: '1', imdbId: null, internetArchiveId: null, youtubeId: null, voteAverage: 7, genres: [], directors: ['Dir A'], language: null, isStreamable: true },

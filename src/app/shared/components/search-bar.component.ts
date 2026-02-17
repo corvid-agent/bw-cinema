@@ -57,6 +57,11 @@ import type { MovieSummary } from '../../core/models/movie.model';
           }
         </div>
       }
+      <div class="sr-only" aria-live="polite" aria-atomic="true">
+        @if (showSuggestions() && suggestions().length > 0) {
+          {{ suggestions().length }} suggestion{{ suggestions().length !== 1 ? 's' : '' }} available
+        }
+      </div>
       @if (showSuggestions() && suggestions().length > 0) {
         <ul class="search__suggestions" role="listbox" id="search-suggestions">
           @for (s of suggestions(); track s.id; let i = $index) {
