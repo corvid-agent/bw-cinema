@@ -479,6 +479,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">most common title word ({{ mctw.count }}x)</span>
               </div>
             }
+            @if (bestRatedDecade(); as brd) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ brd.decade }}s</span>
+                <span class="stats__fact-text">best rated decade (avg &#9733; {{ brd.avg }})</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1260,6 +1266,25 @@ export class StatsComponent implements OnInit {
     }
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return top && top[1] >= 10 ? { word: top[0], count: top[1] } : null;
+  });
+
+  readonly bestRatedDecade = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    const decMap = new Map<number, { total: number; count: number }>();
+    for (const m of movies) {
+      if (m.voteAverage === 0) continue;
+      const d = Math.floor(m.year / 10) * 10;
+      const e = decMap.get(d) ?? { total: 0, count: 0 };
+      e.total += m.voteAverage;
+      e.count++;
+      decMap.set(d, e);
+    }
+    const best = [...decMap.entries()]
+      .filter(([, v]) => v.count >= 20)
+      .map(([decade, v]) => ({ decade, avg: (v.total / v.count).toFixed(1) }))
+      .sort((a, b) => parseFloat(b.avg) - parseFloat(a.avg));
+    return best[0] ?? null;
   });
 
   readonly avgTitleLengthByDecade = computed(() => {

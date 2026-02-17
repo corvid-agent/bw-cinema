@@ -250,6 +250,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Median Year</span>
               </div>
             }
+            @if (nonEnglishWatchedPct(); as newp) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ newp }}%</span>
+                <span class="wrapped__hero-label">Non-English</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -1110,6 +1116,14 @@ export class WrappedComponent implements OnInit {
     const years = films.map((m) => m.year).sort((a, b) => a - b);
     const mid = Math.floor(years.length / 2);
     return years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
+  });
+
+  readonly nonEnglishWatchedPct = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 5) return null;
+    const count = films.filter((m) => m.language && m.language !== 'English' && m.language !== 'en').length;
+    const pct = Math.round((count / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly avgWatchedYear = computed(() => {

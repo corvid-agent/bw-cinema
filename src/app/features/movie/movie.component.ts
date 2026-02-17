@@ -259,7 +259,7 @@ import type { MovieDetail, MovieSummary } from '../../core/models/movie.model';
                           <a class="detail__tag" [routerLink]="['/genre', genre]">{{ genre }}</a>
                         }
                         @if (genreSiblingCount(); as gsc) {
-                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (directorAvgTitleLength(); as datl) {, avg title {{ datl }} chars}@if (decadeAvgRating(); as dar) {, decade avg &#9733; {{ dar }}}@if (genreHighlyRatedCount(); as ghrc) {, {{ ghrc }} rated 8+}@if (genreStreamablePct(); as gsp) {, {{ gsp }}% streamable}@if (decadeStreamablePct(); as dsp) {, {{ dsp }}% of decade streamable})</span>
+                          <span class="detail__director-count">({{ gsc.count }} {{ gsc.genre }} films@if (genreNonEnglishPct(); as gnep) {, {{ gnep }}% non-English}@if (genreSilentEraCount(); as gsec) {, {{ gsec }} silent-era}@if (genreMedianRating(); as gmr) {, median &#9733; {{ gmr }}}@if (directorAvgTitleLength(); as datl) {, avg title {{ datl }} chars}@if (decadeAvgRating(); as dar) {, decade avg &#9733; {{ dar }}}@if (genreHighlyRatedCount(); as ghrc) {, {{ ghrc }} rated 8+}@if (genreStreamablePct(); as gsp) {, {{ gsp }}% streamable}@if (decadeStreamablePct(); as dsp) {, {{ dsp }}% of decade streamable}@if (genreAvgYear(); as gay) {, avg year {{ gay }}})</span>
                         }
                       </div>
                     </div>
@@ -1361,6 +1361,15 @@ export class MovieComponent implements OnInit {
     if (films.length < 10) return null;
     const pct = Math.round((films.filter((m) => m.isStreamable).length / films.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly genreAvgYear = computed(() => {
+    const s = this.summary();
+    if (!s || s.genres.length === 0) return null;
+    const genre = s.genres[0];
+    const films = this.catalogService.movies().filter((m) => m.genres.includes(genre));
+    if (films.length < 10) return null;
+    return Math.round(films.reduce((sum, m) => sum + m.year, 0) / films.length);
   });
 
   readonly genreSilentEraCount = computed(() => {
