@@ -79,5 +79,10 @@ export const routes: Routes = [
     title: 'Explore — BW Cinema',
     loadComponent: () => import('./features/explore/explore.component').then((m) => m.ExploreComponent),
   },
-  { path: '**', redirectTo: 'home' },
+  {
+    path: '**',
+    title: 'Page Not Found — BW Cinema',
+    loadComponent: () =>
+      import('./features/not-found/not-found.component').then((m) => m.NotFoundComponent),
+  },
 ];

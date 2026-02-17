@@ -89,7 +89,12 @@ import type { MovieSummary } from '../../core/models/movie.model';
         </div>
       </div>
 
-      @if (filmA() && filmB()) {
+      @if (filmA() && filmB() && filmA()!.id === filmB()!.id) {
+        <div class="compare__same-warning" role="alert">
+          You've selected the same film for both slots. Pick a different film to compare.
+        </div>
+      }
+      @if (filmA() && filmB() && filmA()!.id !== filmB()!.id) {
         <div class="compare__table">
           <div class="compare__row compare__row--header">
             <div class="compare__cell compare__cell--label"></div>
@@ -539,6 +544,17 @@ import type { MovieSummary } from '../../core/models/movie.model';
     .compare__action-btn:hover {
       border-color: var(--accent-gold);
       color: var(--accent-gold);
+    }
+    .compare__same-warning {
+      text-align: center;
+      padding: var(--space-lg);
+      margin-bottom: var(--space-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--accent-gold);
+      border-radius: var(--radius-lg);
+      color: var(--accent-gold);
+      font-weight: 600;
+      font-size: 0.9rem;
     }
     .compare__year-gap {
       text-align: center;

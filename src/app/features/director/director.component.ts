@@ -414,6 +414,7 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
         } @else {
           <div class="director__empty">
             <p>No films found for this director.</p>
+            <a class="director__empty-cta" routerLink="/browse">Browse All Films</a>
           </div>
         }
       </div>
@@ -764,6 +765,19 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       padding: var(--space-3xl);
       color: var(--text-tertiary);
     }
+    .director__empty-cta {
+      display: inline-block;
+      margin-top: var(--space-md);
+      padding: var(--space-sm) var(--space-lg);
+      background: var(--accent-gold);
+      color: var(--bg-base);
+      border-radius: var(--radius-lg);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .director__empty-cta:hover { opacity: 0.85; }
     @media (max-width: 768px) {
       .director__stats {
         grid-template-columns: repeat(2, 1fr);

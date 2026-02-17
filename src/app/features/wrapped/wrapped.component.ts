@@ -64,6 +64,12 @@ interface WrappedStats {
             <p class="wrapped__empty-text">Start watching to see your year in review!</p>
             <a class="btn-primary" routerLink="/browse">Browse Films</a>
           </div>
+        } @else if (stats().totalFilms === 1) {
+          <div class="wrapped__few">
+            <p class="wrapped__few-title">Just getting started!</p>
+            <p class="wrapped__few-text">You watched 1 film in {{ selectedYear() }}. Watch a few more to unlock your full year in review.</p>
+            <a class="btn-primary" routerLink="/browse">Discover More Films</a>
+          </div>
         } @else {
           <div class="wrapped__hero-stats">
             <div class="wrapped__hero-stat">
@@ -484,6 +490,19 @@ interface WrappedStats {
       margin-bottom: var(--space-sm);
     }
     .wrapped__empty-text {
+      color: var(--text-tertiary);
+      margin-bottom: var(--space-lg);
+    }
+    .wrapped__few {
+      text-align: center;
+      padding: var(--space-3xl) var(--space-lg);
+    }
+    .wrapped__few-title {
+      font-family: var(--font-heading);
+      font-size: 1.3rem;
+      margin-bottom: var(--space-sm);
+    }
+    .wrapped__few-text {
       color: var(--text-tertiary);
       margin-bottom: var(--space-lg);
     }
