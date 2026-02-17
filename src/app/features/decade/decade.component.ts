@@ -159,6 +159,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (singleGenreCount()) {
             <p class="decade__fact">{{ singleGenreCount() }} single-genre films</p>
           }
+          @if (coDirectedPct(); as cdp) {
+            <p class="decade__fact">{{ cdp }}% co-directed</p>
+          }
 
           @if (bestFilm(); as best) {
             <div class="decade__best-film">
@@ -958,6 +961,13 @@ export class DecadeComponent implements OnInit {
     for (const m of f) for (const g of m.genres) counts.set(g, (counts.get(g) ?? 0) + 1);
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return top ? top[0] : null;
+  });
+
+  readonly coDirectedPct = computed(() => {
+    const f = this.films();
+    if (f.length < 10) return null;
+    const pct = Math.round((f.filter((m) => m.directors.length > 1).length / f.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly singleGenreCount = computed(() => {

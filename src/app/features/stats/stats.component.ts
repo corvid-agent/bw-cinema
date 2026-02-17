@@ -461,6 +461,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">films from before 1940</span>
               </div>
             }
+            @if (singleDirectorPct(); as sdp) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ sdp }}%</span>
+                <span class="stats__fact-text">solo-directed films</span>
+              </div>
+            }
             @if (avgDirectorsPerFilm(); as adpf) {
               <div class="stats__fact-card">
                 <span class="stats__fact-number">{{ adpf }}</span>
@@ -1329,6 +1335,13 @@ export class StatsComponent implements OnInit {
       .filter(([, v]) => v.count >= 10)
       .map(([decade, v]) => ({ decade, avg: Math.round(v.total / v.count) }))
       .sort((a, b) => b.avg - a.avg);
+  });
+
+  readonly singleDirectorPct = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 10) return null;
+    const pct = Math.round((movies.filter((m) => m.directors.length === 1).length / movies.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly preWarPct = computed(() => {

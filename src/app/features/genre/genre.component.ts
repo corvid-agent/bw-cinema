@@ -161,6 +161,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (preWarCount()) {
             <p class="genre__fact">{{ preWarCount() }} films from before 1940</p>
           }
+          @if (newestFilmTitle(); as nft) {
+            <p class="genre__fact">Newest: "{{ nft }}"</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -953,6 +956,13 @@ export class GenreComponent implements OnInit {
     if (counts.size < 2) return null;
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return `${top[0]}s`;
+  });
+
+  readonly newestFilmTitle = computed(() => {
+    const f = this.films();
+    if (f.length < 2) return null;
+    const newest = f.reduce((a, b) => a.year >= b.year ? a : b);
+    return newest.title;
   });
 
   readonly preWarCount = computed(() => {
