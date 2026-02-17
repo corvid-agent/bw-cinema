@@ -119,95 +119,29 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
             }
           </div>
 
-          @if (newestFilmYear(); as nfy) {
-            <p class="genre__fact">Most recent: {{ nfy }}</p>
+          @if (highestRatedTitle(); as hrt) {
+            <p class="genre__fact">Top rated: {{ hrt.title }} (&#9733; {{ hrt.rating }})@if (medianRating(); as mr) { &middot; median &#9733; {{ mr }}}</p>
           }
           @if (watchedInGenre() > 0) {
-            <p class="genre__fact">You've watched {{ watchedInGenre() }} {{ name() }} film{{ watchedInGenre() !== 1 ? 's' : '' }}</p>
-          }
-          @if (highestRatedTitle(); as hrt) {
-            <p class="genre__fact">Top rated: {{ hrt.title }} (&#9733; {{ hrt.rating }})</p>
-          }
-          @if (unwatchedStreamableCount() > 0) {
-            <p class="genre__fact">{{ unwatchedStreamableCount() }} free {{ name() }} films you haven't watched</p>
-          }
-          @if (nonEnglishPct() > 0) {
-            <p class="genre__fact">{{ nonEnglishPct() }}% non-English films</p>
-          }
-          @if (medianRating(); as mr) {
-            <p class="genre__fact">Median rating: &#9733; {{ mr }}</p>
-          }
-          @if (avgTitleLength(); as atl) {
-            <p class="genre__fact">Avg title length: {{ atl }} chars</p>
-          }
-          @if (longestTitle(); as lt) {
-            <p class="genre__fact">Longest title: "{{ lt }}"</p>
-          }
-          @if (shortestTitle(); as st) {
-            <p class="genre__fact">Shortest title: "{{ st }}"</p>
-          }
-          @if (highlyRatedCount() > 0) {
-            <p class="genre__fact">{{ highlyRatedCount() }} films rated 8.0+</p>
-          }
-          @if (coDirectedPct(); as cdp) {
-            <p class="genre__fact">{{ cdp }}% co-directed</p>
-          }
-          @if (streamableHighRatedCount() > 0) {
-            <p class="genre__fact">{{ streamableHighRatedCount() }} highly-rated free to watch</p>
-          }
-          @if (topDecadeLabel(); as tdl) {
-            <p class="genre__fact">Most films from the {{ tdl }}</p>
-          }
-          @if (preWarCount()) {
-            <p class="genre__fact">{{ preWarCount() }} films from before 1940</p>
-          }
-          @if (newestFilmTitle(); as nft) {
-            <p class="genre__fact">Newest: "{{ nft }}"</p>
-          }
-          @if (oldestFilmTitle(); as oft) {
-            <p class="genre__fact">Oldest: "{{ oft }}"</p>
-          }
-          @if (streamableHighRatedPct(); as shrp) {
-            <p class="genre__fact">{{ shrp }}% of free films rated 7+</p>
-          }
-          @if (uniqueDirectorLanguages(); as udl) {
-            <p class="genre__fact">Directors from {{ udl }} language backgrounds</p>
-          }
-          @if (ratingsSpread(); as rs) {
-            <p class="genre__fact">Ratings range: {{ rs }}</p>
+            <p class="genre__fact">You've watched {{ watchedInGenre() }}@if (unwatchedStreamableCount() > 0) { &middot; {{ unwatchedStreamableCount() }} free to discover}</p>
           }
           @if (directorWithMostFilms(); as dwmf) {
-            <p class="genre__fact">Top director: {{ dwmf.name }} ({{ dwmf.count }} films)</p>
+            <p class="genre__fact">Top director: {{ dwmf.name }} ({{ dwmf.count }})@if (topDecadeLabel(); as tdl) { &middot; peak {{ tdl }}}</p>
           }
-          @if (avgFilmYearGap(); as afyg) {
-            <p class="genre__fact">Avg {{ afyg }} years between films</p>
-          }
-          @if (nonEnglishCount() > 0) {
-            <p class="genre__fact">{{ nonEnglishCount() }} non-English films</p>
-          }
-          @if (genreAvgDirectorFilmCount(); as gadfc) {
-            <p class="genre__fact">Avg {{ gadfc }} films per director</p>
-          }
-          @if (imdbLinkedPct(); as ilp) {
-            <p class="genre__fact">{{ ilp }}% linked to IMDb</p>
-          }
-          @if (posterCoveragePct(); as pcp) {
-            <p class="genre__fact">{{ pcp }}% have poster art</p>
-          }
-          @if (avgDirectorCareer(); as adc) {
-            <p class="genre__fact">Avg director career: {{ adc }} years</p>
-          }
-          @if (ytStreamableCount(); as ysc) {
-            <p class="genre__fact">{{ ysc }} available on YouTube</p>
-          }
-          @if (iaStreamableCount(); as iasc) {
-            <p class="genre__fact">{{ iasc }} on Internet Archive</p>
-          }
-          @if (highlyRatedPct(); as hrp) {
-            <p class="genre__fact">{{ hrp }}% rated 7.0+</p>
-          }
-          @if (notableFact()) {
-            <p class="genre__fact">{{ notableFact() }}</p>
+          <button class="genre__more-toggle" (click)="showMoreFacts.set(!showMoreFacts())">{{ showMoreFacts() ? 'Less' : 'More facts' }}</button>
+          @if (showMoreFacts()) {
+            @if (nonEnglishPct() > 0) {
+              <p class="genre__fact">{{ nonEnglishPct() }}% non-English &middot; {{ uniqueDirectorLanguages() }} language backgrounds</p>
+            }
+            @if (ytStreamableCount(); as ysc) {
+              <p class="genre__fact">{{ ysc }} on YouTube &middot; {{ iaStreamableCount() }} on IA &middot; {{ highlyRatedPct() }}% rated 7.0+</p>
+            }
+            @if (coDirectedPct(); as cdp) {
+              <p class="genre__fact">{{ cdp }}% co-directed &middot; {{ posterCoveragePct() }}% have posters &middot; {{ imdbLinkedPct() }}% IMDb-linked</p>
+            }
+            @if (notableFact()) {
+              <p class="genre__fact">{{ notableFact() }}</p>
+            }
           }
 
           @if (topFilm(); as top) {
@@ -684,6 +618,16 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       font-size: 0.95rem;
       margin: 0 0 var(--space-xl);
     }
+    .genre__more-toggle {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: var(--space-xs) 0;
+      opacity: 0.7;
+      &:hover { opacity: 1; }
+    }
     @media (max-width: 768px) {
       .genre__header { flex-direction: column; gap: var(--space-md); }
     }
@@ -695,6 +639,7 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
   `],
 })
 export class GenreComponent implements OnInit {
+  readonly showMoreFacts = signal(false);
   readonly name = input.required<string>();
 
   protected readonly catalog = inject(CatalogService);

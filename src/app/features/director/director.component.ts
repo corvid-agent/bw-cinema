@@ -72,6 +72,8 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">vs Catalog Avg</span>
               </div>
             }
+            <button class="director__more-toggle" (click)="showMoreStats.set(!showMoreStats())">{{ showMoreStats() ? 'Less' : 'More stats' }}</button>
+            @if (showMoreStats()) {
             @if (avgYear()) {
               <div class="director__stat">
                 <span class="director__stat-value">{{ avgYear() }}</span>
@@ -294,6 +296,7 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
                 <span class="director__stat-label">Have Posters</span>
               </div>
             }
+            }
           </div>
 
           @if (bestFilm(); as best) {
@@ -445,6 +448,17 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
       font-style: italic;
       color: var(--accent-gold);
       margin: var(--space-xs) 0 0;
+    }
+    .director__more-toggle {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: var(--space-xs) 0;
+      opacity: 0.7;
+      grid-column: 1 / -1;
+      &:hover { opacity: 1; }
     }
     .director__stats {
       display: grid;
@@ -770,6 +784,7 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
   `],
 })
 export class DirectorComponent implements OnInit {
+  readonly showMoreStats = signal(false);
   readonly name = input.required<string>();
 
   protected readonly catalog = inject(CatalogService);

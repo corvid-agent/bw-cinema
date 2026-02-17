@@ -191,15 +191,6 @@ import type { MovieSummary } from '../../core/models/movie.model';
           @if (eraLabel(); as era) {
             <p class="compare__double-feature-note">{{ era }}</p>
           }
-          @if (midpointYear(); as mpy) {
-            <p class="compare__double-feature-note">Midpoint: {{ mpy }}</p>
-          }
-          @if (yearSpan(); as ys) {
-            <p class="compare__double-feature-note">Spanning {{ ys }}</p>
-          }
-          @if (combinedGenreCount(); as cgc) {
-            <p class="compare__double-feature-note">{{ cgc }} genres between them</p>
-          }
           @if (combinedAvgRating(); as avg) {
             <div class="compare__combined-avg">
               Combined Avg: {{ avg }}/10
@@ -217,90 +208,6 @@ import type { MovieSummary } from '../../core/models/movie.model';
               }
               @if (combinedLanguageCount() > 1) {
                 <span class="compare__overlap"> &middot; {{ combinedLanguageCount() }} languages</span>
-              }
-              @if (avgFilmAge(); as afa) {
-                <span class="compare__overlap"> &middot; avg {{ afa }} years old</span>
-              }
-              @if (bothStreamable()) {
-                <span class="compare__overlap"> &middot; both free to watch</span>
-              }
-              @if (bothNonEnglish()) {
-                <span class="compare__overlap"> &middot; both non-English</span>
-              }
-              @if (bothSilentEra()) {
-                <span class="compare__overlap"> &middot; both silent-era</span>
-              }
-              @if (combinedTitleLength(); as ctl) {
-                <span class="compare__overlap"> &middot; {{ ctl }} chars combined</span>
-              }
-              @if (sameLanguage(); as sl) {
-                <span class="compare__overlap"> &middot; both in {{ sl }}</span>
-              }
-              @if (genreCountDiff(); as gcd) {
-                <span class="compare__overlap"> &middot; {{ gcd }} genre difference</span>
-              }
-              @if (directorCountDiff(); as dcd) {
-                <span class="compare__overlap"> &middot; {{ dcd }} director difference</span>
-              }
-              @if (bothHighlyRated()) {
-                <span class="compare__overlap"> &middot; both rated 8+</span>
-              }
-              @if (bothPreWar()) {
-                <span class="compare__overlap"> &middot; both pre-1940</span>
-              }
-              @if (avgYearDiff(); as ayd) {
-                <span class="compare__overlap"> &middot; {{ ayd }} avg year diff from catalog</span>
-              }
-              @if (sameDecade()) {
-                <span class="compare__overlap"> &middot; same decade</span>
-              }
-              @if (bothCoDirected()) {
-                <span class="compare__overlap"> &middot; both co-directed</span>
-              }
-              @if (ratingGap(); as rg) {
-                <span class="compare__overlap"> &middot; {{ rg }} rating gap</span>
-              }
-              @if (combinedGenreList(); as cgl) {
-                <span class="compare__overlap"> &middot; genres: {{ cgl }}</span>
-              }
-              @if (combinedAvgYear(); as cay) {
-                <span class="compare__overlap"> &middot; avg year {{ cay }}</span>
-              }
-              @if (titleLengthDiff(); as tld) {
-                <span class="compare__overlap"> &middot; {{ tld }} char title difference</span>
-              }
-              @if (olderFilmLabel(); as ofl) {
-                <span class="compare__overlap"> &middot; {{ ofl }}</span>
-              }
-              @if (combinedLanguages(); as cl) {
-                <span class="compare__overlap"> &middot; languages: {{ cl }}</span>
-              }
-              @if (avgGenreCount(); as agc) {
-                <span class="compare__overlap"> &middot; avg {{ agc }} genres</span>
-              }
-              @if (bothImdbLinked()) {
-                <span class="compare__overlap"> &middot; both on IMDb</span>
-              }
-              @if (higherRatedLabel(); as hrl) {
-                <span class="compare__overlap"> &middot; {{ hrl }}</span>
-              }
-              @if (bothHavePoster()) {
-                <span class="compare__overlap"> &middot; both have posters</span>
-              }
-              @if (combinedPosterCount(); as cpc) {
-                <span class="compare__overlap"> &middot; {{ cpc }}/2 have poster art</span>
-              }
-              @if (combinedAvgFilmAge(); as cafa) {
-                <span class="compare__overlap"> &middot; avg {{ cafa }} years old</span>
-              }
-              @if (bothYtStreamable()) {
-                <span class="compare__overlap"> &middot; both on YouTube</span>
-              }
-              @if (bothIaStreamable()) {
-                <span class="compare__overlap"> &middot; both on Internet Archive</span>
-              }
-              @if (combinedIaCount(); as ciac) {
-                <span class="compare__overlap"> &middot; {{ ciac }}/2 on IA</span>
               }
             </div>
           }

@@ -66,6 +66,8 @@ interface QuizStep {
           @if (resultStreamableCount() > 0) {
             <p class="quiz__decade-range">{{ resultStreamableCount() }} of {{ results().length }} free to watch</p>
           }
+          <button class="quiz__more-toggle" (click)="showMoreResults.set(!showMoreResults())">{{ showMoreResults() ? 'Less' : 'More stats' }}</button>
+          @if (showMoreResults()) {
           @if (resultUniqueDirectors() > 1) {
             <p class="quiz__decade-range">{{ resultUniqueDirectors() }} different directors</p>
           }
@@ -161,6 +163,7 @@ interface QuizStep {
           }
           @if (resultIaStreamablePct(); as riasp) {
             <p class="quiz__decade-range">{{ riasp }}% on IA</p>
+          }
           }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
@@ -434,12 +437,23 @@ interface QuizStep {
       color: var(--text-tertiary);
       margin: 0 0 var(--space-sm);
     }
+    .quiz__more-toggle {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: var(--space-xs) 0;
+      opacity: 0.7;
+      &:hover { opacity: 1; }
+    }
     @media (max-width: 480px) {
       .quiz__result-grid { grid-template-columns: repeat(2, 1fr); }
     }
   `],
 })
 export class QuizComponent implements OnInit {
+  readonly showMoreResults = signal(false);
   protected readonly catalog = inject(CatalogService);
   private readonly collection = inject(CollectionService);
   private readonly notifications = inject(NotificationService);
