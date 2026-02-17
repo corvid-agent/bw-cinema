@@ -123,6 +123,9 @@ interface QuizStep {
           @if (resultNewestTitle(); as rnt) {
             <p class="quiz__decade-range">Newest: "{{ rnt }}"</p>
           }
+          @if (resultOldestTitle(); as rot) {
+            <p class="quiz__decade-range">Oldest: "{{ rot }}"</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -632,6 +635,13 @@ export class QuizComponent implements OnInit {
     }
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     return top && top[1] >= 2 ? top[0] : null;
+  });
+
+  readonly resultOldestTitle = computed(() => {
+    const films = this.results();
+    if (films.length < 2) return null;
+    const oldest = films.reduce((a, b) => a.year <= b.year ? a : b);
+    return oldest.title;
   });
 
   readonly resultNewestTitle = computed(() => {
