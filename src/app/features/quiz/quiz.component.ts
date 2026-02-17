@@ -111,6 +111,9 @@ interface QuizStep {
           @if (resultHighlyRatedCount(); as rhrc) {
             <p class="quiz__decade-range">{{ rhrc }} rated 8.0+</p>
           }
+          @if (resultLongestTitle(); as rlt) {
+            <p class="quiz__decade-range">Longest: "{{ rlt }}"</p>
+          }
           <div class="quiz__prefs">
             @for (pref of selectedPrefs(); track pref) {
               <span class="quiz__pref-chip">{{ pref }}</span>
@@ -595,6 +598,13 @@ export class QuizComponent implements OnInit {
     const oldest = Math.min(...films.map((m) => m.year));
     const newest = Math.max(...films.map((m) => m.year));
     return newest - oldest >= 5 ? oldest : null;
+  });
+
+  readonly resultLongestTitle = computed(() => {
+    const films = this.results();
+    if (films.length < 3) return null;
+    const longest = films.reduce((a, b) => a.title.length >= b.title.length ? a : b);
+    return longest.title.length >= 20 ? longest.title : null;
   });
 
   readonly avgMatchScore = computed(() => {

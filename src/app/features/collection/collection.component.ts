@@ -402,6 +402,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Rated 8.0+</span>
                   </div>
                 }
+                @if (watchedStreamablePct(); as wsp) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ wsp }}%</span>
+                    <span class="stats__card-label">Streamable</span>
+                  </div>
+                }
               </div>
 
               @if (nextMilestone(); as milestone) {
@@ -1728,6 +1734,13 @@ export class CollectionComponent implements OnInit {
     if (films.length < 3) return null;
     const shortest = films.reduce((a, b) => a.title.length <= b.title.length ? a : b);
     return shortest.title.length <= 15 ? shortest.title : null;
+  });
+
+  readonly watchedStreamablePct = computed(() => {
+    const films = this.watchedMovies();
+    if (films.length < 3) return null;
+    const pct = Math.round((films.filter((m) => m.isStreamable).length / films.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   readonly watchedLongestTitle = computed(() => {

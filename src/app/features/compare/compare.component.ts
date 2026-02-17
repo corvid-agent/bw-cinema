@@ -239,6 +239,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (bothHighlyRated()) {
                 <span class="compare__overlap"> &middot; both rated 8+</span>
               }
+              @if (sameDecade()) {
+                <span class="compare__overlap"> &middot; same decade</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -868,6 +871,13 @@ export class CompareComponent implements OnInit {
     if (!a || !b) return null;
     const total = a.title.length + b.title.length;
     return total >= 10 ? total : null;
+  });
+
+  readonly sameDecade = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return false;
+    return Math.floor(a.year / 10) === Math.floor(b.year / 10);
   });
 
   readonly bothSilentEra = computed(() => {
