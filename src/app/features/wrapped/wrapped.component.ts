@@ -244,6 +244,12 @@ interface WrappedStats {
                 <span class="wrapped__hero-label">Rated 7.0+</span>
               </div>
             }
+            @if (medianWatchedYear(); as mwy) {
+              <div class="wrapped__hero-stat">
+                <span class="wrapped__hero-value">{{ mwy }}</span>
+                <span class="wrapped__hero-label">Median Year</span>
+              </div>
+            }
           </div>
 
           <div class="wrapped__cards">
@@ -1096,6 +1102,14 @@ export class WrappedComponent implements OnInit {
     if (films.length < 3) return null;
     const count = films.filter((m) => m.voteAverage >= 7.0).length;
     return count > 0 && count < films.length ? count : null;
+  });
+
+  readonly medianWatchedYear = computed(() => {
+    const films = this.yearFilms();
+    if (films.length < 3) return null;
+    const years = films.map((m) => m.year).sort((a, b) => a - b);
+    const mid = Math.floor(years.length / 2);
+    return years.length % 2 === 0 ? Math.round((years[mid - 1] + years[mid]) / 2) : years[mid];
   });
 
   readonly avgWatchedYear = computed(() => {

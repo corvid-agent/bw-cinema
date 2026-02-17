@@ -473,6 +473,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">top genre ({{ tg.count }} films)</span>
               </div>
             }
+            @if (mostCommonTitleWord(); as mctw) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number" style="font-size: 0.85em">"{{ mctw.word }}"</span>
+                <span class="stats__fact-text">most common title word ({{ mctw.count }}x)</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1241,6 +1247,19 @@ export class StatsComponent implements OnInit {
     const movies = this.catalog.movies();
     if (movies.length === 0) return 0;
     return Math.round(movies.reduce((s, m) => s + m.title.length, 0) / movies.length);
+  });
+
+  readonly mostCommonTitleWord = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length === 0) return null;
+    const stopWords = new Set(['the', 'of', 'a', 'and', 'in', 'to', 'is', 'it', 'for', 'on', 'at', 'an', 'or', 'de', 'la', 'le', 'el', 'das', 'der', 'die', 'les', 'des', 'du', 'un', 'une']);
+    const counts = new Map<string, number>();
+    for (const m of movies) {
+      const words = m.title.toLowerCase().split(/\s+/).filter((w) => w.length > 2 && !stopWords.has(w));
+      for (const w of words) counts.set(w, (counts.get(w) ?? 0) + 1);
+    }
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return top && top[1] >= 10 ? { word: top[0], count: top[1] } : null;
   });
 
   readonly avgTitleLengthByDecade = computed(() => {

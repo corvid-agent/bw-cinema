@@ -96,6 +96,9 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
         @if (resultShortestTitle(); as rst) {
           <p class="browse__watched-note">Shortest: "{{ rst }}"</p>
         }
+        @if (resultUniqueDirectorCount(); as rudc) {
+          <p class="browse__watched-note">{{ rudc }} unique directors</p>
+        }
       </div>
 
       @if (catalog.loading()) {
@@ -792,6 +795,14 @@ export class BrowseComponent implements OnInit, OnDestroy, AfterViewInit {
     if (films.length < 10) return null;
     const shortest = films.reduce((a, b) => a.title.length <= b.title.length ? a : b);
     return shortest.title.length <= 8 ? shortest.title : null;
+  });
+
+  readonly resultUniqueDirectorCount = computed(() => {
+    const films = this.filteredMovies();
+    if (films.length < 10) return null;
+    const dirs = new Set<string>();
+    for (const m of films) for (const d of m.directors) dirs.add(d);
+    return dirs.size > 1 ? dirs.size : null;
   });
 
   readonly topResultDirector = computed(() => {
