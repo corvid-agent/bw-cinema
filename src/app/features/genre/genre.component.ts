@@ -200,6 +200,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (ytStreamableCount(); as ysc) {
             <p class="genre__fact">{{ ysc }} available on YouTube</p>
           }
+          @if (iaStreamableCount(); as iasc) {
+            <p class="genre__fact">{{ iasc }} on Internet Archive</p>
+          }
           @if (notableFact()) {
             <p class="genre__fact">{{ notableFact() }}</p>
           }
@@ -1116,6 +1119,13 @@ export class GenreComponent implements OnInit {
     if (spans.length < 3) return null;
     const avg = Math.round(spans.reduce((s, v) => s + v, 0) / spans.length);
     return avg >= 3 ? avg : null;
+  });
+
+  readonly iaStreamableCount = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const count = f.filter((m) => m.internetArchiveId).length;
+    return count > 0 ? count : null;
   });
 
   readonly decadeBreakdown = computed(() => {
