@@ -32,6 +32,12 @@ import { RouterLink } from '@angular/router';
             <a routerLink="/about">About</a>
             <a href="https://github.com/corvid-agent/bw-cinema" target="_blank" rel="noopener">GitHub</a>
           </div>
+          <div class="footer__nav-col footer__ecosystem">
+            <h4 class="footer__nav-heading">Ecosystem</h4>
+            <a href="https://corvid-agent.github.io/" target="_blank" rel="noopener">Home</a>
+            <a href="https://corvid-agent.github.io/weather-dashboard/" target="_blank" rel="noopener">Weather</a>
+            <a href="https://corvid-agent.github.io/space-dashboard/" target="_blank" rel="noopener">Space</a>
+          </div>
         </nav>
         <div class="footer__decades">
           <h4 class="footer__nav-heading">Browse by Decade</h4>
@@ -94,9 +100,9 @@ import { RouterLink } from '@angular/router';
     }
     .footer__nav {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: var(--space-lg);
-      max-width: 480px;
+      max-width: 580px;
       margin: 0 auto var(--space-xl);
       text-align: left;
     }
