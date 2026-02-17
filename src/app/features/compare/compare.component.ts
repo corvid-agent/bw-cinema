@@ -281,6 +281,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (bothImdbLinked()) {
                 <span class="compare__overlap"> &middot; both on IMDb</span>
               }
+              @if (higherRatedLabel(); as hrl) {
+                <span class="compare__overlap"> &middot; {{ hrl }}</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -996,6 +999,16 @@ export class CompareComponent implements OnInit {
     if (diff < 5) return null;
     const older = a.year < b.year ? a : b;
     return `"${older.title}" is ${diff} years older`;
+  });
+
+  readonly higherRatedLabel = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b || a.voteAverage === 0 || b.voteAverage === 0) return null;
+    const diff = Math.abs(a.voteAverage - b.voteAverage);
+    if (diff < 0.5) return null;
+    const higher = a.voteAverage > b.voteAverage ? a : b;
+    return `"${higher.title}" rated ${diff.toFixed(1)} higher`;
   });
 
   readonly bothImdbLinked = computed(() => {

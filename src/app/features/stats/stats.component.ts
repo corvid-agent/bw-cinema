@@ -557,6 +557,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">have poster images</span>
               </div>
             }
+            @if (decadeWithMostStreamable(); as dwms) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ dwms.decade }}s</span>
+                <span class="stats__fact-text">most streamable ({{ dwms.count }})</span>
+              </div>
+            }
           </div>
         </section>
 
@@ -1430,6 +1436,20 @@ export class StatsComponent implements OnInit {
     if (movies.length < 10) return null;
     const pct = Math.round((movies.filter((m) => m.directors.length === 1).length / movies.length) * 100);
     return pct > 0 && pct < 100 ? pct : null;
+  });
+
+  readonly decadeWithMostStreamable = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const counts = new Map<number, number>();
+    for (const m of movies) {
+      if (m.isStreamable) {
+        const decade = Math.floor(m.year / 10) * 10;
+        counts.set(decade, (counts.get(decade) ?? 0) + 1);
+      }
+    }
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return top ? { decade: top[0], count: top[1] } : null;
   });
 
   readonly filmsWithPosterPct = computed(() => {
