@@ -41,7 +41,7 @@ const MOODS: Mood[] = [
       <div class="explore container">
         <div class="explore__header">
           <h1>Explore</h1>
-          <p class="explore__subtitle">Discover films by mood, or let fate decide@if (totalUnwatchedStreamable(); as tus) { &middot; {{ tus }} free films to discover}@if (unwatchedAvgRating(); as uar) { &middot; avg &#9733; {{ uar }}}@if (unwatchedLanguageCount(); as ulc) { &middot; {{ ulc }} languages}@if (unwatchedGenreCount(); as ugc) { &middot; {{ ugc }} genres}@if (unwatchedDirectorCount(); as udc) { &middot; {{ udc }} directors}@if (unwatchedAvgAge(); as uaa) { &middot; avg {{ uaa }}yr old}@if (unwatchedNonEnglishCount(); as unec) { &middot; {{ unec }} non-English}@if (unwatchedSilentEraCount(); as usec) { &middot; {{ usec }} silent-era}@if (unwatchedMedianYear(); as umy) { &middot; median year {{ umy }}}@if (unwatchedCoDirectedCount(); as ucdc) { &middot; {{ ucdc }} co-directed}@if (unwatchedAvgYear(); as uay) { &middot; avg year {{ uay }}}@if (unwatchedAvgTitleLength(); as uatl) { &middot; avg title {{ uatl }} chars}@if (unwatchedHighlyRatedCount(); as uhrc) { &middot; {{ uhrc }} rated 8+}@if (uncoveredFilmCount(); as ufc) { &middot; {{ ufc }} uncategorized}@if (unwatchedShortestTitle(); as ust) { &middot; shortest: "{{ ust }}"}@if (unwatchedLongestTitle(); as ult) { &middot; longest: "{{ ult }}"}@if (topMoodByFilmCount(); as tmfc) { &middot; biggest mood: {{ tmfc }}}@if (oldestUnwatchedTitle(); as out) { &middot; oldest: "{{ out }}"}@if (moodStreamablePct(); as msp) { &middot; {{ msp }}% mood-matched}@if (moodFilmCountRange(); as mfcr) { &middot; moods: {{ mfcr }}}@if (watchedMoodCount(); as wmc) { &middot; {{ wmc }} moods watched}@if (avgMoodFilmRating(); as amfr) { &middot; mood avg &#9733; {{ amfr }}}</p>
+          <p class="explore__subtitle">Discover films by mood, or let fate decide@if (totalUnwatchedStreamable(); as tus) { &middot; {{ tus }} free films to discover}@if (unwatchedAvgRating(); as uar) { &middot; avg &#9733; {{ uar }}}@if (unwatchedLanguageCount(); as ulc) { &middot; {{ ulc }} languages}@if (unwatchedGenreCount(); as ugc) { &middot; {{ ugc }} genres}@if (unwatchedDirectorCount(); as udc) { &middot; {{ udc }} directors}@if (unwatchedAvgAge(); as uaa) { &middot; avg {{ uaa }}yr old}@if (unwatchedNonEnglishCount(); as unec) { &middot; {{ unec }} non-English}@if (unwatchedSilentEraCount(); as usec) { &middot; {{ usec }} silent-era}@if (unwatchedMedianYear(); as umy) { &middot; median year {{ umy }}}@if (unwatchedCoDirectedCount(); as ucdc) { &middot; {{ ucdc }} co-directed}@if (unwatchedAvgYear(); as uay) { &middot; avg year {{ uay }}}@if (unwatchedAvgTitleLength(); as uatl) { &middot; avg title {{ uatl }} chars}@if (unwatchedHighlyRatedCount(); as uhrc) { &middot; {{ uhrc }} rated 8+}@if (uncoveredFilmCount(); as ufc) { &middot; {{ ufc }} uncategorized}@if (unwatchedShortestTitle(); as ust) { &middot; shortest: "{{ ust }}"}@if (unwatchedLongestTitle(); as ult) { &middot; longest: "{{ ult }}"}@if (topMoodByFilmCount(); as tmfc) { &middot; biggest mood: {{ tmfc }}}@if (oldestUnwatchedTitle(); as out) { &middot; oldest: "{{ out }}"}@if (moodStreamablePct(); as msp) { &middot; {{ msp }}% mood-matched}@if (moodFilmCountRange(); as mfcr) { &middot; moods: {{ mfcr }}}@if (watchedMoodCount(); as wmc) { &middot; {{ wmc }} moods watched}@if (avgMoodFilmRating(); as amfr) { &middot; mood avg &#9733; {{ amfr }}}@if (newestMoodFilm(); as nmf) { &middot; newest in mood: "{{ nmf }}"}</p>
         </div>
 
         <div class="explore__random">
@@ -1258,6 +1258,15 @@ export class ExploreComponent implements OnInit {
     const covered = films.filter((m) => this.moods.some((mood) => this.matchesMood(m, mood)));
     const uncovered = films.length - covered.length;
     return uncovered > 0 ? uncovered : null;
+  });
+
+  readonly newestMoodFilm = computed(() => {
+    const mood = this.activeMood();
+    if (!mood) return null;
+    const movies = this.catalog.movies().filter((m) => m.isStreamable && this.matchesMood(m, mood));
+    if (movies.length < 3) return null;
+    const newest = movies.reduce((a, b) => a.year >= b.year ? a : b);
+    return newest.title;
   });
 
   readonly avgMoodFilmRating = computed(() => {

@@ -77,6 +77,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
             @if (movieTitleWordCount()) {
               <span class="watch__header-rating">&middot; {{ movieTitleWordCount() }}-word title</span>
             }
+            @if (decadeStreamableCount()) {
+              <span class="watch__header-rating">&middot; {{ decadeStreamableCount() }} streamable from this decade</span>
+            }
             @if (decadeLabel()) {
               <span class="watch__header-rating">&middot; <a [routerLink]="['/decade', decadeValue()]" class="watch__header-director">{{ decadeLabel() }}</a></span>
             }
@@ -631,6 +634,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   readonly catalogRankByRating = signal(0);
   readonly directorHighRatedCount = signal(0);
   readonly movieTitleWordCount = signal(0);
+  readonly decadeStreamableCount = signal(0);
 
   private fullscreenHandler = () => {
     this.isFullscreen.set(!!document.fullscreenElement);
@@ -675,6 +679,8 @@ export class WatchComponent implements OnInit, OnDestroy {
       this.decadeValue.set(String(decade));
       const decadeFilms = this.catalogService.movies().filter((m) => Math.floor(m.year / 10) * 10 === decade);
       if (decadeFilms.length >= 10) this.decadeFilmCount.set(decadeFilms.length);
+      const decadeStreamable = decadeFilms.filter((m) => m.isStreamable).length;
+      if (decadeStreamable >= 5) this.decadeStreamableCount.set(decadeStreamable);
       const sameYear = this.catalogService.movies().filter((m) => m.year === movie.year && m.id !== movie.id).length;
       if (sameYear >= 5) this.sameYearCount.set(sameYear);
       const ratedInDecade = decadeFilms.filter((m) => m.voteAverage > 0).sort((a, b) => b.voteAverage - a.voteAverage);

@@ -444,6 +444,12 @@ type SortOption = 'added-desc' | 'added-asc' | 'title-asc' | 'title-desc' | 'rat
                     <span class="stats__card-label">Streamable</span>
                   </div>
                 }
+                @if (watchedRatingSpread(); as wrs) {
+                  <div class="stats__card">
+                    <span class="stats__card-value">{{ wrs }}</span>
+                    <span class="stats__card-label">Rating Spread</span>
+                  </div>
+                }
                 @if (watchedMedianRating(); as wmr) {
                   <div class="stats__card">
                     <span class="stats__card-value">{{ wmr }}</span>
@@ -1839,6 +1845,14 @@ export class CollectionComponent implements OnInit {
     if (films.length < 3) return null;
     const longest = films.reduce((a, b) => a.title.length >= b.title.length ? a : b);
     return longest.title.length >= 15 ? longest.title : null;
+  });
+
+  readonly watchedRatingSpread = computed(() => {
+    const rated = this.watchedMovies().filter((m) => m.voteAverage > 0);
+    if (rated.length < 5) return null;
+    const sorted = rated.map((m) => m.voteAverage).sort((a, b) => a - b);
+    const spread = sorted[sorted.length - 1] - sorted[0];
+    return spread >= 2 ? spread.toFixed(1) : null;
   });
 
   readonly watchedPreWarCount = computed(() => {
