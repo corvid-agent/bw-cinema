@@ -479,6 +479,12 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
                 <span class="stats__fact-text">avg directors per film</span>
               </div>
             }
+            @if (multiGenreFilmPct(); as mgfp) {
+              <div class="stats__fact-card">
+                <span class="stats__fact-number">{{ mgfp }}%</span>
+                <span class="stats__fact-text">films with 2+ genres</span>
+              </div>
+            }
             @if (imdbLinkedPct(); as ilp) {
               <div class="stats__fact-card">
                 <span class="stats__fact-number">{{ ilp }}%</span>
@@ -1589,6 +1595,13 @@ export class StatsComponent implements OnInit {
     if (avgs.length < 2) return null;
     avgs.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
     return avgs[0];
+  });
+
+  readonly multiGenreFilmPct = computed(() => {
+    const movies = this.catalog.movies();
+    if (movies.length < 50) return null;
+    const pct = Math.round((movies.filter((m) => m.genres.length >= 2).length / movies.length) * 100);
+    return pct > 0 && pct < 100 ? pct : null;
   });
 
   ngOnInit(): void {

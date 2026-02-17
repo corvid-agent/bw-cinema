@@ -296,6 +296,9 @@ import type { MovieSummary } from '../../core/models/movie.model';
               @if (bothYtStreamable()) {
                 <span class="compare__overlap"> &middot; both on YouTube</span>
               }
+              @if (bothIaStreamable()) {
+                <span class="compare__overlap"> &middot; both on Internet Archive</span>
+              }
             </div>
           }
           @if (comparisonNotes().length > 0 || sharedGenres().length > 0 || sharedDirectors().length > 0) {
@@ -1085,6 +1088,13 @@ export class CompareComponent implements OnInit {
     const b = this.filmB();
     if (!a || !b) return false;
     return !!a.youtubeId && !!b.youtubeId;
+  });
+
+  readonly bothIaStreamable = computed(() => {
+    const a = this.filmA();
+    const b = this.filmB();
+    if (!a || !b) return false;
+    return !!a.internetArchiveId && !!b.internetArchiveId;
   });
 
   ngOnInit(): void {
