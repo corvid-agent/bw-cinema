@@ -165,6 +165,9 @@ import { SkeletonGridComponent } from '../../shared/components/skeleton-grid.com
           @if (ytStreamableCount(); as ysc) {
             <p class="decade__fact">{{ ysc }} streamable via YouTube</p>
           }
+          @if (iaStreamableCount(); as isc) {
+            <p class="decade__fact">{{ isc }} on Internet Archive</p>
+          }
           @if (coDirectedPct(); as cdp) {
             <p class="decade__fact">{{ cdp }}% co-directed</p>
           }
@@ -1096,6 +1099,13 @@ export class DecadeComponent implements OnInit {
     const f = this.films();
     if (f.length < 5) return null;
     const count = f.filter((m) => m.youtubeId).length;
+    return count > 0 ? count : null;
+  });
+
+  readonly iaStreamableCount = computed(() => {
+    const f = this.films();
+    if (f.length < 5) return null;
+    const count = f.filter((m) => m.internetArchiveId).length;
     return count > 0 ? count : null;
   });
 
