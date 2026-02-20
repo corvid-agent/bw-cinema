@@ -125,8 +125,8 @@ import type { MovieSummary } from '../../core/models/movie.model';
       color: var(--text-tertiary);
       cursor: pointer;
       padding: 6px;
-      min-width: 36px;
-      min-height: 36px;
+      min-width: 44px;
+      min-height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -229,11 +229,11 @@ import type { MovieSummary } from '../../core/models/movie.model';
       background: none;
       border: none;
       color: var(--text-tertiary);
-      font-size: 0.75rem;
+      font-size: 0.875rem;
       cursor: pointer;
-      padding: 2px 6px;
-      min-height: auto;
-      min-width: auto;
+      padding: 6px 10px;
+      min-height: 44px;
+      min-width: 44px;
     }
     .search__history-clear:hover { color: var(--accent-gold); }
     .search__history-item {
@@ -249,8 +249,8 @@ import type { MovieSummary } from '../../core/models/movie.model';
       cursor: pointer;
       text-align: left;
       border-radius: var(--radius);
-      min-height: auto;
-      min-width: auto;
+      min-height: 44px;
+      min-width: 44px;
     }
     .search__history-item:hover {
       background-color: var(--bg-hover);

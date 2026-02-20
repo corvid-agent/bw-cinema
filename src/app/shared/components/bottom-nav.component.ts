@@ -54,7 +54,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
       padding: 6px 12px;
       color: var(--text-tertiary);
       text-decoration: none;
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.04em;

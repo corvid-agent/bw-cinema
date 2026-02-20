@@ -31,8 +31,8 @@ const ONBOARDING_KEY = 'bw-cinema-onboarded';
     <app-bottom-nav />
 
     @if (showOnboarding) {
-      <div class="onboarding-overlay" role="dialog" aria-label="Welcome">
-        <div class="onboarding-panel">
+      <div class="onboarding-overlay" role="dialog" aria-label="Welcome" aria-modal="true" (keydown)="trapFocus($event)">
+        <div class="onboarding-panel" tabindex="-1">
           <h2 class="onboarding-title">Welcome to BW Cinema</h2>
           <p class="onboarding-text">Your home for classic black &amp; white films. Here's what you can do:</p>
           <ul class="onboarding-list">
@@ -49,7 +49,7 @@ const ONBOARDING_KEY = 'bw-cinema-onboarded';
 
     @if (a11y.panelOpen()) {
       <div class="a11y-overlay" (click)="a11y.panelOpen.set(false)">
-        <aside class="a11y-panel" (click)="$event.stopPropagation()" role="dialog" aria-label="Accessibility settings">
+        <aside class="a11y-panel" (click)="$event.stopPropagation()" role="dialog" aria-label="Accessibility settings" aria-modal="true" tabindex="-1" (keydown)="trapFocus($event)" (keydown.escape)="a11y.panelOpen.set(false)">
           <div class="a11y-header">
             <h2 class="a11y-title">Accessibility</h2>
             <button class="a11y-close" (click)="a11y.panelOpen.set(false)" aria-label="Close accessibility settings">&times;</button>
@@ -104,8 +104,8 @@ const ONBOARDING_KEY = 'bw-cinema-onboarded';
     }
 
     @if (shortcuts.helpOpen()) {
-      <div class="shortcuts-overlay" (click)="shortcuts.helpOpen.set(false)" role="dialog" aria-label="Keyboard shortcuts">
-        <div class="shortcuts-panel" (click)="$event.stopPropagation()">
+      <div class="shortcuts-overlay" (click)="shortcuts.helpOpen.set(false)" role="dialog" aria-label="Keyboard shortcuts" aria-modal="true" (keydown)="trapFocus($event)">
+        <div class="shortcuts-panel" (click)="$event.stopPropagation()" tabindex="-1">
           <div class="shortcuts-header">
             <h2 class="shortcuts-title">Keyboard Shortcuts</h2>
             <button class="shortcuts-close" (click)="shortcuts.helpOpen.set(false)" aria-label="Close">&times;</button>
@@ -201,10 +201,13 @@ const ONBOARDING_KEY = 'bw-cinema-onboarded';
       color: var(--text-tertiary);
       font-size: 1.5rem;
       cursor: pointer;
-      min-height: auto;
-      min-width: auto;
+      min-height: 44px;
+      min-width: 44px;
       padding: 4px 8px;
       line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .shortcuts-close:hover {
       color: var(--text-primary);
@@ -494,5 +497,28 @@ export class App implements OnInit, OnDestroy {
     try {
       localStorage.setItem(ONBOARDING_KEY, '1');
     } catch { /* noop */ }
+  }
+
+  trapFocus(event: KeyboardEvent): void {
+    if (event.key !== 'Tab') return;
+    const dialog = (event.target as HTMLElement).closest('[role="dialog"]');
+    if (!dialog) return;
+    const focusable = dialog.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey) {
+      if (document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
   }
 }

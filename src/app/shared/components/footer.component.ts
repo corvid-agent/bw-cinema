@@ -146,13 +146,16 @@ import { RouterLink } from '@angular/router';
       gap: var(--space-xs);
     }
     .footer__decade-link {
-      font-size: 0.8rem;
-      padding: 4px 12px;
+      font-size: 0.875rem;
+      padding: 8px 14px;
       border: 1px solid var(--border);
       border-radius: 14px;
       color: var(--text-tertiary);
       text-decoration: none;
       transition: all 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
     }
     .footer__decade-link:hover {
       border-color: var(--accent-gold);

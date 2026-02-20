@@ -115,7 +115,7 @@ import { CatalogService } from '../../core/services/catalog.service';
     </header>
     @if (shortcutsOpen()) {
       <div class="shortcuts-backdrop" (click)="shortcutsOpen.set(false)"></div>
-      <div class="shortcuts-overlay" role="dialog" aria-label="Keyboard shortcuts">
+      <div class="shortcuts-overlay" role="dialog" aria-label="Keyboard shortcuts" aria-modal="true" tabindex="-1" (keydown.escape)="shortcutsOpen.set(false)">
         <div class="shortcuts__header">
           <h2 class="shortcuts__title">Keyboard Shortcuts</h2>
           <button class="shortcuts__close" (click)="shortcutsOpen.set(false)" aria-label="Close">&times;</button>
@@ -245,10 +245,10 @@ import { CatalogService } from '../../core/services/catalog.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
-      min-height: 36px;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
       padding: 0;
       border-radius: 50%;
       background: var(--bg-hover);
@@ -267,10 +267,10 @@ import { CatalogService } from '../../core/services/catalog.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
-      min-height: 36px;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
       padding: 0;
       border-radius: 50%;
       background: var(--bg-hover);
@@ -433,6 +433,11 @@ import { CatalogService } from '../../core/services/catalog.service';
       cursor: pointer;
       padding: 0;
       line-height: 1;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .shortcuts__close:hover { color: var(--text-primary); }
     .shortcuts__section h3 {

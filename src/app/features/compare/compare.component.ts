@@ -342,9 +342,12 @@ import type { MovieSummary } from '../../core/models/movie.model';
       font-size: 1.2rem;
       cursor: pointer;
       padding: 0 4px;
-      min-height: auto;
-      min-width: auto;
+      min-height: 44px;
+      min-width: 44px;
       line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .compare__vs {
       padding-top: 38px;
@@ -362,10 +365,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
-      min-height: 36px;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
       padding: 0;
       border-radius: 50%;
       background: var(--bg-surface);
@@ -438,8 +441,8 @@ import type { MovieSummary } from '../../core/models/movie.model';
       margin-top: var(--space-sm);
     }
     .compare__quick-btn {
-      padding: 4px 10px;
-      font-size: 0.75rem;
+      padding: 8px 12px;
+      font-size: 0.875rem;
       border-radius: 12px;
       background: var(--bg-raised);
       border: 1px solid var(--border);
@@ -447,6 +450,7 @@ import type { MovieSummary } from '../../core/models/movie.model';
       cursor: pointer;
       transition: all 0.2s;
       white-space: nowrap;
+      min-height: 44px;
     }
     .compare__quick-btn:hover {
       border-color: var(--accent-gold);

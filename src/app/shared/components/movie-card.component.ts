@@ -378,10 +378,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
       .card__rating { font-size: 0.75rem; padding: 2px 6px; }
       .card__user-rating { font-size: 0.7rem; }
       .card__action {
-        width: 32px;
-        height: 32px;
-        min-width: 32px;
-        min-height: 32px;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
       }
       .card__info { padding: 6px 2px 2px; }
       .card__year { font-size: 0.7rem; }
@@ -395,10 +395,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
       .card__rating { font-size: 0.65rem; padding: 2px 4px; }
       .card__badge { font-size: 0.6rem; padding: 1px 4px; }
       .card__action {
-        width: 28px;
-        height: 28px;
-        min-width: 28px;
-        min-height: 28px;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
       }
       .card__action svg { width: 12px; height: 12px; }
       .card__heart svg { width: 12px; height: 12px; }

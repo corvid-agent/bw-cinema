@@ -386,11 +386,10 @@ import type { MovieSummary } from '../../core/models/movie.model';
       background: none;
       border: none;
       color: var(--accent-gold);
-      font-size: 0.85rem;
+      font-size: 0.875rem;
       font-weight: 600;
-      padding: 0;
-      min-height: auto;
-      min-width: auto;
+      padding: 8px 0;
+      min-height: 44px;
       cursor: pointer;
     }
     .actor__add-unwatched:hover { text-decoration: underline; }

@@ -15,7 +15,7 @@
   /* Text */
   --text-primary: #f0ede8;
   --text-secondary: #a8a29e;
-  --text-tertiary: #6b6560;
+  --text-tertiary: #8a847e;
 
   /* Accents */
   --accent-gold: #d4a843;
@@ -68,7 +68,7 @@
   --border-bright: #4d4232;
   --text-primary: #e8dcc8;
   --text-secondary: #b0a48e;
-  --text-tertiary: #786c58;
+  --text-tertiary: #93866e;
   --accent-gold: #c9a034;
   --accent-cream: #e8d8b8;
 }

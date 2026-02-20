@@ -174,6 +174,7 @@ import type { DirectorCount } from '../../core/models/catalog.model';
           class="filters__range"
           [value]="minRating()"
           (input)="onRatingChange($event)"
+          aria-label="Minimum rating"
         />
       </div>
     </aside>
@@ -204,11 +205,11 @@ import type { DirectorCount } from '../../core/models/catalog.model';
       border: 1px solid var(--border);
       border-radius: 12px;
       color: var(--text-tertiary);
-      font-size: 0.75rem;
+      font-size: 0.875rem;
       font-weight: 600;
-      padding: 3px 10px;
-      min-height: auto;
-      min-width: auto;
+      padding: 6px 12px;
+      min-height: 44px;
+      min-width: 44px;
       cursor: pointer;
       transition: all 0.2s;
     }
@@ -234,13 +235,13 @@ import type { DirectorCount } from '../../core/models/catalog.model';
       background: none;
       border: none;
       color: var(--text-secondary);
-      font-size: 0.8rem;
+      font-size: 0.875rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.06em;
       padding: var(--space-sm) 2px;
       cursor: pointer;
-      min-height: 36px;
+      min-height: 44px;
       min-width: auto;
       transition: color 0.2s;
     }
@@ -316,14 +317,14 @@ import type { DirectorCount } from '../../core/models/catalog.model';
     }
     .filters__director-search {
       width: 100%;
-      font-size: 0.82rem;
+      font-size: 0.875rem;
       padding: 7px 10px;
       margin-bottom: var(--space-xs);
       background-color: var(--bg-input);
       color: var(--text-primary);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      min-height: 32px;
+      min-height: 44px;
       transition: border-color 0.2s;
     }
     .filters__director-search:focus {

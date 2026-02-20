@@ -38,9 +38,9 @@ import { Component, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewIni
     .scroll-row::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
     .scroll-arrow {
       position: absolute;
-      top: calc(50% - 18px);
-      width: 36px;
-      height: 36px;
+      top: calc(50% - 22px);
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       background: var(--bg-surface);
       border: 1px solid var(--border-bright);

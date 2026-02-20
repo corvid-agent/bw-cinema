@@ -130,12 +130,13 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
                 [class.browse__streamable-toggle--active]="filter().streamableOnly"
                 (click)="toggleStreamableOnly()"
                 [attr.title]="filter().streamableOnly ? 'Showing watchable films only — click to show all' : 'Showing all films — click to show watchable only'"
+                [attr.aria-label]="filter().streamableOnly ? 'Showing watchable films only — click to show all' : 'Showing all films — click to show watchable only'"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                 {{ filter().streamableOnly ? 'Watchable' : 'All' }}
               </button>
               <app-view-toggle [(mode)]="viewMode" />
-              <button class="browse__surprise" (click)="surpriseMe()" title="Random film">
+              <button class="browse__surprise" (click)="surpriseMe()" title="Random film" aria-label="Pick a random film">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/><polyline points="21 12 16.5 14.6 16.5 19.79"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
               </button>
             </div>
@@ -257,9 +258,10 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       background: none;
       border: none;
       color: var(--text-tertiary);
-      font-size: 0.75rem;
+      font-size: 0.875rem;
       cursor: pointer;
       padding: var(--space-xs) 0;
+      min-height: 44px;
       opacity: 0.7;
       &:hover { opacity: 1; }
     }
@@ -298,10 +300,10 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 40px;
-      height: 40px;
-      min-width: 40px;
-      min-height: 40px;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
       padding: 0;
       border-radius: 50%;
       background: var(--bg-surface);
@@ -329,12 +331,12 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       border: 1px solid var(--accent-gold);
       border-radius: 14px;
       color: var(--accent-gold);
-      font-size: 0.8rem;
+      font-size: 0.875rem;
       font-weight: 600;
       cursor: pointer;
       transition: background-color 0.2s;
-      min-height: auto;
-      min-width: auto;
+      min-height: 44px;
+      min-width: 44px;
     }
     .browse__chip:hover {
       background: var(--accent-gold);
@@ -358,18 +360,18 @@ import type { CatalogFilter } from '../../core/models/catalog.model';
       display: flex;
       align-items: center;
       gap: 4px;
-      padding: 4px 12px;
+      padding: 8px 12px;
       background: var(--bg-surface);
       border: 1px solid var(--border);
       border-radius: 14px;
       color: var(--text-secondary);
-      font-size: 0.8rem;
+      font-size: 0.875rem;
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.2s;
-      min-height: auto;
-      min-width: auto;
+      min-height: 44px;
+      min-width: 44px;
     }
     .browse__quick-decade:hover {
       border-color: var(--accent-gold);
