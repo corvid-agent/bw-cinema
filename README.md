@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/preview.png" alt="bw-cinema preview" width="100%"></p>
+
 # BW Cinema
 
 The definitive destination for discovering, tracking, and watching classic black & white films. A catalog of 7,600+ timeless masterpieces from the golden age of cinema — browse, track your collection, and stream thousands for free.
