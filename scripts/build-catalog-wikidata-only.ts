@@ -66,22 +66,35 @@ interface MovieSummary {
   isStreamable: boolean;
 }
 
+async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3): Promise<Response> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const response = await fetch(url, options);
+    if (response.ok) return response;
+
+    const isRetryable = response.status >= 500 || response.status === 429;
+    if (!isRetryable || attempt === maxRetries) {
+      throw new Error(`Wikidata query failed: ${response.status} ${response.statusText}`);
+    }
+
+    const delay = Math.min(1000 * 2 ** attempt, 30000);
+    console.log(`Attempt ${attempt}/${maxRetries} failed (${response.status}), retrying in ${delay / 1000}s...`);
+    await new Promise((r) => setTimeout(r, delay));
+  }
+  throw new Error('Unreachable');
+}
+
 async function main() {
   console.log('Querying Wikidata for B&W films...');
 
   const url = new URL(SPARQL_ENDPOINT);
   url.searchParams.set('query', SPARQL_QUERY);
 
-  const response = await fetch(url.toString(), {
+  const response = await fetchWithRetry(url.toString(), {
     headers: {
       Accept: 'application/sparql-results+json',
       'User-Agent': 'BWCinema/1.0 (https://github.com/corvid-agent/bw-cinema)',
     },
   });
-
-  if (!response.ok) {
-    throw new Error(`Wikidata query failed: ${response.status} ${response.statusText}`);
-  }
 
   const data = await response.json() as {
     results: {
