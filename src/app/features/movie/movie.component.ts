@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, input, computed, HostListener, effect, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, DestroyRef, inject, signal, input, computed, HostListener, effect, untracked } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
@@ -1047,6 +1047,7 @@ export class MovieComponent {
   private readonly recentlyViewed = inject(RecentlyViewedService);
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly movie = signal<MovieDetail | null>(null);
   readonly loading = signal(true);
@@ -1056,6 +1057,7 @@ export class MovieComponent {
       const movieId = this.id();
       untracked(() => this.loadMovie(movieId));
     });
+    this.destroyRef.onDestroy(() => this.resetMetaTags());
   }
   readonly streamingUrl = signal<string | null>(null);
   readonly posterFailed = signal(false);
@@ -1410,17 +1412,37 @@ export class MovieComponent {
   }
 
   private updateMetaTags(movie: { title: string; year: number; posterUrl: string | null; directors: string[]; genres: string[] }): void {
+    const title = `${movie.title} (${movie.year}) — BW Cinema`;
     const desc = `${movie.title} (${movie.year}) — ${movie.directors.join(', ')}. ${movie.genres.join(', ')}. Watch classic B&W cinema on BW Cinema.`;
-    this.metaService.updateTag({ property: 'og:title', content: `${movie.title} (${movie.year}) — BW Cinema` });
+    this.metaService.updateTag({ property: 'og:type', content: 'video.movie' });
+    this.metaService.updateTag({ property: 'og:title', content: title });
     this.metaService.updateTag({ property: 'og:description', content: desc });
-    this.metaService.updateTag({ name: 'twitter:title', content: `${movie.title} (${movie.year}) — BW Cinema` });
+    this.metaService.updateTag({ property: 'og:url', content: window.location.href });
+    this.metaService.updateTag({ name: 'twitter:title', content: title });
     this.metaService.updateTag({ name: 'twitter:description', content: desc });
     this.metaService.updateTag({ name: 'description', content: desc });
-    this.metaService.updateTag({ property: 'og:url', content: window.location.href });
     if (movie.posterUrl) {
       this.metaService.updateTag({ property: 'og:image', content: movie.posterUrl });
+      this.metaService.updateTag({ property: 'og:image:alt', content: `${movie.title} poster` });
       this.metaService.updateTag({ name: 'twitter:image', content: movie.posterUrl });
+      this.metaService.updateTag({ name: 'twitter:image:alt', content: `${movie.title} poster` });
     }
+  }
+
+  private resetMetaTags(): void {
+    const defaultTitle = 'BW Cinema — Classic Black & White Films';
+    const defaultDesc = 'Discover, track, and watch classic black and white films from the golden age of cinema.';
+    this.metaService.updateTag({ property: 'og:type', content: 'website' });
+    this.metaService.updateTag({ property: 'og:title', content: defaultTitle });
+    this.metaService.updateTag({ property: 'og:description', content: defaultDesc });
+    this.metaService.updateTag({ name: 'twitter:title', content: defaultTitle });
+    this.metaService.updateTag({ name: 'twitter:description', content: defaultDesc });
+    this.metaService.updateTag({ name: 'description', content: defaultDesc });
+    this.metaService.removeTag("property='og:image'");
+    this.metaService.removeTag("property='og:image:alt'");
+    this.metaService.removeTag("property='og:url'");
+    this.metaService.removeTag("name='twitter:image'");
+    this.metaService.removeTag("name='twitter:image:alt'");
   }
 
   addToPlaylist(playlistId: string, movieId: string): void {
